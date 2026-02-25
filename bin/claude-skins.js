@@ -185,7 +185,23 @@ function cmdList() {
       const rc = rarityColors[manifest.rarity] || c.gray;
       const rb = rarityBadges[manifest.rarity] || '⚪';
 
-      console.log(`  ${isActive ? c.green : c.orange}●${c.reset} ${c.bold}${manifest.name}${c.reset} ${rc}[${manifest.rarity}]${c.reset} ${c.dim}v${manifest.version}${c.reset}${badge}`);
+      // Seasonal availability check
+      let availBadge = '';
+      if (manifest.edition === 'seasonal') {
+        if (isSeasonalAvailable(manifest)) {
+          availBadge = ` ${c.green}● AVAILABLE NOW${c.reset}`;
+        } else {
+          const dates = formatSeasonDates(manifest);
+          availBadge = ` ${c.red}🔒 LOCKED${c.reset} ${c.dim}(${dates})${c.reset}`;
+        }
+      }
+      // Supply info for numbered editions
+      let supplyBadge = '';
+      if (manifest.edition === 'numbered' && manifest.max_supply) {
+        supplyBadge = ` ${c.yellow}Limited: ${manifest.max_supply}${c.reset}`;
+      }
+
+      console.log(`  ${isActive ? c.green : c.orange}●${c.reset} ${c.bold}${manifest.name}${c.reset} ${rc}[${manifest.rarity}]${c.reset} ${c.dim}v${manifest.version}${c.reset}${badge}${availBadge}${supplyBadge}`);
       console.log(`    ${c.gray}${manifest.description}${c.reset}`);
       console.log(`    ${c.dim}Colors: ${c.reset}${manifest.colors?.primary || 'default'} / ${manifest.colors?.accent || 'default'}`);
       console.log(`    ${c.dim}ID: ${c.cyan}${dir}${c.reset}`);
@@ -232,6 +248,35 @@ function cmdApply(skinName) {
   doApply(skinName);
 }
 
+// ═══════════════════════════════════════════════════
+// DATE & SUPPLY CHECKS
+// ═══════════════════════════════════════════════════
+function isSeasonalAvailable(manifest) {
+  if (manifest.edition !== 'seasonal' || !manifest.available_from || !manifest.available_until) return true;
+  const now = new Date();
+  const from = new Date(manifest.available_from + 'T00:00:00');
+  const until = new Date(manifest.available_until + 'T23:59:59');
+  // Compare month/day only for recurring yearly seasons
+  const fm = from.getMonth(), fd = from.getDate();
+  const um = until.getMonth(), ud = until.getDate();
+  const nm = now.getMonth(), nd = now.getDate();
+  // Does this season wrap around year boundary? (e.g., Dec 1 → Jan 15)
+  const wraps = fm > um || (fm === um && fd > ud);
+  if (wraps) {
+    return (nm > fm || (nm === fm && nd >= fd)) || (nm < um || (nm === um && nd <= ud));
+  }
+  // Same-year range
+  return (nm > fm || (nm === fm && nd >= fd)) && (nm < um || (nm === um && nd <= ud));
+}
+
+function formatSeasonDates(manifest) {
+  if (!manifest.available_from || !manifest.available_until) return '';
+  const from = new Date(manifest.available_from + 'T00:00:00');
+  const until = new Date(manifest.available_until + 'T23:59:59');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[from.getMonth()]} ${from.getDate()} – ${months[until.getMonth()]} ${until.getDate()}`;
+}
+
 function doApply(skinName) {
   const skinPath = path.join(SKINS_DIR, skinName);
   const manifestPath = path.join(skinPath, 'manifest.json');
@@ -243,6 +288,23 @@ function doApply(skinName) {
   }
 
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+
+  // ── Seasonal date enforcement ──
+  if (manifest.edition === 'seasonal' && !isSeasonalAvailable(manifest)) {
+    const dates = formatSeasonDates(manifest);
+    console.log(`${c.red}✗${c.reset} ${c.bold}${manifest.name}${c.reset} is a ${c.orange}Seasonal${c.reset} skin.`);
+    console.log(`  This skin is only available during: ${c.yellow}${dates}${c.reset}`);
+    console.log(`  ${c.dim}Current date: ${new Date().toLocaleDateString()}${c.reset}`);
+    console.log(`\n  ${c.gray}Come back during the season window to use this skin!${c.reset}\n`);
+    return;
+  }
+
+  // ── Limited supply warning for numbered editions ──
+  if (manifest.edition === 'numbered' && manifest.max_supply) {
+    console.log(`  ${c.yellow}⚠${c.reset}  ${c.bold}Numbered Edition${c.reset} — Limited to ${c.yellow}${manifest.max_supply}${c.reset} total`);
+    console.log(`  ${c.dim}Serial numbers tracked at claude-skins.vercel.app${c.reset}\n`);
+  }
+
   console.log(`${c.bold}Applying skin: ${c.orange}${manifest.name}${c.reset}\n`);
 
   const result = applySkin(skinPath);

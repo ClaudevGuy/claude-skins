@@ -264,6 +264,34 @@ a:hover{text-decoration:underline}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* ============ LOCKED SEASONAL CARDS ============ */
+.skin-card.locked{opacity:.55;filter:grayscale(.5);pointer-events:none;position:relative}
+.skin-card.locked .card-preview{position:relative}
+.card-locked-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5;border-radius:var(--radius) var(--radius) 0 0;gap:6px}
+.card-locked-overlay .lock-icon{font-size:1.8rem}
+.card-locked-overlay .lock-text{font-size:.75rem;font-weight:700;color:#fff;letter-spacing:.04em}
+.card-locked-overlay .lock-dates{font-size:.65rem;color:rgba(255,255,255,.7);font-weight:500}
+.seasonal-active-badge{display:inline-block;font-size:.65rem;font-weight:700;color:#69f0ae;background:rgba(105,240,174,.1);border:1px solid rgba(105,240,174,.3);padding:2px 8px;border-radius:6px;margin-left:6px}
+
+/* ============ SUPPLY TRACKING (LEGENDARY) ============ */
+.supply-track{padding:0 20px 14px}
+.supply-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.supply-bar-fill{height:100%;border-radius:3px;transition:width .6s ease;background:linear-gradient(90deg,#ffea00,#ff8f00)}
+.supply-info{display:flex;justify-content:space-between;align-items:center;font-size:.7rem}
+.supply-remaining{font-weight:700;color:var(--legendary)}
+.supply-total{color:var(--text3)}
+.claim-btn{width:100%;padding:10px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:.02em;margin-top:8px}
+.claim-btn.available{background:linear-gradient(135deg,#ffd700,#ff8f00);color:#1a0a00}
+.claim-btn.available:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(255,215,0,.4)}
+.claim-btn.claimed{background:#1b5e20;color:#69f0ae;cursor:default}
+.claim-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* ============ SOLD OUT OVERLAY ============ */
+.skin-card.sold-out{opacity:.45;filter:grayscale(.7)}
+.skin-card.sold-out .card-preview{position:relative}
+.sold-out-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:5;border-radius:var(--radius) var(--radius) 0 0}
+.sold-out-text{font-size:1.4rem;font-weight:900;color:#ff1744;letter-spacing:.12em;text-transform:uppercase;transform:rotate(-12deg);text-shadow:0 2px 8px rgba(0,0,0,.6);border:3px solid #ff1744;padding:6px 20px;border-radius:6px;background:rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
@@ -398,14 +426,113 @@ const SKINS=[
   {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.',theme:{editor:'#140a1f',sidebar:'#0e0715',bar:'#08040a',accent:'#e040fb',status:'#e040fb'}},
   {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.',theme:{editor:'#140a20',sidebar:'#0e0718',bar:'#08040f',accent:'#ffd700',status:'#7b1fa2'}},
   {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.',theme:{editor:'#050008',sidebar:'#030005',bar:'#020003',accent:'#7c4dff',status:'#0a0014'}},
-  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',season:'Dec 1 \u2013 Jan 15',theme:{editor:'#0a1420',sidebar:'#070e18',bar:'#04080f',accent:'#bbdefb',status:'#e3f2fd'}},
-  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',season:'Mar 1 \u2013 Apr 15',theme:{editor:'#1f0a14',sidebar:'#15070e',bar:'#0d0408',accent:'#f48fb1',status:'#f8bbd0'}},
-  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',season:'Oct 15 \u2013 Nov 5',theme:{editor:'#1f0f00',sidebar:'#150a00',bar:'#0d0600',accent:'#76ff03',status:'#ff6f00'}},
+  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',season:'Dec 1 \u2013 Jan 15',available_from:'2026-12-01',available_until:'2027-01-15',theme:{editor:'#0a1420',sidebar:'#070e18',bar:'#04080f',accent:'#bbdefb',status:'#e3f2fd'}},
+  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',season:'Mar 1 \u2013 Apr 15',available_from:'2026-03-01',available_until:'2026-04-15',theme:{editor:'#1f0a14',sidebar:'#15070e',bar:'#0d0408',accent:'#f48fb1',status:'#f8bbd0'}},
+  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',season:'Oct 15 \u2013 Nov 5',available_from:'2026-10-15',available_until:'2026-11-05',theme:{editor:'#1f0f00',sidebar:'#150a00',bar:'#0d0600',accent:'#76ff03',status:'#ff6f00'}},
   {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',supply:500,theme:{editor:'#1f1a00',sidebar:'#151100',bar:'#0d0a00',accent:'#ffd700',status:'#ffd700'}},
   {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',supply:200,theme:{editor:'#08040f',sidebar:'#050308',bar:'#030204',accent:'#e040fb',status:'#1a1a1a'}}
 ];
 SKINS.forEach(s=>RARITY_COUNTS[s.rarity]++);
 SKINS.sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
+
+/* ============================================================
+   DATE & SUPPLY ENFORCEMENT
+   ============================================================ */
+// Check if a seasonal skin is currently available (recurring yearly)
+function isSeasonalAvailable(s){
+  if(!s.available_from||!s.available_until) return true;
+  const now=new Date();
+  const from=new Date(s.available_from+'T00:00:00');
+  const until=new Date(s.available_until+'T23:59:59');
+  // Compare month/day only for recurring yearly seasons
+  const fm=from.getMonth(),fd=from.getDate();
+  const um=until.getMonth(),ud=until.getDate();
+  const nm=now.getMonth(),nd=now.getDate();
+  // Does this season wrap around year boundary? (e.g., Dec 1 → Jan 15)
+  const wraps=fm>um||(fm===um&&fd>ud);
+  if(wraps){
+    // Available if in the "from" portion (Dec+) OR the "until" portion (Jan-)
+    return (nm>fm||(nm===fm&&nd>=fd))||(nm<um||(nm===um&&nd<=ud));
+  }
+  // Same-year range (e.g., Mar 1 → Apr 15)
+  return (nm>fm||(nm===fm&&nd>=fd))&&(nm<um||(nm===um&&nd<=ud));
+}
+
+// Supply state — populated from API
+const supplyState={};
+
+// Fetch supply from backend
+async function fetchSupply(){
+  try{
+    const res=await fetch('/api/supply');
+    if(!res.ok) return;
+    const data=await res.json();
+    for(const[skinId,info]of Object.entries(data)){
+      supplyState[skinId]=info;
+      updateSupplyUI(skinId,info);
+    }
+  }catch(e){
+    // API not available — show max supply as default
+    SKINS.forEach(function(s){
+      if(s.supply){
+        supplyState[s.id]={max:s.supply,remaining:s.supply,claimed:0};
+        updateSupplyUI(s.id,supplyState[s.id]);
+      }
+    });
+  }
+}
+
+// Update a single card's supply display
+function updateSupplyUI(skinId,info){
+  const bar=document.querySelector('.supply-bar-fill[data-skin="'+skinId+'"]');
+  const remaining=document.querySelector('.supply-remaining[data-skin="'+skinId+'"]');
+  const card=document.querySelector('.skin-card[data-skin="'+skinId+'"]');
+  const claimBtn=document.querySelector('.claim-btn[data-skin="'+skinId+'"]');
+  if(bar) bar.style.width=Math.round((info.remaining/info.max)*100)+'%';
+  if(remaining) remaining.textContent=info.remaining+' remaining';
+  if(info.remaining<=0){
+    if(card&&!card.classList.contains('sold-out')){
+      card.classList.add('sold-out');
+      const preview=card.querySelector('.card-preview');
+      if(preview&&!preview.querySelector('.sold-out-overlay')){
+        const overlay=document.createElement('div');
+        overlay.className='sold-out-overlay';
+        overlay.innerHTML='<span class="sold-out-text">Sold Out</span>';
+        preview.appendChild(overlay);
+      }
+    }
+    if(claimBtn){claimBtn.disabled=true;claimBtn.textContent='SOLD OUT';}
+  }
+}
+
+// Claim a legendary skin
+async function claimSkin(skinId,btn){
+  if(btn.disabled)return;
+  btn.disabled=true;btn.textContent='Claiming...';
+  try{
+    const res=await fetch('/api/claim',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({skin:skinId})
+    });
+    const data=await res.json();
+    if(data.success){
+      btn.className='claim-btn claimed';
+      btn.textContent='\u2713 Claimed #'+data.serial+' of '+data.max;
+      supplyState[skinId]={max:data.max,remaining:data.remaining,claimed:data.max-data.remaining};
+      updateSupplyUI(skinId,supplyState[skinId]);
+    }else if(data.reason==='sold_out'){
+      btn.textContent='SOLD OUT';
+      supplyState[skinId]={max:data.max,remaining:0,claimed:data.max};
+      updateSupplyUI(skinId,supplyState[skinId]);
+    }else{
+      btn.disabled=false;btn.textContent='Claim \u2014 Error';
+      setTimeout(function(){btn.textContent='Claim Your Number';btn.className='claim-btn available';},2000);
+    }
+  }catch(e){
+    btn.disabled=false;btn.className='claim-btn available';btn.textContent='Claim (offline)';
+  }
+}
 
 /* ============================================================
    SVG LOADER — fetches actual mascot.svg from skins/ directory
@@ -474,19 +601,49 @@ window.addEventListener('scroll',()=>{
 // Skin grid
 const grid=document.getElementById('skinGrid');
 SKINS.forEach(s=>{
+  const isSeasonal=s.rarity==='Seasonal';
+  const isLegendary=s.rarity==='Legendary';
+  const isLocked=isSeasonal&&!isSeasonalAvailable(s);
+
   const card=document.createElement('div');
-  card.className='skin-card rarity-'+s.rarity;
+  card.className='skin-card rarity-'+s.rarity+(isLocked?' locked':'');
   card.dataset.rarity=s.rarity;
   card.dataset.skin=s.id;
   card.style.setProperty('--glow-color',RARITY_COLORS[s.rarity]);
 
   let metaTags='';
-  if(s.season) metaTags+='<span class="card-meta-tag">'+s.season+'</span>';
+  if(s.season){
+    if(isLocked){
+      metaTags+='<span class="card-meta-tag" style="color:#ff9800;border-color:rgba(255,152,0,.3)">Available: '+s.season+'</span>';
+    }else if(isSeasonal){
+      metaTags+='<span class="card-meta-tag" style="color:#69f0ae;border-color:rgba(105,240,174,.3)">Available now!</span>';
+    }
+  }
   if(s.supply) metaTags+='<span class="card-meta-tag limited-badge">Limited: '+s.supply+'</span>';
+
+  // Locked overlay for seasonal skins outside their date window
+  let lockedOverlay='';
+  if(isLocked){
+    lockedOverlay='<div class="card-locked-overlay"><span class="lock-icon">\uD83D\uDD12</span><span class="lock-text">Not Available</span><span class="lock-dates">'+s.season+'</span></div>';
+  }
+
+  // Supply tracker for legendary skins
+  let supplyHtml='';
+  if(isLegendary&&s.supply){
+    supplyHtml=
+      '<div class="supply-track">'+
+        '<div class="supply-bar"><div class="supply-bar-fill" data-skin="'+s.id+'" style="width:100%"></div></div>'+
+        '<div class="supply-info">'+
+          '<span class="supply-remaining" data-skin="'+s.id+'">'+s.supply+' remaining</span>'+
+          '<span class="supply-total">of '+s.supply+'</span>'+
+        '</div>'+
+        '<button class="claim-btn available" data-skin="'+s.id+'" onclick="claimSkin(\''+s.id+'\',this)">Claim Your Number</button>'+
+      '</div>';
+  }
 
   const installId=s.id;
   card.innerHTML=
-    '<div class="card-preview" data-skin="'+s.id+'"><div class="svg-placeholder">Loading...</div></div>'+
+    '<div class="card-preview" data-skin="'+s.id+'"><div class="svg-placeholder">Loading...</div>'+lockedOverlay+'</div>'+
     '<div class="card-body">'+
       '<div class="card-top">'+
         '<span class="card-name">'+s.name+'</span>'+
@@ -502,6 +659,7 @@ SKINS.forEach(s=>{
         return '<div class="swatch"><div class="swatch-dot" style="background:'+s.theme[k]+';--sw-color:'+s.theme[k]+'"></div><span class="swatch-label">'+label+'</span><span class="swatch-hex">'+s.theme[k]+'</span></div>';
       }).join('')+
     '</div>':'')+
+    supplyHtml+
     '<div class="card-install">'+
       '<div class="install-title">Install Instructions</div>'+
       '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
@@ -515,7 +673,8 @@ SKINS.forEach(s=>{
       '</div>'+
     '</div>';
   card.addEventListener('click',e=>{
-    if(e.target.closest('.copy-btn'))return;
+    if(e.target.closest('.copy-btn')||e.target.closest('.claim-btn'))return;
+    if(isLocked)return; // prevent expanding locked cards
     const wasExpanded=card.classList.contains('expanded');
     document.querySelectorAll('.skin-card.expanded').forEach(c=>c.classList.remove('expanded'));
     if(!wasExpanded) card.classList.add('expanded');
@@ -525,6 +684,9 @@ SKINS.forEach(s=>{
 
 // Load all SVGs from skins/ directory
 loadAllSVGs();
+
+// Fetch supply data for legendary skins
+fetchSupply();
 
 // Copy buttons
 document.addEventListener('click',e=>{
