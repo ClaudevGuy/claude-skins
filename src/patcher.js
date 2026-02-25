@@ -174,11 +174,11 @@ const MEDIA_MAP = {
   'vscode_mascot': [
     'clawd.svg',
   ],
-  // icon.svg → extension logo SVG
-  'vscode_icon': [
+  // logo.svg → Claude asterisk logo (recolored) for sidebar/tabs
+  'vscode_logo': [
     'claude-logo.svg',
   ],
-  // icon.png → extension favicon/logo PNG
+  // icon.png → pixel art mascot as extension icon PNG
   'vscode_icon_png': [
     'claude-logo.png',
   ],

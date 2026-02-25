@@ -109,6 +109,11 @@ function genIcon(o){
   var s={};for(var k in o)s[k]=o[k];delete s.animationId;s._static=true;
   return genSVG(s).replace(/viewBox="([^"]+)" width="\d+" height="\d+"/,'viewBox="$1" width="32" height="32"');
 }
+/* ── Claude Logo (asterisk) recolored ── */
+var CLAUDE_LOGO_PATH='M4.709 15.955l4.72-2.647.08-.23-.08-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.06 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.73-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.93-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312-.006.006z';
+function genLogo(color){
+  return '<svg height="256" width="256" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="'+CLAUDE_LOGO_PATH+'" fill="'+color+'" fill-rule="nonzero"/></svg>';
+}
 
 /* ── PNG Icon Generator (pure Node, no deps) ── */
 var crcTable=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);t[n]=c;}return t;})();
@@ -116,7 +121,8 @@ function crc32(buf){var c=0xffffffff;for(var i=0;i<buf.length;i++)c=crcTable[(c^
 function pngChunk(type,data){var len=Buffer.alloc(4);len.writeUInt32BE(data.length,0);var td=Buffer.concat([Buffer.from(type),data]);var crc=Buffer.alloc(4);crc.writeUInt32BE(crc32(td),0);return Buffer.concat([len,td,crc]);}
 function parseHex(hex){hex=hex.replace('#','');if(hex.length===3)hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];return[parseInt(hex.substring(0,2),16),parseInt(hex.substring(2,4),16),parseInt(hex.substring(4,6),16)];}
 function genPNG(o){
-  var W=136,H=128,OX=16,OY=24;
+  var S=2; // scale factor: 2x gives 272x256
+  var W=136*S,H=128*S,OX=16*S,OY=24*S,PP=PX*S;
   var rgba=Buffer.alloc(W*H*4);
   function fillRect(x,y,w,h,color,alpha){
     var c=parseHex(color),a=alpha!==undefined?Math.round(alpha*255):255;
@@ -127,11 +133,11 @@ function genPNG(o){
   }
   var bodyColor=o.bodyColor||'#e8834a',eyeColor=o.eyeGlow||o.eyeColor||'#1a1a1a';
   if(o.gradient&&o.gradient.stops){var stops=o.gradient.stops;bodyColor=stops[Math.floor(stops.length/2)].color;}
-  BODY.forEach(function(p){fillRect(OX+p[0]*PX,OY+p[1]*PX,PX,PX,bodyColor);});
-  EYES.forEach(function(p){fillRect(OX+p[0]*PX,OY+p[1]*PX,PX,PX,eyeColor);});
-  if(o.extraPixels)o.extraPixels.forEach(function(p){fillRect(OX+p.x*PX,OY+p.y*PX,PX,PX,p.color);});
+  BODY.forEach(function(p){fillRect(OX+p[0]*PP,OY+p[1]*PP,PP,PP,bodyColor);});
+  EYES.forEach(function(p){fillRect(OX+p[0]*PP,OY+p[1]*PP,PP,PP,eyeColor);});
+  if(o.extraPixels)o.extraPixels.forEach(function(p){fillRect(OX+p.x*PP,OY+p.y*PP,PP,PP,p.color);});
   if(o.accessoriesFn){
-    var accSvg=o.accessoriesFn(OX,OY,PX);
+    var accSvg=o.accessoriesFn(OX,OY,PP);
     var m,re=/<rect x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)" fill="([^"]+)"(?:\s+opacity="([^"]+)")?/g;
     while((m=re.exec(accSvg))!==null){
       var rx=Math.round(parseFloat(m[1])),ry=Math.round(parseFloat(m[2]));
@@ -204,8 +210,9 @@ SKINS.forEach(function(skin){
   fs.writeFileSync(path.join(dir,'mascot.svg'),genSVG(skin.mascot));
   fs.writeFileSync(path.join(dir,'icon.svg'),genIcon(skin.mascot));
   fs.writeFileSync(path.join(dir,'icon.png'),genPNG(skin.mascot));
+  fs.writeFileSync(path.join(dir,'logo.svg'),genLogo(skin.colors.primary));
   fs.writeFileSync(path.join(dir,'ascii-art.txt'),[skin.ascii.line1,skin.ascii.line2,skin.ascii.line3].join('\n'));
-  var manifest={name:skin.name,author:'claude-skins',version:'1.0.0',rarity:skin.rarity,edition:skin.edition,description:skin.description,targets:{vscode_mascot:'mascot.svg',vscode_icon:'icon.svg',vscode_icon_png:'icon.png',terminal_ascii:'ascii-art.txt'},colors:Object.assign({},skin.colors)};
+  var manifest={name:skin.name,author:'claude-skins',version:'1.0.0',rarity:skin.rarity,edition:skin.edition,description:skin.description,targets:{vscode_mascot:'mascot.svg',vscode_icon:'icon.svg',vscode_icon_png:'icon.png',vscode_logo:'logo.svg',terminal_ascii:'ascii-art.txt'},colors:Object.assign({},skin.colors)};
   if(skin.mascot.eyeGlow) manifest.colors.eyes=skin.mascot.eyeGlow;
   if(skin.mascot.outline) manifest.colors.outline=skin.mascot.outline;
   if(skin.edition==='seasonal'){manifest.season=skin.season;manifest.available_from=skin.available_from;manifest.available_until=skin.available_until;}

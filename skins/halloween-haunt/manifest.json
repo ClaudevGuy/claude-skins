@@ -9,6 +9,7 @@
     "vscode_mascot": "mascot.svg",
     "vscode_icon": "icon.svg",
     "vscode_icon_png": "icon.png",
+    "vscode_logo": "logo.svg",
     "terminal_ascii": "ascii-art.txt"
   },
   "colors": {
