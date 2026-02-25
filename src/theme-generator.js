@@ -254,9 +254,42 @@ function generateColorCustomizations(primary, accent, skinId) {
     'minimapSlider.background':         withAlpha(p.mid, 0.15),
     'minimapSlider.hoverBackground':    withAlpha(p.mid, 0.25),
 
+    // Command Palette / Quick Input
+    'quickInput.background':               p.darker,
+    'quickInput.foreground':               '#f0f0f0',
+    'quickInputTitle.background':          p.darkest,
+    'quickInputList.focusBackground':      withAlpha(p.mid, 0.3),
+    'quickInputList.focusForeground':      '#ffffff',
+    'quickInputList.focusIconForeground':  '#ffffff',
+
+    // Editor Widgets (command palette, find widget, suggestions)
+    'editorWidget.background':             p.darker,
+    'editorWidget.foreground':             '#f0f0f0',
+    'editorWidget.border':                 darken(p.darker, 0.2),
+    'editorSuggestWidget.background':      p.darker,
+    'editorSuggestWidget.foreground':      '#f0f0f0',
+    'editorSuggestWidget.selectedBackground': withAlpha(p.mid, 0.25),
+    'editorSuggestWidget.highlightForeground': p.light,
+
+    // Dropdowns & Menus
+    'dropdown.background':                 p.darker,
+    'dropdown.foreground':                 '#f0f0f0',
+    'dropdown.border':                     darken(p.darker, 0.2),
+    'menu.background':                     p.darker,
+    'menu.foreground':                     '#f0f0f0',
+    'menu.selectionBackground':            withAlpha(p.mid, 0.3),
+    'menu.selectionForeground':            '#ffffff',
+    'menu.separatorBackground':            darken(p.darker, 0.2),
+
+    // Keybinding labels
+    'keybindingLabel.background':          withAlpha(p.mid, 0.15),
+    'keybindingLabel.foreground':          '#f0f0f0',
+    'keybindingLabel.border':              withAlpha(p.mid, 0.3),
+
     // Notifications
     'notificationCenterHeader.background': p.darkest,
     'notifications.background':            p.darker,
+    'notifications.foreground':            '#f0f0f0',
     'notifications.border':                darken(p.darker, 0.2),
   };
 
