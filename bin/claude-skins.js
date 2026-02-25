@@ -300,6 +300,15 @@ function doApply(skinName) {
     }
   }
 
+  if (result.colorTheme) {
+    if (result.colorTheme.applied) {
+      console.log(`  ${c.green}✓${c.reset} VS Code theme applied (${skinName} palette)`);
+    }
+    if (result.colorTheme.error) {
+      console.log(`  ${c.yellow}⚠${c.reset} Theme: ${result.colorTheme.error}`);
+    }
+  }
+
   if (result.terminal) {
     if (result.terminal.patched?.length > 0) {
       console.log(`  ${c.green}✓${c.reset} Terminal ASCII art patched`);

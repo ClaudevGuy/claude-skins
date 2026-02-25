@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { findExtension, findCLI, scanExtensionAssets, scanCLIAssets } = require('./finder');
+const { applyColorTheme, restoreColorTheme } = require('./theme-generator');
 
 const BACKUP_SUFFIX = '.claudeskins-backup';
 
@@ -782,6 +783,9 @@ function applySkin(skinDir) {
     results.webviewMascot = patchWebviewMascot(ext.path, skinDir, manifest);
   }
 
+  // Apply VS Code color theme
+  results.colorTheme = applyColorTheme(skinDir, manifest);
+
   // Apply terminal ASCII art
   for (const cli of cliInstalls) {
     if (manifest.targets?.terminal_ascii) {
@@ -838,6 +842,15 @@ function restoreAll() {
     }
 
     walkRestore(basePath);
+  }
+
+  // Restore VS Code settings.json color theme
+  const themeResult = restoreColorTheme();
+  if (themeResult.restored) {
+    results.restored.push('VS Code settings.json (color theme)');
+  }
+  if (themeResult.error) {
+    results.errors.push(themeResult.error);
   }
 
   return results;
