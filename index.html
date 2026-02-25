@@ -692,24 +692,9 @@ SKINS.sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
 /* ============================================================
    DATE & SUPPLY ENFORCEMENT
    ============================================================ */
-// Check if a seasonal skin is currently available (recurring yearly)
+// All seasonal skins available for launch
 function isSeasonalAvailable(s){
-  if(!s.available_from||!s.available_until) return true;
-  const now=new Date();
-  const from=new Date(s.available_from+'T00:00:00');
-  const until=new Date(s.available_until+'T23:59:59');
-  // Compare month/day only for recurring yearly seasons
-  const fm=from.getMonth(),fd=from.getDate();
-  const um=until.getMonth(),ud=until.getDate();
-  const nm=now.getMonth(),nd=now.getDate();
-  // Does this season wrap around year boundary? (e.g., Dec 1 → Jan 15)
-  const wraps=fm>um||(fm===um&&fd>ud);
-  if(wraps){
-    // Available if in the "from" portion (Dec+) OR the "until" portion (Jan-)
-    return (nm>fm||(nm===fm&&nd>=fd))||(nm<um||(nm===um&&nd<=ud));
-  }
-  // Same-year range (e.g., Mar 1 → Apr 15)
-  return (nm>fm||(nm===fm&&nd>=fd))&&(nm<um||(nm===um&&nd<=ud));
+  return true;
 }
 
 // Supply state — populated from API
@@ -917,7 +902,7 @@ SKINS.forEach(s=>{
     if(isLocked){
       metaTags+='<span class="card-meta-tag" style="color:#ff9800;border-color:rgba(255,152,0,.3)">Available: '+s.season+'</span>';
     }else if(isSeasonal){
-      metaTags+='<span class="card-meta-tag" style="color:#69f0ae;border-color:rgba(105,240,174,.3)">Available now!</span>';
+      metaTags+='<span class="card-meta-tag" style="color:#69f0ae;border-color:rgba(105,240,174,.3)">Available for launch</span>';
     }
   }
   if(s.supply) metaTags+='<span class="card-meta-tag limited-badge">Limited: '+s.supply+'</span>';
