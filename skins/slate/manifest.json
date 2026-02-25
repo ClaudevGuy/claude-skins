@@ -1,0 +1,17 @@
+{
+  "name": "Slate",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Common",
+  "edition": "permanent",
+  "description": "Clean. Minimal.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#78909c",
+    "accent": "#455a64"
+  }
+}

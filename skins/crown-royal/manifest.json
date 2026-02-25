@@ -1,0 +1,17 @@
+{
+  "name": "Crown Royal",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Epic",
+  "edition": "permanent",
+  "description": "King of the codebase. 👑",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#ffd700",
+    "accent": "#7b1fa2"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Holographic",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Epic",
+  "edition": "permanent",
+  "description": "Full spectrum shift.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#e040fb",
+    "accent": "#00e5ff"
+  }
+}

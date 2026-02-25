@@ -1,0 +1,17 @@
+{
+  "name": "Blood Red",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Common",
+  "edition": "permanent",
+  "description": "Debugging at 3am.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#ef5350",
+    "accent": "#b71c1c"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Angel",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Rare",
+  "edition": "permanent",
+  "description": "Zero bugs. Divinely clean.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#fff8e1",
+    "accent": "#ffd54f"
+  }
+}

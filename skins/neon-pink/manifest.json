@@ -1,0 +1,17 @@
+{
+  "name": "Neon Pink",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Uncommon",
+  "edition": "permanent",
+  "description": "Hot pink. Impossible to ignore.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#ff4081",
+    "accent": "#c51162"
+  }
+}

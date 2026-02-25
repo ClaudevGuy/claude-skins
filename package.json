@@ -1,0 +1,22 @@
+{
+  "name": "claude-skins",
+  "version": "1.0.0",
+  "description": "Skin store & patcher for Claude Code — replace the mascot in VS Code and Terminal",
+  "main": "src/index.js",
+  "bin": {
+    "claude-skins": "./bin/claude-skins.js"
+  },
+  "scripts": {
+    "start": "node bin/claude-skins.js",
+    "scan": "node bin/claude-skins.js scan",
+    "list": "node bin/claude-skins.js list",
+    "apply": "node bin/claude-skins.js apply",
+    "restore": "node bin/claude-skins.js restore"
+  },
+  "keywords": ["claude", "claude-code", "skins", "theme", "mascot", "customization"],
+  "author": "David",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

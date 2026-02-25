@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Skins — Collection Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');
+  :root { --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e; --text: #e4e4e9; --dim: #666680; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; }
+  .header {
+    text-align: center; padding: 48px 24px 32px;
+    font-family: 'Syne', sans-serif;
+  }
+  .header h1 { font-size: 2.4rem; font-weight: 800; color: #e8834a; margin-bottom: 8px; }
+  .header p { color: var(--dim); font-size: 0.9rem; }
+
+  .rarity-section { padding: 0 24px; max-width: 1200px; margin: 0 auto 40px; }
+  .rarity-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    padding: 4px 14px; border-radius: 100px; display: inline-block; margin-bottom: 16px;
+  }
+  .rarity-common .rarity-label { background: #333; color: #aaa; }
+  .rarity-uncommon .rarity-label { background: #1b4332; color: #52b788; }
+  .rarity-rare .rarity-label { background: #0a2463; color: #4fc3f7; }
+  .rarity-epic .rarity-label { background: #2d0a4e; color: #ce93d8; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+
+  .skin-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; transition: all 0.2s;
+  }
+  .skin-card:hover { border-color: #444; transform: translateY(-2px); }
+  .skin-preview {
+    height: 160px; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .skin-preview img, .skin-preview svg { max-height: 120px; width: auto; image-rendering: pixelated; }
+  .skin-preview .bg-pattern {
+    position: absolute; inset: 0; opacity: 0.05;
+    background: repeating-conic-gradient(#fff 0% 25%, transparent 0% 50%) 0 0/16px 16px;
+  }
+  .skin-info { padding: 14px 16px; border-top: 1px solid var(--border); }
+  .skin-info h3 { font-size: 0.9rem; margin-bottom: 4px; }
+  .skin-info .desc { font-size: 0.72rem; color: var(--dim); line-height: 1.5; margin-bottom: 8px; }
+  .skin-info .meta { display: flex; gap: 6px; align-items: center; }
+  .skin-info .color-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #333; }
+  .skin-info .id { font-size: 0.68rem; color: var(--dim); }
+
+  .ascii-section { padding: 16px; border-top: 1px solid var(--border); }
+  .ascii-art { font-size: 1rem; line-height: 1.2; text-align: center; white-space: pre; }
+
+  .rarity-common .skin-preview { background: linear-gradient(135deg, #1a1a1a 0%, #0f0f15 100%); }
+  .rarity-uncommon .skin-preview { background: linear-gradient(135deg, #0a1f0f 0%, #0f0f15 100%); }
+  .rarity-rare .skin-preview { background: linear-gradient(135deg, #0a0f2a 0%, #0f0f15 100%); }
+  .rarity-epic .skin-preview { background: linear-gradient(135deg, #1a0a2e 0%, #0f0f15 100%); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎨 Claude Skins Collection</h1>
+  <p>10 skins · 4 rarity tiers · Same mascot, different energy</p>
+</div>
+
+<div class="rarity-section rarity-common">
+  <div class="rarity-label">⚪ Common</div>
+  <div class="grid" id="common"></div>
+</div>
+
+<div class="rarity-section rarity-uncommon">
+  <div class="rarity-label">🟢 Uncommon</div>
+  <div class="grid" id="uncommon"></div>
+</div>
+
+<div class="rarity-section rarity-rare">
+  <div class="rarity-label">🔵 Rare</div>
+  <div class="grid" id="rare"></div>
+</div>
+
+<div class="rarity-section rarity-epic">
+  <div class="rarity-label">🟣 Epic</div>
+  <div class="grid" id="epic"></div>
+</div>
+
+<script>
+const skins = [
+  // COMMON
+  { id: 'ice-blue', name: 'Ice Blue', rarity: 'common', desc: 'Frozen solid. Cool under pressure.', colors: ['#4fc3f7','#0288d1'], ascii: ' ▐▛███▜▌\n ▜█████▛▘\n  ▘▘ ▝▝' },
+  { id: 'forest-green', name: 'Forest Green', rarity: 'common', desc: 'Camouflaged in the codebase.', colors: ['#66bb6a','#2e7d32'], ascii: ' ▐▛███▜▌\n ▜█████▛▘\n  ▘▘ ▝▝' },
+  { id: 'midnight-purple', name: 'Midnight Purple', rarity: 'common', desc: 'Late night coding sessions only.', colors: ['#ab47bc','#6a1b9a'], ascii: ' ▐▛███▜▌\n ▜█████▛▘\n  ▘▘ ▝▝' },
+  // UNCOMMON
+  { id: 'gold-edition', name: 'Gold Edition', rarity: 'uncommon', desc: 'Ship to prod with confidence. Minted in gold.', colors: ['#ffd700','#b8860b'], ascii: '★▐▛███▜▌★\n ▜█████▛▘\n  ▘▘ ▝▝' },
+  { id: 'neon-pink', name: 'Neon Pink', rarity: 'uncommon', desc: 'Hot pink energy. Impossible to ignore.', colors: ['#ff4081','#c51162'], ascii: ' ▐▛███▜▌\n ▜█████▛▘\n  ▘▘ ▝▝' },
+  // RARE
+  { id: 'diamond', name: 'Diamond', rarity: 'rare', desc: 'Transparent and flawless. The flex skin.', colors: ['#b3e5fc','#4fc3f7'], ascii: '◇▐▛███▜▌◇\n ▜█████▛▘\n◇ ▘▘ ▝▝◇' },
+  { id: 'fire', name: 'Fire', rarity: 'rare', desc: 'Straight heat. Code is literally on fire.', colors: ['#ff5722','#bf360c'], ascii: '🔥▐▛███▜▌\n ▜█████▛▘\n  ▘▘ ▝▝' },
+  { id: 'shadow', name: 'Shadow', rarity: 'rare', desc: "Can't see it, but it sees your bugs.", colors: ['#263238','#ff0044'], ascii: ' ▐▛███▜▌\n ▜█████▛▘\n  ◉◉ ◉◉' },
+  // EPIC
+  { id: 'holographic', name: 'Holographic', rarity: 'epic', desc: 'The showstopper. Rainbow shift.', colors: ['#e040fb','#00e5ff'], ascii: '✦▐▛███▜▌✦\n✦▜█████▛▘\n  ▘▘ ▝▝ ✦' },
+  { id: 'crown-royal', name: 'Crown Royal', rarity: 'epic', desc: 'King of the codebase. 👑', colors: ['#ffd700','#7b1fa2'], ascii: '👑▐▛███▜▌\n ▜█████▛▘\n  ▘▘ ▝▝' },
+];
+
+skins.forEach(skin => {
+  const container = document.getElementById(skin.rarity);
+  const card = document.createElement('div');
+  card.className = 'skin-card';
+  card.innerHTML = `
+    <div class="skin-preview">
+      <div class="bg-pattern"></div>
+      <img src="skins/${skin.id}/mascot.svg" alt="${skin.name}" loading="lazy"/>
+    </div>
+    <div class="skin-info">
+      <h3>${skin.name}</h3>
+      <div class="desc">${skin.desc}</div>
+      <div class="meta">
+        <div class="color-dot" style="background:${skin.colors[0]}"></div>
+        <div class="color-dot" style="background:${skin.colors[1]}"></div>
+        <span class="id">${skin.id}</span>
+      </div>
+    </div>
+    <div class="ascii-section">
+      <pre class="ascii-art" style="color:${skin.colors[0]}">${skin.ascii}</pre>
+    </div>
+  `;
+  container.appendChild(card);
+});
+</script>
+</body>
+</html>

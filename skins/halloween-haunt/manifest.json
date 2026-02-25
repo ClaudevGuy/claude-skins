@@ -1,0 +1,20 @@
+{
+  "name": "Halloween Haunt",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Seasonal",
+  "edition": "seasonal",
+  "description": "Trick or debug.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#ff6f00",
+    "accent": "#1a0a00"
+  },
+  "season": "Halloween 2026",
+  "available_from": "2026-10-15",
+  "available_until": "2026-11-05"
+}

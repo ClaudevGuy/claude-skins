@@ -1,0 +1,17 @@
+{
+  "name": "Shadow",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Rare",
+  "edition": "permanent",
+  "description": "Sees your bugs.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#263238",
+    "accent": "#000"
+  }
+}

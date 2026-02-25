@@ -1,0 +1,17 @@
+{
+  "name": "Electric Cyan",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Uncommon",
+  "edition": "permanent",
+  "description": "Pure voltage.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#00e5ff",
+    "accent": "#0097a7"
+  }
+}

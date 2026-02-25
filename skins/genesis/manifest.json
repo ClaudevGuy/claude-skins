@@ -1,0 +1,19 @@
+{
+  "name": "Genesis",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Legendary",
+  "edition": "numbered",
+  "description": "First 500. Never again.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#ffd700",
+    "accent": "#ff6f00"
+  },
+  "max_supply": 500,
+  "serial_number": null
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Obsidian",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Legendary",
+  "edition": "numbered",
+  "description": "Only 200. Volcanic glass.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#1a1a1a",
+    "accent": "#4a148c"
+  },
+  "max_supply": 200,
+  "serial_number": null
+}

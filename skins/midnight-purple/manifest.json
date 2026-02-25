@@ -1,0 +1,17 @@
+{
+  "name": "Midnight Purple",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Common",
+  "edition": "permanent",
+  "description": "Late night coding only.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#ab47bc",
+    "accent": "#6a1b9a"
+  }
+}

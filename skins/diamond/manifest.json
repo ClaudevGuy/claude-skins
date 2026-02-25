@@ -1,0 +1,17 @@
+{
+  "name": "Diamond",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Rare",
+  "edition": "permanent",
+  "description": "Flawless. The flex skin.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#b3e5fc",
+    "accent": "#4fc3f7"
+  }
+}

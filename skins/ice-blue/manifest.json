@@ -1,0 +1,17 @@
+{
+  "name": "Ice Blue",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Common",
+  "edition": "permanent",
+  "description": "Frozen solid. Cool under pressure.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#4fc3f7",
+    "accent": "#0288d1"
+  }
+}

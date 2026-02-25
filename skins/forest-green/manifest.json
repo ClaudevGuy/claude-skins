@@ -1,0 +1,17 @@
+{
+  "name": "Forest Green",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Common",
+  "edition": "permanent",
+  "description": "Camouflaged in the codebase.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#66bb6a",
+    "accent": "#2e7d32"
+  }
+}

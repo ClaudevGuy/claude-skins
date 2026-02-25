@@ -1,0 +1,17 @@
+{
+  "name": "Demon",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Rare",
+  "edition": "permanent",
+  "description": "Summoned from the stack trace.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#d32f2f",
+    "accent": "#880e0e"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Bitcoin OG",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Rare",
+  "edition": "permanent",
+  "description": "HODL. Laser eyes. Block 0.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#f7931a",
+    "accent": "#4d2800"
+  }
+}

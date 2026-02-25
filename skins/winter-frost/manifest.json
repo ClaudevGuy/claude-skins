@@ -1,0 +1,20 @@
+{
+  "name": "Winter Frost",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Seasonal",
+  "edition": "seasonal",
+  "description": "Dec-Jan only.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#e3f2fd",
+    "accent": "#90caf9"
+  },
+  "season": "Winter 2026",
+  "available_from": "2026-12-01",
+  "available_until": "2027-01-15"
+}

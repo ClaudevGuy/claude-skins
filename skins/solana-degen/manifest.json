@@ -1,0 +1,17 @@
+{
+  "name": "Solana Degen",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Rare",
+  "edition": "permanent",
+  "description": "Wen moon? SOL chain on.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#14f195",
+    "accent": "#9945ff"
+  }
+}

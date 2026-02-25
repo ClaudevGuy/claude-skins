@@ -1,0 +1,17 @@
+{
+  "name": "Sunset",
+  "author": "claude-skins",
+  "version": "1.0.0",
+  "rarity": "Uncommon",
+  "edition": "permanent",
+  "description": "Golden hour. Ship before dark.",
+  "targets": {
+    "vscode_mascot": "mascot.svg",
+    "vscode_icon": "icon.svg",
+    "terminal_ascii": "ascii-art.txt"
+  },
+  "colors": {
+    "primary": "#ff8a65",
+    "accent": "#ff5722"
+  }
+}

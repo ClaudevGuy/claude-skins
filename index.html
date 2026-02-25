@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Skins — Collectible Mascot Skins for Claude Code</title>
+<meta name="description" content="26 collectible skins across 6 rarity tiers for the Claude Code mascot. Zero dependencies. Pure Node.js.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#0e0e18;--bg3:#141422;--bg4:#1a1a2e;
+  --text:#e0e0e0;--text2:#8888aa;--text3:#555577;
+  --common:#8b8b8b;--uncommon:#4fc3f7;--rare:#ffd700;--epic:#ff4081;--seasonal:#ff9800;--legendary:#ffea00;
+  --border:#1a1a2e;--card:#0c0c16;--card-hover:#111122;
+  --radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.5;-webkit-font-smoothing:antialiased}
+code,pre,.mono{font-family:'JetBrains Mono',monospace}
+a{color:var(--uncommon);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ============ CANVAS BG ============ */
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.4}
+.page-wrap{position:relative;z-index:1}
+
+/* ============ HERO ============ */
+.hero{padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(transparent,var(--bg));pointer-events:none}
+.hero-title{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:16px;
+  background:linear-gradient(135deg,#ff4081,#e040fb,#7c4dff,#00e5ff,#69f0ae,#ffea00,#ff4081);
+  background-size:300% 300%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:heroGrad 6s ease infinite}
+@keyframes heroGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:clamp(1rem,2.5vw,1.25rem);color:var(--text2);max-width:600px;margin:0 auto 32px;font-weight:400}
+.hero-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.hero-stat{padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:700;letter-spacing:.02em;border:1px solid;display:flex;align-items:center;gap:6px}
+.hero-stat .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hero-mascot{width:136px;height:104px;margin:0 auto;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* ============ FILTER BAR ============ */
+.filter-bar{position:sticky;top:0;z-index:100;padding:12px 24px;background:rgba(10,10,15,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;transition:box-shadow .3s}
+.filter-bar.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.5)}
+.filter-btn{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.filter-btn:hover{background:var(--bg3);color:var(--text)}
+.filter-btn.active{color:#fff;border-color:currentColor}
+.filter-btn.active[data-rarity="all"]{background:var(--bg4);border-color:var(--text2)}
+.filter-btn.active[data-rarity="Common"]{color:var(--common);background:rgba(139,139,139,.12)}
+.filter-btn.active[data-rarity="Uncommon"]{color:var(--uncommon);background:rgba(79,195,247,.12)}
+.filter-btn.active[data-rarity="Rare"]{color:var(--rare);background:rgba(255,215,0,.12)}
+.filter-btn.active[data-rarity="Epic"]{color:var(--epic);background:rgba(255,64,129,.12)}
+.filter-btn.active[data-rarity="Seasonal"]{color:var(--seasonal);background:rgba(255,152,0,.12)}
+.filter-btn.active[data-rarity="Legendary"]{color:var(--legendary);background:rgba(255,234,0,.15)}
+.filter-count{font-size:.7rem;opacity:.7}
+
+/* ============ GRID ============ */
+.grid-section{max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+.skin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+@media(max-width:720px){.skin-grid{grid-template-columns:1fr}}
+
+/* ============ CARD ============ */
+.skin-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .3s ease;position:relative}
+.skin-card:hover{transform:translateY(-4px);border-color:var(--glow-color,var(--border))}
+.skin-card:hover .card-preview{background:var(--bg3)}
+.skin-card.expanded{grid-column:1/-1;max-width:700px;margin:0 auto;width:100%}
+.skin-card[data-rarity="Legendary"]{
+  border-image:linear-gradient(135deg,#ffea00,#ff8f00,#ffea00,#fff9c4,#ffea00) 1;
+  animation:legendBorder 3s linear infinite}
+@keyframes legendBorder{0%{border-image-source:linear-gradient(0deg,#ffea00,#ff8f00,#ffea00)}
+  33%{border-image-source:linear-gradient(120deg,#ff8f00,#ffea00,#fff9c4)}
+  66%{border-image-source:linear-gradient(240deg,#ffea00,#fff9c4,#ff8f00)}
+  100%{border-image-source:linear-gradient(360deg,#ffea00,#ff8f00,#ffea00)}}
+.skin-card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);opacity:0;transition:opacity .3s;pointer-events:none;
+  box-shadow:0 0 30px var(--glow-color,transparent),inset 0 0 30px rgba(0,0,0,.3)}
+.skin-card:hover::before{opacity:.5}
+
+.card-preview{padding:24px;display:flex;justify-content:center;align-items:center;background:var(--bg2);transition:background .3s;min-height:160px;position:relative;overflow:hidden}
+.card-preview svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.card-body{padding:16px 20px}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.card-name{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
+.rarity-badge{font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:10px;border:1px solid;white-space:nowrap}
+.rarity-Common .rarity-badge{color:var(--common);border-color:rgba(139,139,139,.3);background:rgba(139,139,139,.08)}
+.rarity-Uncommon .rarity-badge{color:var(--uncommon);border-color:rgba(79,195,247,.3);background:rgba(79,195,247,.08)}
+.rarity-Rare .rarity-badge{color:var(--rare);border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.08)}
+.rarity-Epic .rarity-badge{color:var(--epic);border-color:rgba(255,64,129,.3);background:rgba(255,64,129,.08)}
+.rarity-Seasonal .rarity-badge{color:var(--seasonal);border-color:rgba(255,152,0,.3);background:rgba(255,152,0,.08)}
+.rarity-Legendary .rarity-badge{color:var(--legendary);border-color:rgba(255,234,0,.3);background:rgba(255,234,0,.12);animation:shimmerBadge 2s ease infinite}
+@keyframes shimmerBadge{0%,100%{text-shadow:0 0 6px rgba(255,234,0,.4)}50%{text-shadow:0 0 14px rgba(255,234,0,.8)}}
+.card-desc{color:var(--text2);font-size:.85rem;margin-bottom:12px}
+.card-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card-meta-tag{font-size:.7rem;color:var(--text3);padding:2px 8px;border-radius:6px;background:var(--bg2);border:1px solid var(--border)}
+.limited-badge{color:#ff4081;border-color:rgba(255,64,129,.3)!important;background:rgba(255,64,129,.06)!important;font-weight:600}
+
+/* ============ EXPANDED CARD ============ */
+.card-install{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;padding:0 20px}
+.skin-card.expanded .card-install{max-height:600px;padding:0 20px 20px}
+.install-title{font-size:.85rem;font-weight:700;margin-bottom:12px;color:var(--text)}
+.install-step{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.install-step code{font-size:.75rem;color:var(--uncommon);word-break:break-all;flex:1}
+.copy-btn{flex-shrink:0;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.7rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:var(--bg4);color:var(--text)}
+.copy-btn.copied{background:#1b5e20;border-color:#4caf50;color:#69f0ae}
+.quick-apply{margin-top:8px;padding:12px 14px;background:linear-gradient(135deg,rgba(124,77,255,.08),rgba(0,229,255,.08));border:1px solid rgba(124,77,255,.2);border-radius:var(--radius-sm)}
+.quick-apply-label{font-size:.7rem;font-weight:700;color:var(--epic);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+
+/* ============ HOW IT WORKS ============ */
+.how-section{max-width:900px;margin:0 auto;padding:60px 24px 80px}
+.section-title{font-size:1.8rem;font-weight:800;text-align:center;margin-bottom:40px;letter-spacing:-.02em}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+@media(max-width:640px){.steps{grid-template-columns:1fr}}
+.step{text-align:center;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius)}
+.step-icon{font-size:2.2rem;margin-bottom:12px}
+.step-num{font-size:.7rem;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.step-title{font-weight:700;margin-bottom:4px}
+.step-desc{font-size:.85rem;color:var(--text2)}
+
+/* ============ FOOTER ============ */
+.footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--text3);font-size:.85rem}
+.footer a{color:var(--text2)}
+.footer-line{margin-bottom:6px}
+
+/* ============ SPECIAL SKIN EFFECTS ============ */
+.card-preview[data-skin="holographic"]{animation:holoShift 4s linear infinite}
+@keyframes holoShift{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
+.card-preview[data-skin="fire"] svg{animation:flicker .15s infinite alternate}
+@keyframes flicker{0%{filter:drop-shadow(0 -2px 6px rgba(255,152,0,.6)) brightness(1)}100%{filter:drop-shadow(0 -4px 10px rgba(255,69,0,.8)) brightness(1.05)}}
+.card-preview[data-skin="diamond"] svg{animation:sparkle 2s ease infinite}
+@keyframes sparkle{0%,100%{filter:drop-shadow(0 0 4px rgba(224,247,250,.4)) brightness(1)}50%{filter:drop-shadow(0 0 12px rgba(224,247,250,.8)) brightness(1.1)}}
+.card-preview[data-skin="void-walker"] svg{animation:voidPulse 2s ease infinite}
+@keyframes voidPulse{0%,100%{filter:drop-shadow(0 0 6px rgba(179,136,255,.3))}50%{filter:drop-shadow(0 0 18px rgba(179,136,255,.7))}}
+.card-preview[data-skin="shadow"] svg{animation:shadowGlow 3s ease infinite}
+@keyframes shadowGlow{0%,100%{filter:drop-shadow(0 0 4px rgba(255,0,68,.3))}50%{filter:drop-shadow(0 0 14px rgba(255,0,68,.7))}}
+.card-preview[data-skin="genesis"] svg,.card-preview[data-skin="obsidian"] svg{animation:legendGlow 2.5s ease infinite}
+@keyframes legendGlow{0%,100%{filter:drop-shadow(0 0 6px rgba(255,234,0,.3)) brightness(1)}50%{filter:drop-shadow(0 0 16px rgba(255,234,0,.6)) brightness(1.08)}}
+.card-preview[data-skin="neon-pink"] svg{filter:drop-shadow(0 0 8px rgba(255,64,129,.4))}
+.card-preview[data-skin="electric-cyan"] svg{filter:drop-shadow(0 0 8px rgba(0,229,255,.4))}
+.card-preview[data-skin="gold-edition"] svg{filter:drop-shadow(0 0 8px rgba(255,215,0,.3))}
+.card-preview[data-skin="aurora"] svg{animation:auroraGlow 3s ease infinite}
+@keyframes auroraGlow{0%,100%{filter:drop-shadow(0 0 6px rgba(0,230,118,.3)) hue-rotate(0deg)}50%{filter:drop-shadow(0 0 14px rgba(124,77,255,.5)) hue-rotate(20deg)}}
+.card-preview[data-skin="bitcoin-og"] svg{filter:drop-shadow(0 0 6px rgba(247,147,26,.4))}
+.card-preview[data-skin="solana-degen"] svg{filter:drop-shadow(0 0 8px rgba(20,241,149,.3))}
+.card-preview[data-skin="crown-royal"] svg{filter:drop-shadow(0 0 8px rgba(123,31,162,.4))}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="page-wrap">
+
+<!-- HERO -->
+<section class="hero">
+  <h1 class="hero-title">CLAUDE SKINS</h1>
+  <p class="hero-sub">Customize your Claude Code mascot. 26 skins. 6 rarity tiers. Zero dependencies.</p>
+  <div class="hero-stats" id="heroStats"></div>
+  <div class="hero-mascot" id="heroMascot"></div>
+</section>
+
+<!-- FILTER BAR -->
+<nav class="filter-bar" id="filterBar">
+  <button class="filter-btn active" data-rarity="all">All <span class="filter-count">26</span></button>
+</nav>
+
+<!-- SKIN GRID -->
+<section class="grid-section">
+  <div class="skin-grid" id="skinGrid"></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <h2 class="section-title">How It Works</h2>
+  <div class="steps">
+    <div class="step"><div class="step-icon">&#x1F4E6;</div><div class="step-num">Step 1</div><div class="step-title">Clone</div><div class="step-desc">Download claude-skins with git clone. No build tools needed.</div></div>
+    <div class="step"><div class="step-icon">&#x1F3A8;</div><div class="step-num">Step 2</div><div class="step-title">Pick</div><div class="step-desc">Browse 26 skins across 6 rarity tiers. Find your vibe.</div></div>
+    <div class="step"><div class="step-icon">&#x26A1;</div><div class="step-num">Step 3</div><div class="step-title">Apply</div><div class="step-desc">One command. Reload VS Code. Your mascot is transformed.</div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-line">Made for the Claude Code community</div>
+  <div class="footer-line"><a href="https://github.com/claudeskins/claude-skins" target="_blank">github.com/claudeskins/claude-skins</a></div>
+  <div class="footer-line">Zero dependencies &middot; Pure Node.js &middot; MIT License</div>
+</footer>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const PX=8,OX=16,OY=24;
+const BODY=[[3,0],[4,0],[8,0],[9,0],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],[10,1],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,2],[1,3],[2,3],[5,3],[6,3],[7,3],[10,3],[11,3],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[10,4],[11,4],[1,5],[2,5],[3,5],[4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],[2,6],[3,6],[4,6],[5,6],[6,6],[7,6],[8,6],[9,6],[10,6],[3,7],[4,7],[8,7],[9,7],[3,8],[4,8],[8,8],[9,8]];
+const EYES=[[3,3],[4,3],[8,3],[9,3]];
+const RARITY_ORDER={Legendary:0,Epic:1,Seasonal:2,Rare:3,Uncommon:4,Common:5};
+const RARITY_COLORS={Common:'#8b8b8b',Uncommon:'#4fc3f7',Rare:'#ffd700',Epic:'#ff4081',Seasonal:'#ff9800',Legendary:'#ffea00'};
+const RARITY_COUNTS={Common:0,Uncommon:0,Rare:0,Epic:0,Seasonal:0,Legendary:0};
+
+const SKINS=[
+  {id:'ice-blue',name:'Ice Blue',rarity:'Common',desc:'Frozen solid. Cool under pressure.',body:'#4fc3f7',eyes:'#0d1b2a',outline:'#81d4fa'},
+  {id:'forest-green',name:'Forest Green',rarity:'Common',desc:'Camouflaged in the codebase.',body:'#66bb6a',eyes:'#1b2e1b'},
+  {id:'midnight-purple',name:'Midnight Purple',rarity:'Common',desc:'Late night coding only.',body:'#ab47bc',eyes:'#1a0a2e'},
+  {id:'blood-red',name:'Blood Red',rarity:'Common',desc:'Debugging at 3am.',body:'#ef5350',eyes:'#1a0505'},
+  {id:'slate',name:'Slate',rarity:'Common',desc:'Clean. Minimal.',body:'#78909c',eyes:'#1a1a1a',outline:'#90a4ae'},
+  {id:'gold-edition',name:'Gold Edition',rarity:'Uncommon',desc:'Ship to prod with confidence.',body:'#ffd700',eyes:'#3e2723',outline:'#ffecb3',glow:'rgba(255,215,0,.5)'},
+  {id:'neon-pink',name:'Neon Pink',rarity:'Uncommon',desc:'Hot pink. Impossible to ignore.',body:'#ff4081',eyes:'#1a0a12',glow:'rgba(255,64,129,.5)'},
+  {id:'electric-cyan',name:'Electric Cyan',rarity:'Uncommon',desc:'Pure voltage.',body:'#00e5ff',eyes:'#001a1f',glow:'rgba(0,229,255,.5)'},
+  {id:'sunset',name:'Sunset',rarity:'Uncommon',desc:'Golden hour. Ship before dark.',gradient:{id:'sun',stops:['#ffcc02 0%','#ff6f00 50%','#e91e63 100%']},eyes:'#1a0a05'},
+  {id:'diamond',name:'Diamond',rarity:'Rare',desc:'Flawless. The flex skin.',body:'#e0f7fa',eyes:'#006064',outline:'#80deea',sparkle:true},
+  {id:'fire',name:'Fire',rarity:'Rare',desc:'Straight heat.',gradient:{id:'fg',stops:['#ffeb3b 0%','#ff9800 40%','#f44336 100%']},eyes:'#1a0500',flames:true},
+  {id:'shadow',name:'Shadow',rarity:'Rare',desc:'Sees your bugs.',body:'#1a1a2e',eyes:'#ff0044',eyeGlow:true,outline:'#2d2d44'},
+  {id:'demon',name:'Demon',rarity:'Rare',desc:'Summoned from the stack trace.',body:'#8b0000',eyes:'#ff4444',eyeGlow:true,outline:'#b71c1c',horns:true},
+  {id:'gentleman',name:'Gentleman',rarity:'Rare',desc:'Sir codes-a-lot.',body:'#5c6bc0',eyes:'#0d0d2b',tophat:true,shades:true},
+  {id:'angel',name:'Angel',rarity:'Rare',desc:'Zero bugs. Divinely clean.',body:'#fff3e0',eyes:'#4e342e',outline:'#ffe0b2',halo:true},
+  {id:'solana-degen',name:'Solana Degen',rarity:'Rare',desc:'Wen moon? SOL chain on.',gradient:{id:'sol',x2:'1',stops:['#14f195 0%','#9945ff 100%']},eyes:'#0a0520',glow:'rgba(20,241,149,.4)',sol:true},
+  {id:'bitcoin-og',name:'Bitcoin OG',rarity:'Rare',desc:'HODL. Laser eyes. Block 0.',body:'#f7931a',eyes:'#ff0000',eyeGlow:true,outline:'#ffc107',laser:true,btc:true},
+  {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.',gradient:{id:'hl',x2:'1',stops:['#ff4081 0%','#e040fb 25%','#7c4dff 50%','#00e5ff 75%','#69f0ae 100%']},eyes:'#0a0020',outline:'rgba(255,255,255,0.25)',glow:'rgba(224,64,251,.4)'},
+  {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.',body:'#7b1fa2',eyes:'#ffd700',outline:'#ce93d8',crown:true},
+  {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.',body:'#0a0014',eyes:'#b388ff',eyeGlow:true,outline:'#4a148c',voidPixels:true},
+  {id:'aurora',name:'Aurora',rarity:'Epic',desc:'Northern lights dancing.',gradient:{id:'ar',x2:'1',y2:'.5',stops:['#00e676 0%','#00bcd4 30%','#7c4dff 60%','#e040fb 100%']},eyes:'#001a0f',outline:'rgba(255,255,255,0.15)',glow:'rgba(0,230,118,.4)'},
+  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',body:'#bbdefb',eyes:'#0d47a1',outline:'#e3f2fd',santa:true,season:'Dec 1 \u2013 Jan 15'},
+  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',body:'#f48fb1',eyes:'#33001a',outline:'#f8bbd0',sakura:true,season:'Mar 1 \u2013 Apr 15'},
+  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',body:'#ff6f00',eyes:'#76ff03',eyeGlow:true,outline:'#e65100',horns:true,season:'Oct 15 \u2013 Nov 5'},
+  {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',gradient:{id:'gn',stops:['#ffd700 0%','#ff8f00 50%','#ff6f00 100%']},eyes:'#1a0a00',outline:'#fff9c4',glow:'rgba(255,215,0,.5)',crown:true,halo:true,supply:500},
+  {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',body:'#1a1a1a',eyes:'#e040fb',eyeGlow:true,outline:'#4a148c',accent:[{x:2,y:1,c:'#7c4dff'},{x:10,y:1,c:'#7c4dff'},{x:3,y:6,c:'#e040fb'},{x:9,y:6,c:'#e040fb'}],antenna:true,supply:200}
+];
+SKINS.forEach(s=>RARITY_COUNTS[s.rarity]++);
+SKINS.sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
+
+/* ============================================================
+   SVG RENDERER
+   ============================================================ */
+function r(x,y,fill,extra=''){return `<rect x="${OX+x*PX}" y="${OY+y*PX}" width="${PX}" height="${PX}" fill="${fill}"${extra}/>`;}
+
+function buildSVG(s){
+  const W=13*PX+PX*4, H=10*PX+PX*6;
+  let defs='',fill=s.body||'#e8834a',stroke=s.outline?` stroke="${s.outline}" stroke-width="0.5"`:'';
+  const uid=s.id.replace(/[^a-z0-9]/g,'');
+
+  // gradient
+  if(s.gradient){
+    const g=s.gradient;
+    const stops=g.stops.map(st=>{const[c,o]=st.split(' ');return `<stop offset="${o}" stop-color="${c}"/>`;}).join('');
+    defs+=`<linearGradient id="${uid}g" x1="0" y1="0" x2="${g.x2||0}" y2="${g.y2||1}">${stops}</linearGradient>`;
+    fill=`url(#${uid}g)`;
+  }
+  // glow filter
+  if(s.glow||s.eyeGlow){
+    defs+=`<filter id="${uid}f"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  }
+
+  let bodyPx=BODY.map(p=>r(p[0],p[1],fill,stroke+(s.glow?` filter="url(#${uid}f)"`:'')));
+  let eyeFill=s.eyes||'#1a1a1a';
+  let eyePx=EYES.map(p=>r(p[0],p[1],eyeFill,s.eyeGlow?` filter="url(#${uid}f)"`:''));
+  let extras=[];
+
+  // sparkle
+  if(s.sparkle){
+    [[0,1],[12,2],[1,7],[11,8]].forEach(p=>extras.push(r(p[0],p[1],'#ffffff',` filter="url(#${uid}f)" opacity="0.8"`)));
+  }
+  // flames
+  if(s.flames){
+    [[5,-1,'#ff9800'],[6,-1,'#ffeb3b'],[7,-1,'#ff9800'],[6,-2,'#ffeb3b'],[4,-1,'#ff5722'],[8,-1,'#ff5722']].forEach(f=>extras.push(r(f[0],f[1],f[2])));
+  }
+  // horns
+  if(s.horns){
+    [[1,-1,'#cc0000'],[2,-2,'#ff1a1a'],[11,-1,'#cc0000'],[10,-2,'#ff1a1a']].forEach(h=>extras.push(r(h[0],h[1],h[2])));
+  }
+  // crown
+  if(s.crown){
+    [2,3,5,7,9,10].forEach(i=>extras.push(r(i,-1,'#ffd700')));
+    [[4,-2,'#f44336'],[6,-2,'#4fc3f7'],[8,-2,'#66bb6a']].forEach(j=>extras.push(r(j[0],j[1],j[2])));
+  }
+  // halo
+  if(s.halo){
+    for(let i=3;i<=9;i++) extras.push(r(i,-2,'#ffd700',` opacity="0.7"`));
+    for(let i=4;i<=8;i++) extras.push(r(i,-3,'#ffd700',` opacity="0.4"`));
+  }
+  // tophat
+  if(s.tophat){
+    for(let i=3;i<=9;i++) extras.push(r(i,-1,'#1a1a1a'));
+    for(let i=4;i<=8;i++) extras.push(r(i,-2,'#222'));
+    for(let i=4;i<=8;i++) extras.push(r(i,-3,'#2a2a2a'));
+  }
+  // shades
+  if(s.shades){
+    extras.push(`<rect x="${OX+2*PX}" y="${OY+3*PX}" width="${PX*3}" height="${PX}" fill="#111" rx="1"/>`);
+    extras.push(`<rect x="${OX+7*PX}" y="${OY+3*PX}" width="${PX*3}" height="${PX}" fill="#111" rx="1"/>`);
+    extras.push(`<rect x="${OX+5*PX}" y="${OY+3*PX}" width="${PX*2}" height="${Math.round(PX*.4)}" fill="#333"/>`);
+  }
+  // santa hat
+  if(s.santa){
+    for(let i=2;i<=10;i++) extras.push(r(i,-1,'#cc0000'));
+    for(let i=3;i<=9;i++) extras.push(r(i,-2,'#cc0000'));
+    for(let i=4;i<=8;i++) extras.push(r(i,-3,'#cc0000'));
+    extras.push(r(6,-4,'#cc0000'));extras.push(r(7,-4,'#cc0000'));
+    extras.push(`<rect x="${OX+2*PX}" y="${OY-PX}" width="${PX*9}" height="${Math.round(PX*.4)}" fill="#fff"/>`);
+  }
+  // sakura
+  if(s.sakura){
+    extras.push(`<text x="${OX+PX}" y="${OY-PX*.5}" font-size="${PX}" fill="#ffb7c5" font-family="serif">\u2727</text>`);
+    extras.push(`<text x="${OX+9*PX}" y="${OY}" font-size="${PX*.7}" fill="#ffb7c5" opacity=".7" font-family="serif">\u2727</text>`);
+  }
+  // antenna
+  if(s.antenna){
+    extras.push(r(6,-1,'#888'));extras.push(r(6,-2,'#aaa'));extras.push(r(6,-3,'#ff0044'));
+  }
+  // sol logo
+  if(s.sol){
+    extras.push(`<circle cx="${OX+6*PX+PX/2}" cy="${OY+5*PX+PX/2}" r="${PX*.7}" fill="none" stroke="#14f195" stroke-width="1.5"/><circle cx="${OX+6*PX+PX/2}" cy="${OY+5*PX+PX/2}" r="${PX*.3}" fill="#14f195"/>`);
+  }
+  // btc logo
+  if(s.btc){
+    extras.push(`<circle cx="${OX+6*PX+PX/2}" cy="${OY+5*PX+PX/2}" r="${PX*.8}" fill="#f7931a"/>`);
+  }
+  // laser eyes
+  if(s.laser){
+    extras.push(`<rect x="${OX+3*PX}" y="${OY+3*PX}" width="${PX*2}" height="${PX}" fill="#ff0000" opacity=".9"/>`);
+    extras.push(`<rect x="${OX+8*PX}" y="${OY+3*PX}" width="${PX*2}" height="${PX}" fill="#ff0000" opacity=".9"/>`);
+    extras.push(`<rect x="${OX+PX}" y="${OY+4*PX}" width="${PX*3}" height="${Math.round(PX*.5)}" fill="#ff0000" opacity=".3"/>`);
+    extras.push(`<rect x="${OX+9*PX}" y="${OY+4*PX}" width="${PX*3}" height="${Math.round(PX*.5)}" fill="#ff0000" opacity=".3"/>`);
+  }
+  // void pixels
+  if(s.voidPixels){
+    [[0,0],[12,0],[0,8],[12,8],[6,-2]].forEach(p=>extras.push(r(p[0],p[1],'#7c4dff',` filter="url(#${uid}f)" opacity="0.7"`)));
+  }
+  // accent pixels
+  if(s.accent){
+    s.accent.forEach(a=>extras.push(r(a.x,a.y,a.c,` filter="url(#${uid}f)"`)));
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${defs?`<defs>${defs}</defs>`:''}${bodyPx.join('')}${eyePx.join('')}${extras.join('')}</svg>`;
+}
+
+/* ============================================================
+   RENDER UI
+   ============================================================ */
+// Hero stats
+const heroStats=document.getElementById('heroStats');
+Object.entries(RARITY_COUNTS).forEach(([r,c])=>{
+  const el=document.createElement('div');
+  el.className='hero-stat';
+  el.style.borderColor=RARITY_COLORS[r];el.style.color=RARITY_COLORS[r];
+  el.innerHTML=`<span class="dot" style="background:${RARITY_COLORS[r]}"></span>${c} ${r}`;
+  heroStats.appendChild(el);
+});
+
+// Hero mascot (show holographic)
+const heroSkin=SKINS.find(s=>s.id==='holographic');
+document.getElementById('heroMascot').innerHTML=buildSVG(heroSkin);
+
+// Filter buttons
+const filterBar=document.getElementById('filterBar');
+const rarities=['Common','Uncommon','Rare','Epic','Seasonal','Legendary'];
+rarities.forEach(r=>{
+  const btn=document.createElement('button');
+  btn.className='filter-btn';btn.dataset.rarity=r;
+  btn.innerHTML=`${r} <span class="filter-count">${RARITY_COUNTS[r]}</span>`;
+  filterBar.appendChild(btn);
+});
+
+// Filter logic
+let activeFilter='all';
+filterBar.addEventListener('click',e=>{
+  const btn=e.target.closest('.filter-btn');
+  if(!btn)return;
+  filterBar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter=btn.dataset.rarity;
+  document.querySelectorAll('.skin-card').forEach(card=>{
+    const show=activeFilter==='all'||card.dataset.rarity===activeFilter;
+    card.style.display=show?'':'none';
+    if(!show)card.classList.remove('expanded');
+  });
+});
+
+// Scroll effect on filter bar
+window.addEventListener('scroll',()=>{
+  filterBar.classList.toggle('scrolled',window.scrollY>100);
+},{passive:true});
+
+// Skin grid
+const grid=document.getElementById('skinGrid');
+SKINS.forEach(s=>{
+  const card=document.createElement('div');
+  card.className=`skin-card rarity-${s.rarity}`;
+  card.dataset.rarity=s.rarity;
+  card.dataset.skin=s.id;
+  card.style.setProperty('--glow-color',RARITY_COLORS[s.rarity]);
+
+  let metaTags='';
+  if(s.season) metaTags+=`<span class="card-meta-tag">${s.season}</span>`;
+  if(s.supply) metaTags+=`<span class="card-meta-tag limited-badge">Limited: ${s.supply}</span>`;
+
+  const installId=s.id;
+  card.innerHTML=`
+    <div class="card-preview" data-skin="${s.id}">${buildSVG(s)}</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-name">${s.name}</span>
+        <span class="rarity-badge">${s.rarity}</span>
+      </div>
+      <div class="card-desc">${s.desc}</div>
+      ${metaTags?`<div class="card-meta">${metaTags}</div>`:''}
+    </div>
+    <div class="card-install">
+      <div class="install-title">Install Instructions</div>
+      <div class="install-step"><code>git clone https://github.com/claudeskins/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/claudeskins/claude-skins.git && cd claude-skins">Copy</button></div>
+      <div class="install-step"><code>node bin/claude-skins.js scan</code><button class="copy-btn" data-copy="node bin/claude-skins.js scan">Copy</button></div>
+      <div class="install-step"><code>node bin/claude-skins.js apply ${installId}</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply ${installId}">Copy</button></div>
+      <div class="install-step"><code># Reload VS Code: Cmd+Shift+P &rarr; &quot;Reload Window&quot;</code><button class="copy-btn" data-copy='Cmd+Shift+P → "Reload Window"'>Copy</button></div>
+      <div class="quick-apply">
+        <div class="quick-apply-label">Quick Apply</div>
+        <div class="install-step"><code>git clone https://github.com/claudeskins/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply ${installId}</code><button class="copy-btn" data-copy="git clone https://github.com/claudeskins/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply ${installId}">Copy</button></div>
+      </div>
+    </div>`;
+  card.addEventListener('click',e=>{
+    if(e.target.closest('.copy-btn'))return;
+    card.classList.toggle('expanded');
+  });
+  grid.appendChild(card);
+});
+
+// Copy buttons
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.copy-btn');
+  if(!btn)return;
+  e.stopPropagation();
+  const text=btn.dataset.copy;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);
+  });
+});
+
+/* ============================================================
+   PARTICLE BACKGROUND
+   ============================================================ */
+(function(){
+  const canvas=document.getElementById('bgCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  const COUNT=60;
+  for(let i=0;i<COUNT;i++){
+    particles.push({
+      x:Math.random()*2000,y:Math.random()*2000,
+      vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
+      r:Math.random()*1.5+.5,
+      a:Math.random()*.3+.05
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(124,77,255,${p.a})`;ctx.fill();
+    });
+    // connect nearby
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+        const d=dx*dx+dy*dy;
+        if(d<18000){
+          ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=`rgba(124,77,255,${.04*(1-d/18000)})`;ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
