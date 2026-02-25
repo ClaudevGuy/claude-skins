@@ -140,7 +140,7 @@ function generateColorCustomizations(primary, accent, skinId) {
   const theme = {
     // Editor
     'editor.background':                p.dark,
-    'editor.foreground':                '#d4d4d4',
+    'editor.foreground':                '#e0e0e0',
     'editorCursor.foreground':          p.mid,
     'editor.selectionBackground':       withAlpha(p.mid, 0.3),
     'editor.selectionHighlightBackground': withAlpha(p.light, 0.15),
@@ -151,8 +151,8 @@ function generateColorCustomizations(primary, accent, skinId) {
 
     // Sidebar & Activity Bar
     'sideBar.background':               p.darker,
-    'sideBar.foreground':               '#cccccc',
-    'sideBarTitle.foreground':          '#cccccc',
+    'sideBar.foreground':               '#e0e0e0',
+    'sideBarTitle.foreground':          '#e0e0e0',
     'sideBarSectionHeader.background':  darken(p.darker, 0.15),
     'activityBar.background':           p.darkest,
     'activityBar.foreground':           p.mid,
@@ -162,9 +162,9 @@ function generateColorCustomizations(primary, accent, skinId) {
 
     // Title Bar
     'titleBar.activeBackground':        p.darkest,
-    'titleBar.activeForeground':        '#cccccc',
+    'titleBar.activeForeground':        '#e0e0e0',
     'titleBar.inactiveBackground':      darken(p.darkest, 0.15),
-    'titleBar.inactiveForeground':      '#999999',
+    'titleBar.inactiveForeground':      '#b8b8b8',
 
     // Tabs
     'tab.activeBackground':             p.dark,
@@ -172,11 +172,11 @@ function generateColorCustomizations(primary, accent, skinId) {
     'tab.activeBorderTop':              p.mid,
     'tab.border':                       darken(p.darker, 0.2),
     'tab.activeForeground':             '#ffffff',
-    'tab.inactiveForeground':           '#999999',
+    'tab.inactiveForeground':           '#b8b8b8',
     'editorGroupHeader.tabsBackground': p.darker,
 
     // Terminal
-    'terminal.foreground':              '#d4d4d4',
+    'terminal.foreground':              '#e0e0e0',
     'terminalCursor.foreground':        p.mid,
     'terminal.background':              p.dark,
     ...deriveAnsiColors(primary, accent),
@@ -202,7 +202,7 @@ function generateColorCustomizations(primary, accent, skinId) {
     // Input
     'input.background':                 darken(p.dark, 0.15),
     'input.border':                     withAlpha(p.mid, 0.4),
-    'input.foreground':                 '#d4d4d4',
+    'input.foreground':                 '#e0e0e0',
     'inputOption.activeBorder':         p.mid,
     'inputOption.activeBackground':     withAlpha(p.mid, 0.3),
     'focusBorder':                      withAlpha(p.mid, 0.6),
@@ -232,7 +232,7 @@ function generateColorCustomizations(primary, accent, skinId) {
     'panel.border':                     darken(p.darker, 0.2),
     'panelTitle.activeBorder':          p.mid,
     'panelTitle.activeForeground':      '#ffffff',
-    'panelTitle.inactiveForeground':    '#999999',
+    'panelTitle.inactiveForeground':    '#b8b8b8',
 
     // Peek view
     'peekView.border':                  p.mid,
@@ -284,7 +284,7 @@ const SKIN_OVERRIDES = {
     'sideBar.background':       '#070710',
     'activityBar.background':   '#050508',
     'titleBar.activeBackground':'#050508',
-    'editor.foreground':        '#a0a0b0',
+    'editor.foreground':        '#c0c0d0',
     'statusBar.background':     '#1a1a2e',
     'statusBar.foreground':     '#ff0044',
     'terminal.ansiRed':         '#ff0044',
