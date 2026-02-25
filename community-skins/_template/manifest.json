@@ -1,0 +1,10 @@
+{
+  "name": "Your Skin Name",
+  "author": "your-github-username",
+  "version": "1.0.0",
+  "description": "A short description of your skin (under 80 chars).",
+  "colors": {
+    "primary": "#ff5722",
+    "accent": "#bf360c"
+  }
+}

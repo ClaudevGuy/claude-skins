@@ -185,6 +185,33 @@ a:hover{text-decoration:underline}
 .swatch-dot:hover+.swatch-label+.swatch-hex,.swatch-dot:hover~.swatch-hex{opacity:1}
 .swatch:hover .swatch-hex{opacity:1}
 
+/* ============ COMMUNITY SECTION ============ */
+.community-section{max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+.community-header{text-align:center;margin-bottom:40px}
+.community-title{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:8px;
+  background:linear-gradient(135deg,#69f0ae,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.community-sub{color:var(--text2);font-size:clamp(.85rem,1.8vw,1rem);max-width:520px;margin:0 auto 16px}
+.community-stats{display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap}
+.community-count{font-size:.85rem;color:var(--text2);font-weight:600}
+.community-count strong{color:var(--text);font-size:1rem}
+.contribute-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;
+  border:1px solid rgba(105,240,174,.3);background:rgba(105,240,174,.06);color:#69f0ae;font-size:.8rem;font-weight:600;
+  transition:all .2s;text-decoration:none}
+.contribute-btn:hover{background:rgba(105,240,174,.12);border-color:rgba(105,240,174,.5);transform:translateY(-2px);text-decoration:none}
+.community-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+@media(max-width:720px){.community-grid{grid-template-columns:1fr}}
+.community-empty{text-align:center;padding:60px 24px;color:var(--text3);font-size:.9rem}
+.community-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .3s ease;position:relative}
+.community-card:hover{transform:translateY(-4px);border-color:#69f0ae}
+.community-card:hover .card-preview{background:var(--bg3)}
+.community-card.expanded{grid-column:1/-1;max-width:700px;margin:0 auto;width:100%}
+.community-badge{font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:10px;
+  border:1px solid rgba(105,240,174,.3);color:#69f0ae;background:rgba(105,240,174,.08)}
+.community-author{font-size:.75rem;color:var(--text3);margin-top:4px}
+.community-author a{color:var(--uncommon);font-weight:600}
+.community-card .card-install{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;padding:0 20px}
+.community-card.expanded .card-install{max-height:600px;padding:0 20px 20px}
+
 /* ============ LIGHT MODE OVERRIDES ============ */
 [data-theme="light"] .filter-btn.active{color:#fff}
 [data-theme="light"] .filter-btn.active[data-rarity="all"]{color:var(--text)}
@@ -442,6 +469,21 @@ a:hover{text-decoration:underline}
 <!-- SKIN GRID -->
 <section class="grid-section">
   <div class="skin-grid" id="skinGrid"></div>
+</section>
+
+<!-- COMMUNITY CREATIONS -->
+<section class="community-section" id="communityCreations">
+  <div class="community-header">
+    <h2 class="community-title">Community Creations</h2>
+    <p class="community-sub">Skins built by the community. Fork the repo, add your skin, open a PR.</p>
+    <div class="community-stats">
+      <span class="community-count"><strong id="communityCount">0</strong> community skins</span>
+      <a href="https://github.com/ClaudevGuy/claude-skins/blob/main/CONTRIBUTING.md" target="_blank" class="contribute-btn">+ Submit Your Skin</a>
+    </div>
+  </div>
+  <div class="community-grid" id="communityGrid">
+    <div class="community-empty" id="communityEmpty">No community skins yet. Be the first to contribute!</div>
+  </div>
 </section>
 
 <!-- INSTALLATION GUIDE -->
@@ -946,6 +988,62 @@ document.addEventListener('click',e=>{
     setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);
   });
 });
+
+/* ============================================================
+   COMMUNITY SKINS — loaded from generated index.json
+   ============================================================ */
+(async function loadCommunitySkins(){
+  var grid=document.getElementById('communityGrid');
+  var countEl=document.getElementById('communityCount');
+  var emptyEl=document.getElementById('communityEmpty');
+  try{
+    var resp=await fetch('community-skins/index.json');
+    if(!resp.ok)return;
+    var data=await resp.json();
+    if(!data.skins||data.skins.length===0)return;
+    emptyEl.style.display='none';
+    countEl.textContent=data.count;
+    data.skins.forEach(function(s){
+      var card=document.createElement('div');
+      card.className='community-card';
+      // Build color swatches
+      var swHtml='';
+      if(s.colors){
+        var keys=Object.keys(s.colors);
+        swHtml='<div class="card-palette">'+keys.map(function(k){
+          var lbl=k.charAt(0).toUpperCase()+k.slice(1);
+          return '<div class="swatch"><div class="swatch-dot" style="background:'+s.colors[k]+';--sw-color:'+s.colors[k]+'"></div><span class="swatch-label">'+lbl+'</span><span class="swatch-hex">'+s.colors[k]+'</span></div>';
+        }).join('')+'</div>';
+      }
+      card.innerHTML=
+        '<div class="card-preview" data-cskin="'+s.id+'"><div style="color:var(--text3);font-size:.8rem">Loading...</div></div>'+
+        '<div class="card-body">'+
+          '<div class="card-top"><span class="card-name">'+s.name+'</span><span class="community-badge">Community</span></div>'+
+          '<div class="card-desc" style="color:var(--text2);font-size:.85rem;margin-bottom:4px">'+(s.description||'')+'</div>'+
+          '<div class="community-author">by <a href="'+s.author_url+'" target="_blank" rel="noopener">@'+s.author+'</a></div>'+
+        '</div>'+swHtml+
+        '<div class="card-install">'+
+          '<div style="font-weight:700;margin-bottom:8px;font-size:.9rem">Install</div>'+
+          '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
+          '<div class="install-step"><code>node bin/claude-skins.js apply '+s.id+'</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply '+s.id+'">Copy</button></div>'+
+        '</div>';
+      card.addEventListener('click',function(e){
+        if(e.target.closest('.copy-btn'))return;
+        var was=card.classList.contains('expanded');
+        document.querySelectorAll('.community-card.expanded').forEach(function(c){c.classList.remove('expanded');});
+        if(!was)card.classList.add('expanded');
+      });
+      grid.appendChild(card);
+      // Load SVG
+      (async function(id,target){
+        try{
+          var r=await fetch('community-skins/'+id+'/mascot.svg');
+          if(r.ok){target.innerHTML=await r.text();}
+        }catch(e){}
+      })(s.id,card.querySelector('.card-preview'));
+    });
+  }catch(e){}
+})();
 
 /* ============================================================
    VS CODE MOCKUP — cycle through skin themes

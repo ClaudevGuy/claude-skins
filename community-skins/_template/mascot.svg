@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="136" height="128">
+  <!-- Replace this with your custom mascot design -->
+  <!-- The grid is 17 columns x 16 rows of 8px pixels -->
+  <!-- See official skins in skins/ for reference -->
+  <rect x="28" y="16" width="80" height="72" rx="8" fill="#ff5722" opacity="0.3"/>
+  <rect x="44" y="40" width="12" height="12" rx="2" fill="#ffffff"/>
+  <rect x="72" y="40" width="12" height="12" rx="2" fill="#ffffff"/>
+  <text x="68" y="108" text-anchor="middle" fill="#ff5722" font-size="10" font-family="monospace">TEMPLATE</text>
+</svg>
