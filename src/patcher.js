@@ -9,6 +9,164 @@ const { findExtension, findCLI, scanExtensionAssets, scanCLIAssets } = require('
 
 const BACKUP_SUFFIX = '.claudeskins-backup';
 
+// Mascot body bounding box in mascot.svg (136x128 viewBox, OX=16, OY=24, PX=8)
+const MASCOT_BODY = { x1: 24, y1: 24, x2: 112, y2: 96, w: 88, h: 72 };
+
+// ═══════════════════════════════════════════════════
+// SVG ACCESSORY HELPERS
+// ═══════════════════════════════════════════════════
+
+/** Parse an SVG attribute string like 'x="10" y="20" fill="#fff"' into {x:"10", y:"20", fill:"#fff"} */
+function parseAttributes(attrStr) {
+  const attrs = {};
+  const re = /([\w-]+)="([^"]*)"/g;
+  let m;
+  while ((m = re.exec(attrStr)) !== null) attrs[m[1]] = m[2];
+  return attrs;
+}
+
+/**
+ * Extract accessories from a skin's mascot.svg.
+ * Returns array of { tag, attrs, inner?, textContent? } or null if none.
+ */
+function extractAccessories(skinDir, manifest) {
+  const mascotFile = manifest.targets?.vscode_mascot;
+  if (!mascotFile) return null;
+
+  const mascotPath = path.join(skinDir, mascotFile);
+  if (!fs.existsSync(mascotPath)) return null;
+
+  const svg = fs.readFileSync(mascotPath, 'utf8');
+  const accMatch = svg.match(/<g id="acc"[^>]*>([\s\S]*?)<\/g>/);
+  if (!accMatch) return null;
+
+  const accContent = accMatch[1].trim();
+  if (!accContent) return null;
+
+  const elements = [];
+
+  // Parse <rect> elements (with optional inner content like <animate>)
+  const rectRe = /<rect\s+([^>]*?)(?:\/>|>([\s\S]*?)<\/rect>)/g;
+  let m;
+  while ((m = rectRe.exec(accContent)) !== null) {
+    elements.push({ tag: 'rect', attrs: parseAttributes(m[1]), inner: m[2] || null });
+  }
+
+  // Parse <circle> elements
+  const circleRe = /<circle\s+([^>]*?)(?:\/>|>([\s\S]*?)<\/circle>)/g;
+  while ((m = circleRe.exec(accContent)) !== null) {
+    elements.push({ tag: 'circle', attrs: parseAttributes(m[1]), inner: m[2] || null });
+  }
+
+  // Parse <text> elements
+  const textRe = /<text\s+([^>]*?)>([\s\S]*?)<\/text>/g;
+  while ((m = textRe.exec(accContent)) !== null) {
+    elements.push({ tag: 'text', attrs: parseAttributes(m[1]), textContent: m[2] });
+  }
+
+  return elements.length > 0 ? elements : null;
+}
+
+/**
+ * Compute bounding box from an SVG path d attribute (M/H/V/L/Z commands).
+ * Returns { x1, y1, x2, y2 } or null.
+ */
+function getBBox(pathD) {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  const segs = pathD.match(/[MHVLZ][-0-9. ]+/gi) || [];
+  for (const seg of segs) {
+    const cmd = seg[0].toUpperCase();
+    const nums = seg.slice(1).trim().match(/[-+]?[0-9]*\.?[0-9]+/g);
+    if (!nums) continue;
+    if (cmd === 'M' || cmd === 'L') {
+      for (let i = 0; i < nums.length; i += 2) {
+        const x = parseFloat(nums[i]), y = parseFloat(nums[i + 1]);
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    } else if (cmd === 'H') {
+      for (const n of nums) { const x = parseFloat(n); if (x < minX) minX = x; if (x > maxX) maxX = x; }
+    } else if (cmd === 'V') {
+      for (const n of nums) { const y = parseFloat(n); if (y < minY) minY = y; if (y > maxY) maxY = y; }
+    }
+  }
+  if (minX === Infinity) return null;
+  return { x1: minX, y1: minY, x2: maxX, y2: maxY };
+}
+
+/**
+ * Transform an accessory SVG element from mascot.svg coords to a target coord system.
+ * Returns an SVG string fragment.
+ */
+function transformSvgElement(el, sx, sy, tx, ty) {
+  if (el.tag === 'rect') {
+    const x = (parseFloat(el.attrs.x) * sx + tx).toFixed(2);
+    const y = (parseFloat(el.attrs.y) * sy + ty).toFixed(2);
+    const w = (parseFloat(el.attrs.width) * sx).toFixed(2);
+    const h = (parseFloat(el.attrs.height) * sy).toFixed(2);
+    let extra = '';
+    if (el.attrs.fill) extra += ` fill="${el.attrs.fill}"`;
+    if (el.attrs.opacity) extra += ` opacity="${el.attrs.opacity}"`;
+    if (el.attrs.rx) extra += ` rx="${(parseFloat(el.attrs.rx) * sx).toFixed(2)}"`;
+    const inner = el.inner || '';
+    return inner
+      ? `<rect x="${x}" y="${y}" width="${w}" height="${h}"${extra}>${inner}</rect>`
+      : `<rect x="${x}" y="${y}" width="${w}" height="${h}"${extra}/>`;
+  }
+  if (el.tag === 'circle') {
+    const cx = (parseFloat(el.attrs.cx) * sx + tx).toFixed(2);
+    const cy = (parseFloat(el.attrs.cy) * sy + ty).toFixed(2);
+    const r = (parseFloat(el.attrs.r) * Math.min(sx, sy)).toFixed(2);
+    let extra = '';
+    if (el.attrs.fill) extra += ` fill="${el.attrs.fill}"`;
+    if (el.attrs.stroke) extra += ` stroke="${el.attrs.stroke}"`;
+    if (el.attrs['stroke-width']) extra += ` stroke-width="${el.attrs['stroke-width']}"`;
+    if (el.attrs.opacity) extra += ` opacity="${el.attrs.opacity}"`;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}"${extra}/>`;
+  }
+  if (el.tag === 'text') {
+    const x = (parseFloat(el.attrs.x) * sx + tx).toFixed(2);
+    const y = (parseFloat(el.attrs.y) * sy + ty).toFixed(2);
+    const fs = el.attrs['font-size'] ? (parseFloat(el.attrs['font-size']) * Math.min(sx, sy)).toFixed(2) : null;
+    let extra = '';
+    if (el.attrs.fill) extra += ` fill="${el.attrs.fill}"`;
+    if (el.attrs.opacity) extra += ` opacity="${el.attrs.opacity}"`;
+    if (el.attrs['font-family']) extra += ` font-family="${el.attrs['font-family']}"`;
+    if (fs) extra += ` font-size="${fs}"`;
+    return `<text x="${x}" y="${y}"${extra}>${el.textContent || ''}</text>`;
+  }
+  return '';
+}
+
+/**
+ * Convert an accessory element to a React createElement string for webview injection.
+ * Returns string or null (skips unsupported elements like <text>).
+ */
+function toCreateElement(ce, el, sx, sy, tx, ty) {
+  if (el.tag === 'rect') {
+    const x = (parseFloat(el.attrs.x) * sx + tx).toFixed(1);
+    const y = (parseFloat(el.attrs.y) * sy + ty).toFixed(1);
+    const w = (parseFloat(el.attrs.width) * sx).toFixed(1);
+    const h = (parseFloat(el.attrs.height) * sy).toFixed(1);
+    let props = `x:"${x}",y:"${y}",width:"${w}",height:"${h}"`;
+    if (el.attrs.fill) props += `,fill:"${el.attrs.fill}"`;
+    if (el.attrs.opacity) props += `,opacity:"${el.attrs.opacity}"`;
+    if (el.attrs.rx) props += `,rx:"${(parseFloat(el.attrs.rx) * sx).toFixed(1)}"`;
+    return `${ce}("rect",{${props}})`;
+  }
+  if (el.tag === 'circle') {
+    const cx = (parseFloat(el.attrs.cx) * sx + tx).toFixed(1);
+    const cy = (parseFloat(el.attrs.cy) * sy + ty).toFixed(1);
+    const r = (parseFloat(el.attrs.r) * Math.min(sx, sy)).toFixed(1);
+    let props = `cx:"${cx}",cy:"${cy}",r:"${r}"`;
+    if (el.attrs.fill) props += `,fill:"${el.attrs.fill}"`;
+    if (el.attrs.stroke) props += `,stroke:"${el.attrs.stroke}"`;
+    if (el.attrs['stroke-width']) props += `,strokeWidth:"${el.attrs['stroke-width']}"`;
+    return `${ce}("circle",{${props}})`;
+  }
+  return null; // skip <text> — emoji won't render in React SVG createElement
+}
+
 // Map of skin target keys to the extension resource files they replace
 const MEDIA_MAP = {
   // mascot.svg → the pixel art mascot shown in chat
@@ -208,21 +366,54 @@ function patchWelcomeArt(extPath, skinDir, manifest) {
       }
 
       // Replace the mascot body color with the skin fill
-      const replaced = svg.replace(
+      let replaced = svg.replace(
         new RegExp(`fill="${CLAUDE_ORANGE}"`, 'gi'),
         `fill="${skinFill.fill}"`
       );
 
-      if (replaced !== svg) {
-        fs.writeFileSync(filePath, replaced, 'utf8');
-        results.patched.push({
-          file: filePath,
-          target: fileName,
-          fill: skinFill.fill,
-        });
-      } else {
+      if (replaced === svg) {
         results.skipped.push({ target: fileName, reason: `No ${CLAUDE_ORANGE} fill found to replace` });
+        continue;
       }
+
+      // ── Inject accessories from mascot.svg ──
+      const accessories = extractAccessories(skinDir, manifest);
+      if (accessories && accessories.length > 0) {
+        // Find the mascot body path to get its bounding box in welcome-art coords
+        const fillEsc = skinFill.fill.replace(/[.*+?^${}()|[\]\\#]/g, '\\$&');
+        const pathRe = new RegExp(`<path[^>]*d="([^"]*?)"[^>]*fill="${fillEsc}"`, 'i');
+        let pathMatch = pathRe.exec(replaced);
+        if (!pathMatch) {
+          // Try reversed attr order
+          const pathRe2 = new RegExp(`<path[^>]*fill="${fillEsc}"[^>]*d="([^"]*?)"`, 'i');
+          pathMatch = pathRe2.exec(replaced);
+        }
+        if (pathMatch) {
+          const bbox = getBBox(pathMatch[1]);
+          if (bbox) {
+            const sx = (bbox.x2 - bbox.x1) / MASCOT_BODY.w;
+            const sy = (bbox.y2 - bbox.y1) / MASCOT_BODY.h;
+            const tx = bbox.x1 - MASCOT_BODY.x1 * sx;
+            const ty = bbox.y1 - MASCOT_BODY.y1 * sy;
+
+            let accSvg = '<g id="skin-acc">';
+            for (const el of accessories) {
+              accSvg += transformSvgElement(el, sx, sy, tx, ty);
+            }
+            accSvg += '</g>';
+            replaced = replaced.replace(/<\/svg>\s*$/, accSvg + '</svg>');
+            results.accInjected = true;
+          }
+        }
+      }
+
+      fs.writeFileSync(filePath, replaced, 'utf8');
+      results.patched.push({
+        file: filePath,
+        target: fileName,
+        fill: skinFill.fill,
+        accessories: !!results.accInjected,
+      });
     } catch (e) {
       results.errors.push(`Failed to patch ${fileName}: ${e.message}`);
     }
@@ -430,6 +621,64 @@ function patchWebviewMascot(extPath, skinDir, manifest) {
         results.details.push('Injected eye rects in 47x38 mascot');
         changed = true;
       }
+    }
+
+    // ── Inject accessories from mascot.svg ──
+    // Transform constants derived from known eye positions:
+    //   mascot.svg eyes (40,48) and (80,48) → 47x38 eyes (9.2,10) and (34.1,10)
+    const accessories = extractAccessories(skinDir, manifest);
+    if (accessories && accessories.length > 0) {
+      // Add overflow:visible so above-head accessories (hats, crowns) render outside viewBox
+      content = content.replace(
+        /viewBox:"0 0 (47 38|32 26)"/g,
+        (m) => m + ',overflow:"visible"'
+      );
+
+      // 47x38 coordinate mapping
+      const SX47 = 0.6225, TX47 = -15.7, SY47 = 0.4167, TY47 = -10.0;
+      const mascot47Re = /((\w+\.default\.)createElement\("svg",\{[^}]*viewBox:"0 0 47 38"[^}]*\},)/g;
+      let match47;
+      const acc47Inserts = [];
+      while ((match47 = mascot47Re.exec(content)) !== null) {
+        acc47Inserts.push({ modulePrefix: match47[2], svgStart: match47.index });
+      }
+      for (const ins of acc47Inserts.reverse()) {
+        const ce = ins.modulePrefix + 'createElement';
+        const svgOpenEnd = content.indexOf('},', ins.svgStart) + 2;
+        const accElements = accessories
+          .map(el => toCreateElement(ce, el, SX47, SY47, TX47, TY47))
+          .filter(Boolean)
+          .join(',');
+        if (accElements) {
+          content = content.substring(0, svgOpenEnd) + accElements + ',' + content.substring(svgOpenEnd);
+          changed = true;
+        }
+      }
+
+      // 32x26 coordinate mapping (proportional from 47x38)
+      const scaleX32 = 32 / 47, scaleY32 = 26 / 38;
+      const SX32 = SX47 * scaleX32, TX32 = TX47 * scaleX32;
+      const SY32 = SY47 * scaleY32, TY32 = TY47 * scaleY32;
+      const mascot32Re = /((\w+\.default\.)createElement\("svg",\{[^}]*viewBox:"0 0 32 26"[^}]*\},)/g;
+      let match32;
+      const acc32Inserts = [];
+      while ((match32 = mascot32Re.exec(content)) !== null) {
+        acc32Inserts.push({ modulePrefix: match32[2], svgStart: match32.index });
+      }
+      for (const ins of acc32Inserts.reverse()) {
+        const ce = ins.modulePrefix + 'createElement';
+        const svgOpenEnd = content.indexOf('},', ins.svgStart) + 2;
+        const accElements = accessories
+          .map(el => toCreateElement(ce, el, SX32, SY32, TX32, TY32))
+          .filter(Boolean)
+          .join(',');
+        if (accElements) {
+          content = content.substring(0, svgOpenEnd) + accElements + ',' + content.substring(svgOpenEnd);
+          changed = true;
+        }
+      }
+
+      if (changed) results.details.push('Injected accessories');
     }
 
     if (changed) {
