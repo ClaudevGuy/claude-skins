@@ -409,6 +409,48 @@ function patchWebviewMascot(extPath, skinDir, manifest) {
 // APPLY A FULL SKIN
 // ═══════════════════════════════════════════════════
 
+/**
+ * Restore a single file from its backup if one exists.
+ * Used to reset files to original state before applying a new skin.
+ */
+function restoreFromBackup(filePath) {
+  const backupPath = filePath + BACKUP_SUFFIX;
+  if (fs.existsSync(backupPath)) {
+    fs.copyFileSync(backupPath, filePath);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Restore all backed-up files in an extension directory to original state.
+ * This ensures we always patch from the original baseline.
+ */
+function restoreExtension(extPath) {
+  const restored = [];
+  function walk(dir, depth = 0) {
+    if (depth > 5) return;
+    try {
+      const entries = fs.readdirSync(dir);
+      for (const entry of entries) {
+        if (entry === 'node_modules') continue;
+        const fullPath = path.join(dir, entry);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+          walk(fullPath, depth + 1);
+        } else if (entry.endsWith(BACKUP_SUFFIX)) {
+          const originalPath = fullPath.replace(BACKUP_SUFFIX, '');
+          fs.copyFileSync(fullPath, originalPath);
+          fs.unlinkSync(fullPath);
+          restored.push(originalPath);
+        }
+      }
+    } catch { /* skip */ }
+  }
+  walk(extPath);
+  return restored;
+}
+
 function applySkin(skinDir) {
   const manifestPath = path.join(skinDir, 'manifest.json');
   if (!fs.existsSync(manifestPath)) {
@@ -436,6 +478,12 @@ function applySkin(skinDir) {
   // Apply to each VS Code extension found
   for (const ext of extensions) {
     console.log(`  Patching ${ext.type} (v${ext.version})...`);
+
+    // Restore any previous skin patches to get back to original baseline
+    const restored = restoreExtension(ext.path);
+    if (restored.length > 0) {
+      console.log(`  \x1b[36m↻\x1b[0m Restored ${restored.length} file(s) to original before applying`);
+    }
 
     // Swap media files (mascot + icon) in resources/
     results.media = patchMediaFiles(ext.path, skinDir, manifest);
