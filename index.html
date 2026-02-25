@@ -79,7 +79,7 @@ a:hover{text-decoration:underline}
 .skin-card:hover::before{opacity:.5}
 
 .card-preview{padding:24px;display:flex;justify-content:center;align-items:center;background:var(--bg2);transition:background .3s;min-height:160px;position:relative;overflow:hidden}
-.card-preview svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));max-width:136px;max-height:128px}
+.card-preview svg{max-width:136px;max-height:128px}
 .card-body{padding:16px 20px}
 .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .card-name{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
@@ -124,29 +124,7 @@ a:hover{text-decoration:underline}
 .footer a{color:var(--text2)}
 .footer-line{margin-bottom:6px}
 
-/* ============ SPECIAL SKIN EFFECTS ============ */
-.card-preview[data-skin="holographic"]{animation:holoShift 4s linear infinite}
-@keyframes holoShift{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
-.card-preview[data-skin="fire"] svg{animation:flicker .15s infinite alternate}
-@keyframes flicker{0%{filter:drop-shadow(0 -2px 6px rgba(255,152,0,.6)) brightness(1)}100%{filter:drop-shadow(0 -4px 10px rgba(255,69,0,.8)) brightness(1.05)}}
-.card-preview[data-skin="diamond"] svg{animation:sparkle 2s ease infinite}
-@keyframes sparkle{0%,100%{filter:drop-shadow(0 0 4px rgba(224,247,250,.4)) brightness(1)}50%{filter:drop-shadow(0 0 12px rgba(224,247,250,.8)) brightness(1.1)}}
-.card-preview[data-skin="void-walker"] svg{animation:voidPulse 2s ease infinite}
-@keyframes voidPulse{0%,100%{filter:drop-shadow(0 0 6px rgba(179,136,255,.3))}50%{filter:drop-shadow(0 0 18px rgba(179,136,255,.7))}}
-.card-preview[data-skin="shadow"] svg{animation:shadowGlow 3s ease infinite}
-@keyframes shadowGlow{0%,100%{filter:drop-shadow(0 0 4px rgba(255,0,68,.3))}50%{filter:drop-shadow(0 0 14px rgba(255,0,68,.7))}}
-.card-preview[data-skin="genesis"] svg,.card-preview[data-skin="obsidian"] svg{animation:legendGlow 2.5s ease infinite}
-@keyframes legendGlow{0%,100%{filter:drop-shadow(0 0 6px rgba(255,234,0,.3)) brightness(1)}50%{filter:drop-shadow(0 0 16px rgba(255,234,0,.6)) brightness(1.08)}}
-.card-preview[data-skin="neon-pink"] svg{filter:drop-shadow(0 0 8px rgba(255,64,129,.4))}
-.card-preview[data-skin="electric-cyan"] svg{filter:drop-shadow(0 0 8px rgba(0,229,255,.4))}
-.card-preview[data-skin="gold-edition"] svg{filter:drop-shadow(0 0 8px rgba(255,215,0,.3))}
-.card-preview[data-skin="aurora"] svg{animation:auroraGlow 3s ease infinite}
-@keyframes auroraGlow{0%,100%{filter:drop-shadow(0 0 6px rgba(0,230,118,.3)) hue-rotate(0deg)}50%{filter:drop-shadow(0 0 14px rgba(124,77,255,.5)) hue-rotate(20deg)}}
-.card-preview[data-skin="bitcoin-og"] svg{filter:drop-shadow(0 0 6px rgba(247,147,26,.4))}
-.card-preview[data-skin="solana-degen"] svg{filter:drop-shadow(0 0 8px rgba(20,241,149,.3))}
-.card-preview[data-skin="crown-royal"] svg{filter:drop-shadow(0 0 8px rgba(123,31,162,.4))}
-.card-preview[data-skin="demon"] svg{filter:drop-shadow(0 0 6px rgba(255,68,68,.4))}
-.card-preview[data-skin="halloween-haunt"] svg{filter:drop-shadow(0 0 6px rgba(255,111,0,.4))}
+/* ============ SPECIAL SKIN EFFECTS (glow removed — clean pixel art) ============ */
 
 /* ============ SVG LOADING ============ */
 .svg-placeholder{width:136px;height:128px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.7rem}
