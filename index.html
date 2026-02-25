@@ -129,6 +129,51 @@ a:hover{text-decoration:underline}
 /* ============ SVG LOADING ============ */
 .svg-placeholder{width:136px;height:128px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.7rem}
 
+/* ============ FULL THEMING SECTION ============ */
+.theming-section{max-width:1100px;margin:0 auto;padding:40px 24px 60px}
+.theming-header{text-align:center;margin-bottom:48px}
+.theming-headline{font-size:clamp(1.8rem,5vw,3rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:12px;
+  background:linear-gradient(135deg,#7c4dff,#e040fb,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.theming-sub{color:var(--text2);font-size:clamp(.9rem,2vw,1.05rem);max-width:520px;margin:0 auto}
+
+.vscode-mockup{position:relative;max-width:800px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#0e0e18;box-shadow:0 20px 80px rgba(0,0,0,.6)}
+.mock-titlebar{height:36px;background:#181825;display:flex;align-items:center;padding:0 14px;gap:8px}
+.mock-dot{width:10px;height:10px;border-radius:50%}
+.mock-body{display:grid;grid-template-columns:48px 200px 1fr;grid-template-rows:36px 1fr 28px;height:320px}
+@media(max-width:640px){.mock-body{grid-template-columns:40px 140px 1fr;height:240px}}
+.mock-activity{grid-row:1/4;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:14px;transition:background 1s ease}
+.mock-act-icon{width:22px;height:22px;border-radius:4px;opacity:.5;transition:background 1s ease}
+.mock-sidebar{grid-row:1/3;padding:10px;display:flex;flex-direction:column;gap:4px;transition:background 1s ease}
+.mock-side-item{height:8px;border-radius:3px;opacity:.3;width:80%;transition:background 1s ease}
+.mock-tabs{grid-column:3;display:flex;align-items:flex-end;padding:0 4px;gap:2px;transition:background 1s ease}
+.mock-tab{height:28px;padding:0 14px;border-radius:6px 6px 0 0;font-size:.65rem;font-weight:600;display:flex;align-items:center;color:rgba(255,255,255,.5);transition:background 1s ease,color 1s ease}
+.mock-tab.active{color:#fff}
+.mock-editor{grid-column:3;padding:14px;display:flex;flex-direction:column;gap:6px;transition:background 1s ease}
+.mock-line{height:6px;border-radius:3px;opacity:.2;transition:background 1s ease}
+.mock-status{grid-column:1/4;display:flex;align-items:center;padding:0 10px;font-size:.6rem;font-weight:600;color:rgba(255,255,255,.8);gap:10px;transition:background 1s ease}
+.mock-terminal-area{grid-column:3;display:none}
+
+.mock-labels{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.mock-label{position:absolute;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;padding:3px 8px;border-radius:4px;white-space:nowrap;opacity:0;transition:opacity .3s;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.vscode-mockup:hover .mock-label{opacity:1}
+.mock-label::before{content:'';position:absolute;width:20px;height:1px;background:currentColor;opacity:.4}
+
+.theming-features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px;max-width:800px;margin-left:auto;margin-right:auto}
+@media(max-width:640px){.theming-features{grid-template-columns:1fr}}
+.theming-feat{text-align:center;padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card)}
+.theming-feat-num{font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#7c4dff,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.theming-feat-label{font-size:.78rem;color:var(--text2);font-weight:500}
+
+/* ============ COLOR SWATCHES IN CARD ============ */
+.card-palette{display:flex;gap:6px;padding:10px 20px 14px;border-top:1px solid var(--border)}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;position:relative}
+.swatch-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.08);transition:transform .2s,box-shadow .2s;cursor:default}
+.swatch-dot:hover{transform:scale(1.3);box-shadow:0 0 12px var(--sw-color,rgba(255,255,255,.2));z-index:2}
+.swatch-label{font-size:.55rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.swatch-hex{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);font-size:.6rem;font-family:'JetBrains Mono',monospace;color:#fff;background:rgba(0,0,0,.85);padding:2px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.swatch-dot:hover+.swatch-label+.swatch-hex,.swatch-dot:hover~.swatch-hex{opacity:1}
+.swatch:hover .swatch-hex{opacity:1}
+
 /* ============ SCROLLBAR ============ */
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-track{background:var(--bg)}
@@ -143,9 +188,68 @@ a:hover{text-decoration:underline}
 <!-- HERO -->
 <section class="hero">
   <h1 class="hero-title">CLAUDE SKINS</h1>
-  <p class="hero-sub">Customize your Claude Code mascot. 26 skins. 6 rarity tiers. Zero dependencies.</p>
+  <p class="hero-sub">Full editor theming for Claude Code. 26 skins. Your mascot, sidebar, terminal, and status bar &mdash; all in one command.</p>
   <div class="hero-stats" id="heroStats"></div>
   <div class="hero-mascot" id="heroMascot"></div>
+</section>
+
+<!-- FULL EDITOR THEMING -->
+<section class="theming-section">
+  <div class="theming-header">
+    <h2 class="theming-headline">Your entire editor. One skin.</h2>
+    <p class="theming-sub">Not just a mascot swap. Every pixel of your VS Code transforms &mdash; background, sidebar, tabs, terminal, status bar, brackets, cursor. One command.</p>
+  </div>
+  <div class="vscode-mockup" id="vscodeMockup">
+    <div class="mock-titlebar">
+      <span class="mock-dot" style="background:#ff5f57"></span>
+      <span class="mock-dot" style="background:#febc2e"></span>
+      <span class="mock-dot" style="background:#28c840"></span>
+    </div>
+    <div class="mock-body" id="mockBody">
+      <div class="mock-activity" id="mockActivity">
+        <div class="mock-act-icon"></div>
+        <div class="mock-act-icon"></div>
+        <div class="mock-act-icon"></div>
+        <div class="mock-act-icon"></div>
+      </div>
+      <div class="mock-sidebar" id="mockSidebar">
+        <div class="mock-side-item" style="width:90%"></div>
+        <div class="mock-side-item" style="width:65%"></div>
+        <div class="mock-side-item" style="width:80%"></div>
+        <div class="mock-side-item" style="width:50%"></div>
+        <div class="mock-side-item" style="width:70%"></div>
+        <div class="mock-side-item" style="width:55%"></div>
+      </div>
+      <div class="mock-tabs" id="mockTabs">
+        <div class="mock-tab active">index.ts</div>
+        <div class="mock-tab">utils.ts</div>
+      </div>
+      <div class="mock-editor" id="mockEditor">
+        <div class="mock-line" style="width:40%"></div>
+        <div class="mock-line" style="width:70%"></div>
+        <div class="mock-line" style="width:55%"></div>
+        <div class="mock-line" style="width:30%"></div>
+        <div class="mock-line" style="width:65%"></div>
+        <div class="mock-line" style="width:45%"></div>
+        <div class="mock-line" style="width:60%"></div>
+      </div>
+      <div class="mock-status" id="mockStatus">
+        <span>main</span><span>UTF-8</span><span>TypeScript</span>
+      </div>
+    </div>
+    <div class="mock-labels">
+      <span class="mock-label" style="top:60px;left:4px;font-size:.5rem">Activity Bar</span>
+      <span class="mock-label" style="top:60px;left:56px">Sidebar</span>
+      <span class="mock-label" style="top:46px;right:80px">Tabs</span>
+      <span class="mock-label" style="top:55%;right:40px">Editor</span>
+      <span class="mock-label" style="bottom:4px;right:40px">Status Bar</span>
+    </div>
+  </div>
+  <div class="theming-features">
+    <div class="theming-feat"><div class="theming-feat-num">99</div><div class="theming-feat-label">Color keys themed</div></div>
+    <div class="theming-feat"><div class="theming-feat-num">16</div><div class="theming-feat-label">Terminal ANSI colors</div></div>
+    <div class="theming-feat"><div class="theming-feat-num">0</div><div class="theming-feat-label">Dependencies</div></div>
+  </div>
 </section>
 
 <!-- FILTER BAR -->
@@ -162,9 +266,9 @@ a:hover{text-decoration:underline}
 <section class="how-section">
   <h2 class="section-title">How It Works</h2>
   <div class="steps">
-    <div class="step"><div class="step-icon">&#x1F4E6;</div><div class="step-num">Step 1</div><div class="step-title">Clone</div><div class="step-desc">Download claude-skins with git clone. No build tools needed.</div></div>
-    <div class="step"><div class="step-icon">&#x1F3A8;</div><div class="step-num">Step 2</div><div class="step-title">Pick</div><div class="step-desc">Browse 26 skins across 6 rarity tiers. Find your vibe.</div></div>
-    <div class="step"><div class="step-icon">&#x26A1;</div><div class="step-num">Step 3</div><div class="step-title">Apply</div><div class="step-desc">One command. Reload VS Code. Your mascot is transformed.</div></div>
+    <div class="step"><div class="step-icon">&#x1F4E6;</div><div class="step-num">Step 1</div><div class="step-title">Download</div><div class="step-desc">git clone the repo. Zero dependencies. No build tools.</div></div>
+    <div class="step"><div class="step-icon">&#x1F3A8;</div><div class="step-num">Step 2</div><div class="step-title">Pick your skin</div><div class="step-desc">26 skins across 6 rarity tiers. Browse the palette, find your vibe.</div></div>
+    <div class="step"><div class="step-icon">&#x26A1;</div><div class="step-num">Step 3</div><div class="step-title">Apply</div><div class="step-desc">Mascot, theme colors, terminal, favicon, status bar &mdash; everything changes. One command.</div></div>
   </div>
 </section>
 
@@ -186,32 +290,32 @@ const RARITY_COLORS={Common:'#8b8b8b',Uncommon:'#4fc3f7',Rare:'#ffd700',Epic:'#f
 const RARITY_COUNTS={Common:0,Uncommon:0,Rare:0,Epic:0,Seasonal:0,Legendary:0};
 
 const SKINS=[
-  {id:'ice-blue',name:'Ice Blue',rarity:'Common',desc:'Frozen solid. Cool under pressure.'},
-  {id:'forest-green',name:'Forest Green',rarity:'Common',desc:'Camouflaged in the codebase.'},
-  {id:'midnight-purple',name:'Midnight Purple',rarity:'Common',desc:'Late night coding only.'},
-  {id:'blood-red',name:'Blood Red',rarity:'Common',desc:'Debugging at 3am.'},
-  {id:'slate',name:'Slate',rarity:'Common',desc:'Clean. Minimal.'},
-  {id:'gold-edition',name:'Gold Edition',rarity:'Uncommon',desc:'Ship to prod with confidence.'},
-  {id:'neon-pink',name:'Neon Pink',rarity:'Uncommon',desc:'Hot pink. Impossible to ignore.'},
-  {id:'electric-cyan',name:'Electric Cyan',rarity:'Uncommon',desc:'Pure voltage.'},
-  {id:'sunset',name:'Sunset',rarity:'Uncommon',desc:'Golden hour. Ship before dark.'},
-  {id:'diamond',name:'Diamond',rarity:'Rare',desc:'Flawless. The flex skin.'},
-  {id:'fire',name:'Fire',rarity:'Rare',desc:'Straight heat.'},
-  {id:'shadow',name:'Shadow',rarity:'Rare',desc:'Sees your bugs.'},
-  {id:'demon',name:'Demon',rarity:'Rare',desc:'Summoned from the stack trace.'},
-  {id:'gentleman',name:'Gentleman',rarity:'Rare',desc:'Sir codes-a-lot.'},
-  {id:'angel',name:'Angel',rarity:'Rare',desc:'Zero bugs. Divinely clean.'},
-  {id:'solana-degen',name:'Solana Degen',rarity:'Rare',desc:'Wen moon? SOL chain on.'},
-  {id:'bitcoin-og',name:'Bitcoin OG',rarity:'Rare',desc:'HODL. Laser eyes. Block 0.'},
-  {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.'},
-  {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.'},
-  {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.'},
-  {id:'aurora',name:'Aurora',rarity:'Epic',desc:'Northern lights dancing.'},
-  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',season:'Dec 1 \u2013 Jan 15'},
-  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',season:'Mar 1 \u2013 Apr 15'},
-  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',season:'Oct 15 \u2013 Nov 5'},
-  {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',supply:500},
-  {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',supply:200}
+  {id:'ice-blue',name:'Ice Blue',rarity:'Common',desc:'Frozen solid. Cool under pressure.',theme:{editor:'#0a1a2a',sidebar:'#071320',bar:'#040a14',accent:'#4fc3f7',status:'#4fc3f7'}},
+  {id:'forest-green',name:'Forest Green',rarity:'Common',desc:'Camouflaged in the codebase.',theme:{editor:'#0a1f0a',sidebar:'#071507',bar:'#040d04',accent:'#66bb6a',status:'#66bb6a'}},
+  {id:'midnight-purple',name:'Midnight Purple',rarity:'Common',desc:'Late night coding only.',theme:{editor:'#1a0a2a',sidebar:'#120718',bar:'#0a040f',accent:'#ab47bc',status:'#ab47bc'}},
+  {id:'blood-red',name:'Blood Red',rarity:'Common',desc:'Debugging at 3am.',theme:{editor:'#1f0a0a',sidebar:'#150707',bar:'#0d0404',accent:'#ef5350',status:'#ef5350'}},
+  {id:'slate',name:'Slate',rarity:'Common',desc:'Clean. Minimal.',theme:{editor:'#141b1f',sidebar:'#0e1317',bar:'#080c0f',accent:'#78909c',status:'#78909c'}},
+  {id:'gold-edition',name:'Gold Edition',rarity:'Uncommon',desc:'Ship to prod with confidence.',theme:{editor:'#1f1a00',sidebar:'#151100',bar:'#0d0a00',accent:'#ffd700',status:'#ffd700'}},
+  {id:'neon-pink',name:'Neon Pink',rarity:'Uncommon',desc:'Hot pink. Impossible to ignore.',theme:{editor:'#1f0a15',sidebar:'#15070f',bar:'#0d0408',accent:'#ff4081',status:'#ff4081'}},
+  {id:'electric-cyan',name:'Electric Cyan',rarity:'Uncommon',desc:'Pure voltage.',theme:{editor:'#001a1f',sidebar:'#001217',bar:'#000a0f',accent:'#00e5ff',status:'#00e5ff'}},
+  {id:'sunset',name:'Sunset',rarity:'Uncommon',desc:'Golden hour. Ship before dark.',theme:{editor:'#1f1008',sidebar:'#150b05',bar:'#0d0703',accent:'#ff8a65',status:'#ff8a65'}},
+  {id:'diamond',name:'Diamond',rarity:'Rare',desc:'Flawless. The flex skin.',theme:{editor:'#0a1a1f',sidebar:'#071217',bar:'#040a0f',accent:'#e0f7fa',status:'#b3e5fc'}},
+  {id:'fire',name:'Fire',rarity:'Rare',desc:'Straight heat.',theme:{editor:'#1a0a00',sidebar:'#120700',bar:'#0a0400',accent:'#ff5722',status:'#ff5722'}},
+  {id:'shadow',name:'Shadow',rarity:'Rare',desc:'Sees your bugs.',theme:{editor:'#0a0a0f',sidebar:'#060608',bar:'#030304',accent:'#ff0044',status:'#1a1a2e'}},
+  {id:'demon',name:'Demon',rarity:'Rare',desc:'Summoned from the stack trace.',theme:{editor:'#1a0505',sidebar:'#120303',bar:'#0a0202',accent:'#ff4444',status:'#d32f2f'}},
+  {id:'gentleman',name:'Gentleman',rarity:'Rare',desc:'Sir codes-a-lot.',theme:{editor:'#0d0d1f',sidebar:'#080815',bar:'#04040a',accent:'#5c6bc0',status:'#5c6bc0'}},
+  {id:'angel',name:'Angel',rarity:'Rare',desc:'Zero bugs. Divinely clean.',theme:{editor:'#1f1c14',sidebar:'#15140e',bar:'#0d0c08',accent:'#fff3e0',status:'#fff8e1'}},
+  {id:'solana-degen',name:'Solana Degen',rarity:'Rare',desc:'Wen moon? SOL chain on.',theme:{editor:'#041f15',sidebar:'#03150f',bar:'#020d08',accent:'#14f195',status:'#14f195'}},
+  {id:'bitcoin-og',name:'Bitcoin OG',rarity:'Rare',desc:'HODL. Laser eyes. Block 0.',theme:{editor:'#1a0f04',sidebar:'#120a03',bar:'#0a0602',accent:'#f7931a',status:'#f7931a'}},
+  {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.',theme:{editor:'#140a1f',sidebar:'#0e0715',bar:'#08040a',accent:'#e040fb',status:'#e040fb'}},
+  {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.',theme:{editor:'#140a20',sidebar:'#0e0718',bar:'#08040f',accent:'#ffd700',status:'#7b1fa2'}},
+  {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.',theme:{editor:'#050008',sidebar:'#030005',bar:'#020003',accent:'#7c4dff',status:'#0a0014'}},
+  {id:'aurora',name:'Aurora',rarity:'Epic',desc:'Northern lights dancing.',theme:{editor:'#001f0f',sidebar:'#00150a',bar:'#000d06',accent:'#00e676',status:'#00e676'}},
+  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',season:'Dec 1 \u2013 Jan 15',theme:{editor:'#0a1420',sidebar:'#070e18',bar:'#04080f',accent:'#bbdefb',status:'#e3f2fd'}},
+  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',season:'Mar 1 \u2013 Apr 15',theme:{editor:'#1f0a14',sidebar:'#15070e',bar:'#0d0408',accent:'#f48fb1',status:'#f8bbd0'}},
+  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',season:'Oct 15 \u2013 Nov 5',theme:{editor:'#1f0f00',sidebar:'#150a00',bar:'#0d0600',accent:'#76ff03',status:'#ff6f00'}},
+  {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',supply:500,theme:{editor:'#1f1a00',sidebar:'#151100',bar:'#0d0a00',accent:'#ffd700',status:'#ffd700'}},
+  {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',supply:200,theme:{editor:'#08040f',sidebar:'#050308',bar:'#030204',accent:'#e040fb',status:'#1a1a1a'}}
 ];
 SKINS.forEach(s=>RARITY_COUNTS[s.rarity]++);
 SKINS.sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
@@ -304,13 +408,20 @@ SKINS.forEach(s=>{
       '<div class="card-desc">'+s.desc+'</div>'+
       (metaTags?'<div class="card-meta">'+metaTags+'</div>':'')+
     '</div>'+
+    (s.theme?
+    '<div class="card-palette">'+
+      ['editor','sidebar','bar','accent','status'].map(function(k){
+        var label=k==='bar'?'Bar':k.charAt(0).toUpperCase()+k.slice(1);
+        return '<div class="swatch"><div class="swatch-dot" style="background:'+s.theme[k]+';--sw-color:'+s.theme[k]+'"></div><span class="swatch-label">'+label+'</span><span class="swatch-hex">'+s.theme[k]+'</span></div>';
+      }).join('')+
+    '</div>':'')+
     '<div class="card-install">'+
       '<div class="install-title">Install Instructions</div>'+
       '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
       '<div class="install-step"><code>node bin/claude-skins.js scan</code><button class="copy-btn" data-copy="node bin/claude-skins.js scan">Copy</button></div>'+
       '<div class="install-step"><code>node bin/claude-skins.js apply '+installId+'</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply '+installId+'">Copy</button></div>'+
       '<div class="install-step"><code># Reload VS Code: Ctrl+Shift+P &rarr; &quot;Reload Window&quot;</code><button class="copy-btn" data-copy="Ctrl+Shift+P \u2192 &quot;Reload Window&quot;">Copy</button></div>'+
-      '<div style="font-size:.75rem;color:var(--text2);margin:8px 0 4px;line-height:1.4">Patches the <strong style="color:var(--text)">favicon</strong>, <strong style="color:var(--text)">welcome screen mascot</strong>, and <strong style="color:var(--text)">chat panel mascot</strong> (body color, eyes, and outline).</div>'+
+      '<div style="font-size:.75rem;color:var(--text2);margin:8px 0 4px;line-height:1.4">Applies <strong style="color:var(--text)">full editor theming</strong> &mdash; mascot, favicon, sidebar, tabs, terminal, status bar, brackets, cursor &amp; 99 color keys.</div>'+
       '<div class="quick-apply">'+
         '<div class="quick-apply-label">Quick Apply</div>'+
         '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply '+installId+'</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply '+installId+'">Copy</button></div>'+
@@ -337,6 +448,38 @@ document.addEventListener('click',e=>{
     setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);
   });
 });
+
+/* ============================================================
+   VS CODE MOCKUP — cycle through skin themes
+   ============================================================ */
+(function(){
+  var mockBody=document.getElementById('mockBody');
+  if(!mockBody) return;
+  var mockActivity=document.getElementById('mockActivity');
+  var mockSidebar=document.getElementById('mockSidebar');
+  var mockTabs=document.getElementById('mockTabs');
+  var mockEditor=document.getElementById('mockEditor');
+  var mockStatus=document.getElementById('mockStatus');
+  var idx=0;
+  function applyMockTheme(){
+    var s=SKINS[idx];
+    var t=s.theme;
+    mockActivity.style.background=t.bar;
+    mockActivity.querySelectorAll('.mock-act-icon').forEach(function(el){el.style.background=t.accent;});
+    mockSidebar.style.background=t.sidebar;
+    mockSidebar.querySelectorAll('.mock-side-item').forEach(function(el){el.style.background=t.accent;});
+    mockTabs.style.background=t.sidebar;
+    var tabs=mockTabs.querySelectorAll('.mock-tab');
+    tabs[0].style.background=t.editor;tabs[0].style.color=t.accent;
+    if(tabs[1]){tabs[1].style.background=t.sidebar;tabs[1].style.color='rgba(255,255,255,.3)';}
+    mockEditor.style.background=t.editor;
+    mockEditor.querySelectorAll('.mock-line').forEach(function(el){el.style.background=t.accent;});
+    mockStatus.style.background=t.status;
+    idx=(idx+1)%SKINS.length;
+  }
+  applyMockTheme();
+  setInterval(applyMockTheme,2500);
+})();
 
 /* ============================================================
    PARTICLE BACKGROUND
