@@ -310,87 +310,125 @@ function patchWebviewMascot(extPath, skinDir, manifest) {
     let content = fs.readFileSync(jsPath, 'utf8');
     let changed = false;
 
+    const eyeColor = manifest.colors?.eyes;
+    const outlineColor = manifest.colors?.outline;
+
     if (skinFill.defs) {
       // Gradient skin: inject defs into inline SVG createElement calls
-      // The pattern in the JS is:
-      //   createElement("svg",{...},createElement("path",{d:"...",fill:"#D97757"}))
-      // We need to insert a createElement("defs",...) before the path and change fill.
-
       const gradientIdRe = /<linearGradient\s+id="([^"]+)"([^>]*)>/;
       const gradMatch = skinFill.defs.match(gradientIdRe);
 
       if (gradMatch) {
         const gradId = 'skin-' + gradMatch[1];
         const gradAttrs = gradMatch[2];
-
-        // Parse gradient attributes
         const x1 = gradAttrs.match(/x1="([^"]+)"/)?.[1] || '0';
         const y1 = gradAttrs.match(/y1="([^"]+)"/)?.[1] || '0';
         const x2 = gradAttrs.match(/x2="([^"]+)"/)?.[1] || '0';
         const y2 = gradAttrs.match(/y2="([^"]+)"/)?.[1] || '1';
 
-        // Parse stops
         const stops = [];
         let m;
-        const defsStr = skinFill.defs;
         const stopRe2 = /offset="([^"]+)"[^>]*stop-color="([^"]+)"/g;
-        while ((m = stopRe2.exec(defsStr)) !== null) {
+        while ((m = stopRe2.exec(skinFill.defs)) !== null) {
           stops.push({ offset: m[1], color: m[2] });
         }
 
         if (stops.length > 0) {
-          // Find inline mascot SVGs and inject gradient defs.
-          // The JS uses: someModule.default.createElement("svg",{...viewBox:"0 0 47 38"...},
-          //              someModule.default.createElement("path",{d:"...",fill:"#D97757"}))
-          // We must capture the module prefix (e.g. "hG0.default.") and reuse it.
           const mascotSvgPattern = /((\w+\.default\.)createElement\("svg",\{[^}]*viewBox:"0 0 (?:47 38|32 26)"[^}]*\},)/g;
           let match;
           const insertPositions = [];
 
           while ((match = mascotSvgPattern.exec(content)) !== null) {
-            const modulePrefix = match[2]; // e.g. "hG0.default."
             insertPositions.push({
               index: match.index + match[0].length,
-              modulePrefix,
-              matched: match[0].substring(0, 60)
+              modulePrefix: match[2],
             });
           }
 
-          // Build and insert defs for each mascot SVG (reverse order to preserve indices)
           for (const pos of insertPositions.reverse()) {
             const ce = pos.modulePrefix + 'createElement';
             const stopElements = stops.map(s =>
               `${ce}("stop",{offset:"${s.offset}",stopColor:"${s.color}"})`
             ).join(',');
             const defsElement = `${ce}("defs",null,${ce}("linearGradient",{id:"${gradId}",x1:"${x1}",y1:"${y1}",x2:"${x2}",y2:"${y2}"},${stopElements})),`;
-
             content = content.substring(0, pos.index) + defsElement + content.substring(pos.index);
-            results.details.push(`Injected gradient via ${pos.modulePrefix}createElement`);
             changed = true;
           }
 
-          // Replace the fill color with url(#gradient-id)
           content = content.replace(/fill:"#[Dd]97757"/g, `fill:"url(#${gradId})"`);
           content = content.replace(/fill:"#ff5722"/g, `fill:"url(#${gradId})"`);
+          results.details.push('Injected gradient fill');
           changed = true;
         }
       }
     }
 
     if (!changed && manifest.colors?.primary) {
-      // Flat color fallback: simple hex replacement
-      const orangePatterns = [
-        /#D97757/gi,
-        /#e8834a/gi,
-        /#d97706/gi,
-        /#f59e0b/gi,
-      ];
+      // Flat color: replace body color
+      content = content.replace(/#D97757/gi, manifest.colors.primary);
+      results.details.push(`Body color → ${manifest.colors.primary}`);
+      changed = true;
+    }
 
-      for (const pattern of orangePatterns) {
-        if (pattern.test(content)) {
-          content = content.replace(pattern, manifest.colors.primary);
-          changed = true;
-        }
+    // ── Eye color swap ──
+    // The 32x26 mascot has separate eye rects with fill:"#1F1F1F"
+    if (eyeColor) {
+      content = content.replace(/fill:"#1F1F1F"/g, `fill:"${eyeColor}"`);
+      results.details.push(`Eye color → ${eyeColor}`);
+      changed = true;
+    }
+
+    // ── Outline stroke on body path ──
+    // Add stroke to body path to make dark skins visible on dark backgrounds.
+    // The path uses: fill:"#XXXXXX"} — we append stroke props.
+    if (outlineColor) {
+      // Add stroke to mascot body paths (they have very long d attributes, 100+ chars).
+      // Pattern: createElement("path",{d:"...very long...",fill:"<bodyColor>"})
+      // We match the closing fill:"..."} and inject stroke props before the }.
+      const bodyColor = manifest.colors?.primary || skinFill.fill;
+      const escaped = bodyColor.replace(/[.*+?^${}()|[\]\\#]/g, '\\$&');
+      const strokeRe = new RegExp(
+        `(createElement\\("path",\\{d:"[^"]{100,}",fill:"${escaped}")(\\})`,
+        'g'
+      );
+      content = content.replace(strokeRe, `$1,stroke:"${outlineColor}",strokeWidth:"0.5"$2`);
+      results.details.push(`Outline stroke → ${outlineColor}`);
+      changed = true;
+    }
+
+    // ── Inject eye rects for 47x38 mascot ──
+    // The 47x38 mascot uses a single path where eyes are transparent cutouts.
+    // We inject colored rect elements to fill those cutouts.
+    // Eye positions: left eye ~(9.2, 10, 4.3x4.6), right eye ~(34.1, 10, 4.3x4.6)
+    if (eyeColor) {
+      const mascot47Pattern = /((\w+\.default\.)createElement\("svg",\{[^}]*viewBox:"0 0 47 38"[^}]*\},)/g;
+      let match47;
+      const eyeInserts = [];
+
+      while ((match47 = mascot47Pattern.exec(content)) !== null) {
+        eyeInserts.push({
+          modulePrefix: match47[2],
+          // Find the end of this mascot's createElement block to insert before closing
+          svgStart: match47.index,
+        });
+      }
+
+      for (const ins of eyeInserts.reverse()) {
+        const ce = ins.modulePrefix + 'createElement';
+        // Insert eye rects right after the svg opening (before the path)
+        const insertAt = content.indexOf('),', ins.svgStart + 1);
+        if (insertAt === -1) continue;
+
+        // Find the position right after the svg opening createElement
+        const svgOpenEnd = content.indexOf('},', ins.svgStart) + 2;
+        const eyeRects = [
+          `${ce}("rect",{x:"9.2",y:"10",width:"4.3",height:"4.6",fill:"${eyeColor}"})`,
+          `${ce}("rect",{x:"34.1",y:"10",width:"4.3",height:"4.6",fill:"${eyeColor}"})`,
+        ].join(',') + ',';
+
+        content = content.substring(0, svgOpenEnd) + eyeRects + content.substring(svgOpenEnd);
+        results.details.push('Injected eye rects in 47x38 mascot');
+        changed = true;
       }
     }
 
