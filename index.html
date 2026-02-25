@@ -39,7 +39,7 @@ a:hover{text-decoration:underline}
 .hero-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
 .hero-stat{padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:700;letter-spacing:.02em;border:1px solid;display:flex;align-items:center;gap:6px}
 .hero-stat .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.hero-mascot{width:136px;height:104px;margin:0 auto;animation:float 3s ease-in-out infinite}
+.hero-mascot{width:136px;height:128px;margin:0 auto;animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
 /* ============ FILTER BAR ============ */
@@ -79,7 +79,7 @@ a:hover{text-decoration:underline}
 .skin-card:hover::before{opacity:.5}
 
 .card-preview{padding:24px;display:flex;justify-content:center;align-items:center;background:var(--bg2);transition:background .3s;min-height:160px;position:relative;overflow:hidden}
-.card-preview svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.card-preview svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));max-width:136px;max-height:128px}
 .card-body{padding:16px 20px}
 .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .card-name{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
@@ -145,6 +145,11 @@ a:hover{text-decoration:underline}
 .card-preview[data-skin="bitcoin-og"] svg{filter:drop-shadow(0 0 6px rgba(247,147,26,.4))}
 .card-preview[data-skin="solana-degen"] svg{filter:drop-shadow(0 0 8px rgba(20,241,149,.3))}
 .card-preview[data-skin="crown-royal"] svg{filter:drop-shadow(0 0 8px rgba(123,31,162,.4))}
+.card-preview[data-skin="demon"] svg{filter:drop-shadow(0 0 6px rgba(255,68,68,.4))}
+.card-preview[data-skin="halloween-haunt"] svg{filter:drop-shadow(0 0 6px rgba(255,111,0,.4))}
+
+/* ============ SVG LOADING ============ */
+.svg-placeholder{width:136px;height:128px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.7rem}
 
 /* ============ SCROLLBAR ============ */
 ::-webkit-scrollbar{width:8px}
@@ -196,149 +201,62 @@ a:hover{text-decoration:underline}
 
 <script>
 /* ============================================================
-   DATA
+   DATA — metadata only, SVGs loaded from skins/ directory
    ============================================================ */
-const PX=8,OX=16,OY=24;
-const BODY=[[3,0],[4,0],[8,0],[9,0],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],[10,1],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,2],[1,3],[2,3],[5,3],[6,3],[7,3],[10,3],[11,3],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[10,4],[11,4],[1,5],[2,5],[3,5],[4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],[2,6],[3,6],[4,6],[5,6],[6,6],[7,6],[8,6],[9,6],[10,6],[3,7],[4,7],[8,7],[9,7],[3,8],[4,8],[8,8],[9,8]];
-const EYES=[[3,3],[4,3],[8,3],[9,3]];
 const RARITY_ORDER={Legendary:0,Epic:1,Seasonal:2,Rare:3,Uncommon:4,Common:5};
 const RARITY_COLORS={Common:'#8b8b8b',Uncommon:'#4fc3f7',Rare:'#ffd700',Epic:'#ff4081',Seasonal:'#ff9800',Legendary:'#ffea00'};
 const RARITY_COUNTS={Common:0,Uncommon:0,Rare:0,Epic:0,Seasonal:0,Legendary:0};
 
 const SKINS=[
-  {id:'ice-blue',name:'Ice Blue',rarity:'Common',desc:'Frozen solid. Cool under pressure.',body:'#4fc3f7',eyes:'#0d1b2a',outline:'#81d4fa'},
-  {id:'forest-green',name:'Forest Green',rarity:'Common',desc:'Camouflaged in the codebase.',body:'#66bb6a',eyes:'#1b2e1b'},
-  {id:'midnight-purple',name:'Midnight Purple',rarity:'Common',desc:'Late night coding only.',body:'#ab47bc',eyes:'#1a0a2e'},
-  {id:'blood-red',name:'Blood Red',rarity:'Common',desc:'Debugging at 3am.',body:'#ef5350',eyes:'#1a0505'},
-  {id:'slate',name:'Slate',rarity:'Common',desc:'Clean. Minimal.',body:'#78909c',eyes:'#1a1a1a',outline:'#90a4ae'},
-  {id:'gold-edition',name:'Gold Edition',rarity:'Uncommon',desc:'Ship to prod with confidence.',body:'#ffd700',eyes:'#3e2723',outline:'#ffecb3',glow:'rgba(255,215,0,.5)'},
-  {id:'neon-pink',name:'Neon Pink',rarity:'Uncommon',desc:'Hot pink. Impossible to ignore.',body:'#ff4081',eyes:'#1a0a12',glow:'rgba(255,64,129,.5)'},
-  {id:'electric-cyan',name:'Electric Cyan',rarity:'Uncommon',desc:'Pure voltage.',body:'#00e5ff',eyes:'#001a1f',glow:'rgba(0,229,255,.5)'},
-  {id:'sunset',name:'Sunset',rarity:'Uncommon',desc:'Golden hour. Ship before dark.',gradient:{id:'sun',stops:['#ffcc02 0%','#ff6f00 50%','#e91e63 100%']},eyes:'#1a0a05'},
-  {id:'diamond',name:'Diamond',rarity:'Rare',desc:'Flawless. The flex skin.',body:'#e0f7fa',eyes:'#006064',outline:'#80deea',sparkle:true},
-  {id:'fire',name:'Fire',rarity:'Rare',desc:'Straight heat.',gradient:{id:'fg',stops:['#ffeb3b 0%','#ff9800 40%','#f44336 100%']},eyes:'#1a0500',flames:true},
-  {id:'shadow',name:'Shadow',rarity:'Rare',desc:'Sees your bugs.',body:'#1a1a2e',eyes:'#ff0044',eyeGlow:true,outline:'#2d2d44'},
-  {id:'demon',name:'Demon',rarity:'Rare',desc:'Summoned from the stack trace.',body:'#8b0000',eyes:'#ff4444',eyeGlow:true,outline:'#b71c1c',horns:true},
-  {id:'gentleman',name:'Gentleman',rarity:'Rare',desc:'Sir codes-a-lot.',body:'#5c6bc0',eyes:'#0d0d2b',tophat:true,shades:true},
-  {id:'angel',name:'Angel',rarity:'Rare',desc:'Zero bugs. Divinely clean.',body:'#fff3e0',eyes:'#4e342e',outline:'#ffe0b2',halo:true},
-  {id:'solana-degen',name:'Solana Degen',rarity:'Rare',desc:'Wen moon? SOL chain on.',gradient:{id:'sol',x2:'1',stops:['#14f195 0%','#9945ff 100%']},eyes:'#0a0520',glow:'rgba(20,241,149,.4)',sol:true},
-  {id:'bitcoin-og',name:'Bitcoin OG',rarity:'Rare',desc:'HODL. Laser eyes. Block 0.',body:'#f7931a',eyes:'#ff0000',eyeGlow:true,outline:'#ffc107',laser:true,btc:true},
-  {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.',gradient:{id:'hl',x2:'1',stops:['#ff4081 0%','#e040fb 25%','#7c4dff 50%','#00e5ff 75%','#69f0ae 100%']},eyes:'#0a0020',outline:'rgba(255,255,255,0.25)',glow:'rgba(224,64,251,.4)'},
-  {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.',body:'#7b1fa2',eyes:'#ffd700',outline:'#ce93d8',crown:true},
-  {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.',body:'#0a0014',eyes:'#b388ff',eyeGlow:true,outline:'#4a148c',voidPixels:true},
-  {id:'aurora',name:'Aurora',rarity:'Epic',desc:'Northern lights dancing.',gradient:{id:'ar',x2:'1',y2:'.5',stops:['#00e676 0%','#00bcd4 30%','#7c4dff 60%','#e040fb 100%']},eyes:'#001a0f',outline:'rgba(255,255,255,0.15)',glow:'rgba(0,230,118,.4)'},
-  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',body:'#bbdefb',eyes:'#0d47a1',outline:'#e3f2fd',santa:true,season:'Dec 1 \u2013 Jan 15'},
-  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',body:'#f48fb1',eyes:'#33001a',outline:'#f8bbd0',sakura:true,season:'Mar 1 \u2013 Apr 15'},
-  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',body:'#ff6f00',eyes:'#76ff03',eyeGlow:true,outline:'#e65100',horns:true,season:'Oct 15 \u2013 Nov 5'},
-  {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',gradient:{id:'gn',stops:['#ffd700 0%','#ff8f00 50%','#ff6f00 100%']},eyes:'#1a0a00',outline:'#fff9c4',glow:'rgba(255,215,0,.5)',crown:true,halo:true,supply:500},
-  {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',body:'#1a1a1a',eyes:'#e040fb',eyeGlow:true,outline:'#4a148c',accent:[{x:2,y:1,c:'#7c4dff'},{x:10,y:1,c:'#7c4dff'},{x:3,y:6,c:'#e040fb'},{x:9,y:6,c:'#e040fb'}],antenna:true,supply:200}
+  {id:'ice-blue',name:'Ice Blue',rarity:'Common',desc:'Frozen solid. Cool under pressure.'},
+  {id:'forest-green',name:'Forest Green',rarity:'Common',desc:'Camouflaged in the codebase.'},
+  {id:'midnight-purple',name:'Midnight Purple',rarity:'Common',desc:'Late night coding only.'},
+  {id:'blood-red',name:'Blood Red',rarity:'Common',desc:'Debugging at 3am.'},
+  {id:'slate',name:'Slate',rarity:'Common',desc:'Clean. Minimal.'},
+  {id:'gold-edition',name:'Gold Edition',rarity:'Uncommon',desc:'Ship to prod with confidence.'},
+  {id:'neon-pink',name:'Neon Pink',rarity:'Uncommon',desc:'Hot pink. Impossible to ignore.'},
+  {id:'electric-cyan',name:'Electric Cyan',rarity:'Uncommon',desc:'Pure voltage.'},
+  {id:'sunset',name:'Sunset',rarity:'Uncommon',desc:'Golden hour. Ship before dark.'},
+  {id:'diamond',name:'Diamond',rarity:'Rare',desc:'Flawless. The flex skin.'},
+  {id:'fire',name:'Fire',rarity:'Rare',desc:'Straight heat.'},
+  {id:'shadow',name:'Shadow',rarity:'Rare',desc:'Sees your bugs.'},
+  {id:'demon',name:'Demon',rarity:'Rare',desc:'Summoned from the stack trace.'},
+  {id:'gentleman',name:'Gentleman',rarity:'Rare',desc:'Sir codes-a-lot.'},
+  {id:'angel',name:'Angel',rarity:'Rare',desc:'Zero bugs. Divinely clean.'},
+  {id:'solana-degen',name:'Solana Degen',rarity:'Rare',desc:'Wen moon? SOL chain on.'},
+  {id:'bitcoin-og',name:'Bitcoin OG',rarity:'Rare',desc:'HODL. Laser eyes. Block 0.'},
+  {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.'},
+  {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.'},
+  {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.'},
+  {id:'aurora',name:'Aurora',rarity:'Epic',desc:'Northern lights dancing.'},
+  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',season:'Dec 1 \u2013 Jan 15'},
+  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',season:'Mar 1 \u2013 Apr 15'},
+  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',season:'Oct 15 \u2013 Nov 5'},
+  {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',supply:500},
+  {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',supply:200}
 ];
 SKINS.forEach(s=>RARITY_COUNTS[s.rarity]++);
 SKINS.sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
 
 /* ============================================================
-   SVG RENDERER
+   SVG LOADER — fetches actual mascot.svg from skins/ directory
    ============================================================ */
-function r(x,y,fill,extra=''){return `<rect x="${OX+x*PX}" y="${OY+y*PX}" width="${PX}" height="${PX}" fill="${fill}"${extra}/>`;}
+async function loadSVG(skinId, target){
+  try{
+    const resp=await fetch('skins/'+skinId+'/mascot.svg');
+    if(!resp.ok) return;
+    const text=await resp.text();
+    target.innerHTML=text;
+  }catch(e){}
+}
 
-function buildSVG(s){
-  const W=13*PX+PX*4, H=10*PX+PX*6;
-  let defs='',fill=s.body||'#e8834a',stroke=s.outline?` stroke="${s.outline}" stroke-width="0.5"`:'';
-  const uid=s.id.replace(/[^a-z0-9]/g,'');
-
-  // gradient
-  if(s.gradient){
-    const g=s.gradient;
-    const stops=g.stops.map(st=>{const[c,o]=st.split(' ');return `<stop offset="${o}" stop-color="${c}"/>`;}).join('');
-    defs+=`<linearGradient id="${uid}g" x1="0" y1="0" x2="${g.x2||0}" y2="${g.y2||1}">${stops}</linearGradient>`;
-    fill=`url(#${uid}g)`;
-  }
-  // glow filter
-  if(s.glow||s.eyeGlow){
-    defs+=`<filter id="${uid}f"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
-  }
-
-  let bodyPx=BODY.map(p=>r(p[0],p[1],fill,stroke+(s.glow?` filter="url(#${uid}f)"`:'')));
-  let eyeFill=s.eyes||'#1a1a1a';
-  let eyePx=EYES.map(p=>r(p[0],p[1],eyeFill,s.eyeGlow?` filter="url(#${uid}f)"`:''));
-  let extras=[];
-
-  // sparkle
-  if(s.sparkle){
-    [[0,1],[12,2],[1,7],[11,8]].forEach(p=>extras.push(r(p[0],p[1],'#ffffff',` filter="url(#${uid}f)" opacity="0.8"`)));
-  }
-  // flames
-  if(s.flames){
-    [[5,-1,'#ff9800'],[6,-1,'#ffeb3b'],[7,-1,'#ff9800'],[6,-2,'#ffeb3b'],[4,-1,'#ff5722'],[8,-1,'#ff5722']].forEach(f=>extras.push(r(f[0],f[1],f[2])));
-  }
-  // horns
-  if(s.horns){
-    [[1,-1,'#cc0000'],[2,-2,'#ff1a1a'],[11,-1,'#cc0000'],[10,-2,'#ff1a1a']].forEach(h=>extras.push(r(h[0],h[1],h[2])));
-  }
-  // crown
-  if(s.crown){
-    [2,3,5,7,9,10].forEach(i=>extras.push(r(i,-1,'#ffd700')));
-    [[4,-2,'#f44336'],[6,-2,'#4fc3f7'],[8,-2,'#66bb6a']].forEach(j=>extras.push(r(j[0],j[1],j[2])));
-  }
-  // halo
-  if(s.halo){
-    for(let i=3;i<=9;i++) extras.push(r(i,-2,'#ffd700',` opacity="0.7"`));
-    for(let i=4;i<=8;i++) extras.push(r(i,-3,'#ffd700',` opacity="0.4"`));
-  }
-  // tophat
-  if(s.tophat){
-    for(let i=3;i<=9;i++) extras.push(r(i,-1,'#1a1a1a'));
-    for(let i=4;i<=8;i++) extras.push(r(i,-2,'#222'));
-    for(let i=4;i<=8;i++) extras.push(r(i,-3,'#2a2a2a'));
-  }
-  // shades
-  if(s.shades){
-    extras.push(`<rect x="${OX+2*PX}" y="${OY+3*PX}" width="${PX*3}" height="${PX}" fill="#111" rx="1"/>`);
-    extras.push(`<rect x="${OX+7*PX}" y="${OY+3*PX}" width="${PX*3}" height="${PX}" fill="#111" rx="1"/>`);
-    extras.push(`<rect x="${OX+5*PX}" y="${OY+3*PX}" width="${PX*2}" height="${Math.round(PX*.4)}" fill="#333"/>`);
-  }
-  // santa hat
-  if(s.santa){
-    for(let i=2;i<=10;i++) extras.push(r(i,-1,'#cc0000'));
-    for(let i=3;i<=9;i++) extras.push(r(i,-2,'#cc0000'));
-    for(let i=4;i<=8;i++) extras.push(r(i,-3,'#cc0000'));
-    extras.push(r(6,-4,'#cc0000'));extras.push(r(7,-4,'#cc0000'));
-    extras.push(`<rect x="${OX+2*PX}" y="${OY-PX}" width="${PX*9}" height="${Math.round(PX*.4)}" fill="#fff"/>`);
-  }
-  // sakura
-  if(s.sakura){
-    extras.push(`<text x="${OX+PX}" y="${OY-PX*.5}" font-size="${PX}" fill="#ffb7c5" font-family="serif">\u2727</text>`);
-    extras.push(`<text x="${OX+9*PX}" y="${OY}" font-size="${PX*.7}" fill="#ffb7c5" opacity=".7" font-family="serif">\u2727</text>`);
-  }
-  // antenna
-  if(s.antenna){
-    extras.push(r(6,-1,'#888'));extras.push(r(6,-2,'#aaa'));extras.push(r(6,-3,'#ff0044'));
-  }
-  // sol logo
-  if(s.sol){
-    extras.push(`<circle cx="${OX+6*PX+PX/2}" cy="${OY+5*PX+PX/2}" r="${PX*.7}" fill="none" stroke="#14f195" stroke-width="1.5"/><circle cx="${OX+6*PX+PX/2}" cy="${OY+5*PX+PX/2}" r="${PX*.3}" fill="#14f195"/>`);
-  }
-  // btc logo
-  if(s.btc){
-    extras.push(`<circle cx="${OX+6*PX+PX/2}" cy="${OY+5*PX+PX/2}" r="${PX*.8}" fill="#f7931a"/>`);
-  }
-  // laser eyes
-  if(s.laser){
-    extras.push(`<rect x="${OX+3*PX}" y="${OY+3*PX}" width="${PX*2}" height="${PX}" fill="#ff0000" opacity=".9"/>`);
-    extras.push(`<rect x="${OX+8*PX}" y="${OY+3*PX}" width="${PX*2}" height="${PX}" fill="#ff0000" opacity=".9"/>`);
-    extras.push(`<rect x="${OX+PX}" y="${OY+4*PX}" width="${PX*3}" height="${Math.round(PX*.5)}" fill="#ff0000" opacity=".3"/>`);
-    extras.push(`<rect x="${OX+9*PX}" y="${OY+4*PX}" width="${PX*3}" height="${Math.round(PX*.5)}" fill="#ff0000" opacity=".3"/>`);
-  }
-  // void pixels
-  if(s.voidPixels){
-    [[0,0],[12,0],[0,8],[12,8],[6,-2]].forEach(p=>extras.push(r(p[0],p[1],'#7c4dff',` filter="url(#${uid}f)" opacity="0.7"`)));
-  }
-  // accent pixels
-  if(s.accent){
-    s.accent.forEach(a=>extras.push(r(a.x,a.y,a.c,` filter="url(#${uid}f)"`)));
-  }
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${defs?`<defs>${defs}</defs>`:''}${bodyPx.join('')}${eyePx.join('')}${extras.join('')}</svg>`;
+function loadAllSVGs(){
+  SKINS.forEach(function(s){
+    var el=document.querySelector('.card-preview[data-skin="'+s.id+'"]');
+    if(el) loadSVG(s.id,el);
+  });
+  // Hero mascot
+  loadSVG('holographic',document.getElementById('heroMascot'));
 }
 
 /* ============================================================
@@ -350,13 +268,9 @@ Object.entries(RARITY_COUNTS).forEach(([r,c])=>{
   const el=document.createElement('div');
   el.className='hero-stat';
   el.style.borderColor=RARITY_COLORS[r];el.style.color=RARITY_COLORS[r];
-  el.innerHTML=`<span class="dot" style="background:${RARITY_COLORS[r]}"></span>${c} ${r}`;
+  el.innerHTML='<span class="dot" style="background:'+RARITY_COLORS[r]+'"></span>'+c+' '+r;
   heroStats.appendChild(el);
 });
-
-// Hero mascot (show holographic)
-const heroSkin=SKINS.find(s=>s.id==='holographic');
-document.getElementById('heroMascot').innerHTML=buildSVG(heroSkin);
 
 // Filter buttons
 const filterBar=document.getElementById('filterBar');
@@ -364,7 +278,7 @@ const rarities=['Common','Uncommon','Rare','Epic','Seasonal','Legendary'];
 rarities.forEach(r=>{
   const btn=document.createElement('button');
   btn.className='filter-btn';btn.dataset.rarity=r;
-  btn.innerHTML=`${r} <span class="filter-count">${RARITY_COUNTS[r]}</span>`;
+  btn.innerHTML=r+' <span class="filter-count">'+RARITY_COUNTS[r]+'</span>';
   filterBar.appendChild(btn);
 });
 
@@ -392,44 +306,47 @@ window.addEventListener('scroll',()=>{
 const grid=document.getElementById('skinGrid');
 SKINS.forEach(s=>{
   const card=document.createElement('div');
-  card.className=`skin-card rarity-${s.rarity}`;
+  card.className='skin-card rarity-'+s.rarity;
   card.dataset.rarity=s.rarity;
   card.dataset.skin=s.id;
   card.style.setProperty('--glow-color',RARITY_COLORS[s.rarity]);
 
   let metaTags='';
-  if(s.season) metaTags+=`<span class="card-meta-tag">${s.season}</span>`;
-  if(s.supply) metaTags+=`<span class="card-meta-tag limited-badge">Limited: ${s.supply}</span>`;
+  if(s.season) metaTags+='<span class="card-meta-tag">'+s.season+'</span>';
+  if(s.supply) metaTags+='<span class="card-meta-tag limited-badge">Limited: '+s.supply+'</span>';
 
   const installId=s.id;
-  card.innerHTML=`
-    <div class="card-preview" data-skin="${s.id}">${buildSVG(s)}</div>
-    <div class="card-body">
-      <div class="card-top">
-        <span class="card-name">${s.name}</span>
-        <span class="rarity-badge">${s.rarity}</span>
-      </div>
-      <div class="card-desc">${s.desc}</div>
-      ${metaTags?`<div class="card-meta">${metaTags}</div>`:''}
-    </div>
-    <div class="card-install">
-      <div class="install-title">Install Instructions</div>
-      <div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>
-      <div class="install-step"><code>node bin/claude-skins.js scan</code><button class="copy-btn" data-copy="node bin/claude-skins.js scan">Copy</button></div>
-      <div class="install-step"><code>node bin/claude-skins.js apply ${installId}</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply ${installId}">Copy</button></div>
-      <div class="install-step"><code># Reload VS Code: Ctrl+Shift+P &rarr; &quot;Reload Window&quot;</code><button class="copy-btn" data-copy='Ctrl+Shift+P → "Reload Window"'>Copy</button></div>
-      <div style="font-size:.75rem;color:var(--text2);margin:8px 0 4px;line-height:1.4">Patches the <strong style="color:var(--text)">favicon</strong>, <strong style="color:var(--text)">welcome screen mascot</strong>, and <strong style="color:var(--text)">chat panel mascot</strong> (body color, eyes, and outline).</div>
-      <div class="quick-apply">
-        <div class="quick-apply-label">Quick Apply</div>
-        <div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply ${installId}</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply ${installId}">Copy</button></div>
-      </div>
-    </div>`;
+  card.innerHTML=
+    '<div class="card-preview" data-skin="'+s.id+'"><div class="svg-placeholder">Loading...</div></div>'+
+    '<div class="card-body">'+
+      '<div class="card-top">'+
+        '<span class="card-name">'+s.name+'</span>'+
+        '<span class="rarity-badge">'+s.rarity+'</span>'+
+      '</div>'+
+      '<div class="card-desc">'+s.desc+'</div>'+
+      (metaTags?'<div class="card-meta">'+metaTags+'</div>':'')+
+    '</div>'+
+    '<div class="card-install">'+
+      '<div class="install-title">Install Instructions</div>'+
+      '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
+      '<div class="install-step"><code>node bin/claude-skins.js scan</code><button class="copy-btn" data-copy="node bin/claude-skins.js scan">Copy</button></div>'+
+      '<div class="install-step"><code>node bin/claude-skins.js apply '+installId+'</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply '+installId+'">Copy</button></div>'+
+      '<div class="install-step"><code># Reload VS Code: Ctrl+Shift+P &rarr; &quot;Reload Window&quot;</code><button class="copy-btn" data-copy="Ctrl+Shift+P \u2192 &quot;Reload Window&quot;">Copy</button></div>'+
+      '<div style="font-size:.75rem;color:var(--text2);margin:8px 0 4px;line-height:1.4">Patches the <strong style="color:var(--text)">favicon</strong>, <strong style="color:var(--text)">welcome screen mascot</strong>, and <strong style="color:var(--text)">chat panel mascot</strong> (body color, eyes, and outline).</div>'+
+      '<div class="quick-apply">'+
+        '<div class="quick-apply-label">Quick Apply</div>'+
+        '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply '+installId+'</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply '+installId+'">Copy</button></div>'+
+      '</div>'+
+    '</div>';
   card.addEventListener('click',e=>{
     if(e.target.closest('.copy-btn'))return;
     card.classList.toggle('expanded');
   });
   grid.appendChild(card);
 });
+
+// Load all SVGs from skins/ directory
+loadAllSVGs();
 
 // Copy buttons
 document.addEventListener('click',e=>{
@@ -468,16 +385,15 @@ document.addEventListener('click',e=>{
       if(p.x<0)p.x=W;if(p.x>W)p.x=0;
       if(p.y<0)p.y=H;if(p.y>H)p.y=0;
       ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(124,77,255,${p.a})`;ctx.fill();
+      ctx.fillStyle='rgba(124,77,255,'+p.a+')';ctx.fill();
     });
-    // connect nearby
     for(let i=0;i<particles.length;i++){
       for(let j=i+1;j<particles.length;j++){
         const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
         const d=dx*dx+dy*dy;
         if(d<18000){
           ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);
-          ctx.strokeStyle=`rgba(124,77,255,${.04*(1-d/18000)})`;ctx.stroke();
+          ctx.strokeStyle='rgba(124,77,255,'+(.04*(1-d/18000))+')';ctx.stroke();
         }
       }
     }
