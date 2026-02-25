@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var fs=require('fs'),path=require('path');
+var fs=require('fs'),path=require('path'),zlib=require('zlib');
 var SKINS_DIR=path.join(__dirname,'skins');
 var PX=8;
 var BODY=[[3,0],[4,0],[8,0],[9,0],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],[10,1],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,2],[1,3],[2,3],[5,3],[6,3],[7,3],[10,3],[11,3],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[10,4],[11,4],[1,5],[2,5],[3,5],[4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],[2,6],[3,6],[4,6],[5,6],[6,6],[7,6],[8,6],[9,6],[10,6],[3,7],[4,7],[8,7],[9,7],[3,8],[4,8],[8,8],[9,8]];
@@ -110,6 +110,42 @@ function genIcon(o){
   return genSVG(s).replace(/viewBox="([^"]+)" width="\d+" height="\d+"/,'viewBox="$1" width="32" height="32"');
 }
 
+/* ── PNG Icon Generator (pure Node, no deps) ── */
+var crcTable=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);t[n]=c;}return t;})();
+function crc32(buf){var c=0xffffffff;for(var i=0;i<buf.length;i++)c=crcTable[(c^buf[i])&0xff]^(c>>>8);return(c^0xffffffff)>>>0;}
+function pngChunk(type,data){var len=Buffer.alloc(4);len.writeUInt32BE(data.length,0);var td=Buffer.concat([Buffer.from(type),data]);var crc=Buffer.alloc(4);crc.writeUInt32BE(crc32(td),0);return Buffer.concat([len,td,crc]);}
+function parseHex(hex){hex=hex.replace('#','');if(hex.length===3)hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];return[parseInt(hex.substring(0,2),16),parseInt(hex.substring(2,4),16),parseInt(hex.substring(4,6),16)];}
+function genPNG(o){
+  var W=136,H=128,OX=16,OY=24;
+  var rgba=Buffer.alloc(W*H*4);
+  function fillRect(x,y,w,h,color,alpha){
+    var c=parseHex(color),a=alpha!==undefined?Math.round(alpha*255):255;
+    for(var dy=0;dy<h;dy++)for(var dx=0;dx<w;dx++){
+      var px=x+dx,py=y+dy;
+      if(px>=0&&px<W&&py>=0&&py<H){var idx=(py*W+px)*4;rgba[idx]=c[0];rgba[idx+1]=c[1];rgba[idx+2]=c[2];rgba[idx+3]=a;}
+    }
+  }
+  var bodyColor=o.bodyColor||'#e8834a',eyeColor=o.eyeGlow||o.eyeColor||'#1a1a1a';
+  if(o.gradient&&o.gradient.stops){var stops=o.gradient.stops;bodyColor=stops[Math.floor(stops.length/2)].color;}
+  BODY.forEach(function(p){fillRect(OX+p[0]*PX,OY+p[1]*PX,PX,PX,bodyColor);});
+  EYES.forEach(function(p){fillRect(OX+p[0]*PX,OY+p[1]*PX,PX,PX,eyeColor);});
+  if(o.extraPixels)o.extraPixels.forEach(function(p){fillRect(OX+p.x*PX,OY+p.y*PX,PX,PX,p.color);});
+  if(o.accessoriesFn){
+    var accSvg=o.accessoriesFn(OX,OY,PX);
+    var m,re=/<rect x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)" fill="([^"]+)"(?:\s+opacity="([^"]+)")?/g;
+    while((m=re.exec(accSvg))!==null){
+      var rx=Math.round(parseFloat(m[1])),ry=Math.round(parseFloat(m[2]));
+      var rw=Math.round(parseFloat(m[3])),rh=Math.round(parseFloat(m[4]));
+      fillRect(rx,ry,rw,rh,m[5],m[6]?parseFloat(m[6]):1.0);
+    }
+  }
+  var scanlines=Buffer.alloc(H*(1+W*4));
+  for(var y=0;y<H;y++){scanlines[y*(1+W*4)]=0;rgba.copy(scanlines,y*(1+W*4)+1,y*W*4,(y+1)*W*4);}
+  var compressed=zlib.deflateSync(scanlines);
+  var ihdr=Buffer.alloc(13);ihdr.writeUInt32BE(W,0);ihdr.writeUInt32BE(H,4);ihdr[8]=8;ihdr[9]=6;
+  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),pngChunk('IHDR',ihdr),pngChunk('IDAT',compressed),pngChunk('IEND',Buffer.alloc(0))]);
+}
+
 /* ── Accessories ── */
 function acc_crown(X,Y,P){return [2,3,5,7,9,10].map(function(i){return '<rect x="'+(X+i*P)+'" y="'+(Y-P)+'" width="'+P+'" height="'+P+'" fill="#ffd700"/>';}).join('')+['#f44336','#4fc3f7','#66bb6a'].map(function(c,j){return '<rect x="'+(X+(4+j*2)*P)+'" y="'+(Y-2*P)+'" width="'+P+'" height="'+P+'" fill="'+c+'"/>';}).join('');}
 function acc_tophat(X,Y,P){return '<rect x="'+(X+3*P)+'" y="'+(Y-P)+'" width="'+(7*P)+'" height="'+P+'" fill="#1a1a1a"/><rect x="'+(X+4*P)+'" y="'+(Y-2*P)+'" width="'+(5*P)+'" height="'+P+'" fill="#1a1a1a"/><rect x="'+(X+4*P)+'" y="'+(Y-3*P)+'" width="'+(5*P)+'" height="'+P+'" fill="#222"/><rect x="'+(X+5*P)+'" y="'+(Y-2*P)+'" width="'+(3*P)+'" height="'+P+'" fill="#333"/>';}
@@ -167,8 +203,9 @@ SKINS.forEach(function(skin){
   fs.mkdirSync(dir,{recursive:true});
   fs.writeFileSync(path.join(dir,'mascot.svg'),genSVG(skin.mascot));
   fs.writeFileSync(path.join(dir,'icon.svg'),genIcon(skin.mascot));
+  fs.writeFileSync(path.join(dir,'icon.png'),genPNG(skin.mascot));
   fs.writeFileSync(path.join(dir,'ascii-art.txt'),[skin.ascii.line1,skin.ascii.line2,skin.ascii.line3].join('\n'));
-  var manifest={name:skin.name,author:'claude-skins',version:'1.0.0',rarity:skin.rarity,edition:skin.edition,description:skin.description,targets:{vscode_mascot:'mascot.svg',vscode_icon:'icon.svg',terminal_ascii:'ascii-art.txt'},colors:Object.assign({},skin.colors)};
+  var manifest={name:skin.name,author:'claude-skins',version:'1.0.0',rarity:skin.rarity,edition:skin.edition,description:skin.description,targets:{vscode_mascot:'mascot.svg',vscode_icon:'icon.svg',vscode_icon_png:'icon.png',terminal_ascii:'ascii-art.txt'},colors:Object.assign({},skin.colors)};
   if(skin.mascot.eyeGlow) manifest.colors.eyes=skin.mascot.eyeGlow;
   if(skin.mascot.outline) manifest.colors.outline=skin.mascot.outline;
   if(skin.edition==='seasonal'){manifest.season=skin.season;manifest.available_from=skin.available_from;manifest.available_until=skin.available_until;}

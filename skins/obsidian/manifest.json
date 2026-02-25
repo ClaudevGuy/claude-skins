@@ -8,6 +8,7 @@
   "targets": {
     "vscode_mascot": "mascot.svg",
     "vscode_icon": "icon.svg",
+    "vscode_icon_png": "icon.png",
     "terminal_ascii": "ascii-art.txt"
   },
   "colors": {

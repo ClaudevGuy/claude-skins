@@ -174,9 +174,12 @@ const MEDIA_MAP = {
   'vscode_mascot': [
     'clawd.svg',
   ],
-  // icon.svg → extension logo in sidebar/tabs
+  // icon.svg → extension logo SVG
   'vscode_icon': [
     'claude-logo.svg',
+  ],
+  // icon.png → extension favicon/logo PNG
+  'vscode_icon_png': [
     'claude-logo.png',
   ],
 };
