@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claude Skins — Collectible Mascot Skins for Claude Code</title>
-<meta name="description" content="26 collectible skins across 6 rarity tiers for the Claude Code mascot. Zero dependencies. Pure Node.js.">
+<meta name="description" content="25 collectible skins across 6 rarity tiers for the Claude Code mascot. Zero dependencies. Pure Node.js.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -276,7 +276,7 @@ a:hover{text-decoration:underline}
 <!-- HERO -->
 <section class="hero">
   <h1 class="hero-title">CLAUDE SKINS</h1>
-  <p class="hero-sub">Full editor theming for Claude Code. 26 skins. Your mascot, sidebar, terminal, and status bar &mdash; all in one command.</p>
+  <p class="hero-sub">Full editor theming for Claude Code. 25 skins. Your mascot, sidebar, terminal, and status bar &mdash; all in one command.</p>
   <div class="hero-stats" id="heroStats"></div>
   <div class="hero-mascot" id="heroMascot"></div>
 </section>
@@ -342,7 +342,7 @@ a:hover{text-decoration:underline}
 
 <!-- FILTER BAR -->
 <nav class="filter-bar" id="filterBar">
-  <button class="filter-btn active" data-rarity="all">All <span class="filter-count">26</span></button>
+  <button class="filter-btn active" data-rarity="all">All <span class="filter-count">25</span></button>
 </nav>
 
 <!-- SKIN GRID -->
@@ -355,7 +355,7 @@ a:hover{text-decoration:underline}
   <h2 class="section-title">How It Works</h2>
   <div class="steps">
     <div class="step"><div class="step-icon">&#x1F4E6;</div><div class="step-num">Step 1</div><div class="step-title">Download</div><div class="step-desc">git clone the repo. Zero dependencies. No build tools.</div></div>
-    <div class="step"><div class="step-icon">&#x1F3A8;</div><div class="step-num">Step 2</div><div class="step-title">Pick your skin</div><div class="step-desc">26 skins across 6 rarity tiers. Browse the palette, find your vibe.</div></div>
+    <div class="step"><div class="step-icon">&#x1F3A8;</div><div class="step-num">Step 2</div><div class="step-title">Pick your skin</div><div class="step-desc">25 skins across 6 rarity tiers. Browse the palette, find your vibe.</div></div>
     <div class="step"><div class="step-icon">&#x26A1;</div><div class="step-num">Step 3</div><div class="step-title">Apply</div><div class="step-desc">Mascot, theme colors, terminal, favicon, status bar &mdash; everything changes. One command.</div></div>
   </div>
 </section>
@@ -398,7 +398,6 @@ const SKINS=[
   {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.',theme:{editor:'#140a1f',sidebar:'#0e0715',bar:'#08040a',accent:'#e040fb',status:'#e040fb'}},
   {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.',theme:{editor:'#140a20',sidebar:'#0e0718',bar:'#08040f',accent:'#ffd700',status:'#7b1fa2'}},
   {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.',theme:{editor:'#050008',sidebar:'#030005',bar:'#020003',accent:'#7c4dff',status:'#0a0014'}},
-  {id:'aurora',name:'Aurora',rarity:'Epic',desc:'Northern lights dancing.',theme:{editor:'#001f0f',sidebar:'#00150a',bar:'#000d06',accent:'#00e676',status:'#00e676'}},
   {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',season:'Dec 1 \u2013 Jan 15',theme:{editor:'#0a1420',sidebar:'#070e18',bar:'#04080f',accent:'#bbdefb',status:'#e3f2fd'}},
   {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',season:'Mar 1 \u2013 Apr 15',theme:{editor:'#1f0a14',sidebar:'#15070e',bar:'#0d0408',accent:'#f48fb1',status:'#f8bbd0'}},
   {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',season:'Oct 15 \u2013 Nov 5',theme:{editor:'#1f0f00',sidebar:'#150a00',bar:'#0d0600',accent:'#76ff03',status:'#ff6f00'}},

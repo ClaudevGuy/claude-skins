@@ -415,18 +415,6 @@ const SKIN_OVERRIDES = {
     'statusBar.foreground':     '#ffffff',
     'terminal.ansiMagenta':     '#b388ff',
   },
-  'aurora': {
-    'editor.background':        '#001a0f',
-    'sideBar.background':       '#00140c',
-    'activityBar.background':   '#000e08',
-    'titleBar.activeBackground':'#000e08',
-    'editorBracketHighlight.foreground1': '#00e676',
-    'editorBracketHighlight.foreground2': '#00bcd4',
-    'editorBracketHighlight.foreground3': '#7c4dff',
-    'editorBracketHighlight.foreground4': '#e040fb',
-    'editorBracketHighlight.foreground5': '#69f0ae',
-    'editorBracketHighlight.foreground6': '#84ffff',
-  },
   'neon-pink': {
     'editor.background':        '#1a050f',
     'sideBar.background':       '#14040c',
