@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="32" height="32">
   <defs><linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffcc02"/><stop offset="50%" stop-color="#ff6f00"/><stop offset="100%" stop-color="#e91e63"/></linearGradient></defs>
-  <style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}#mascot{animation:breathe 3s ease-in-out infinite;transform-origin:68px 56px;}</style>
   <g id="mascot">
     <g id="body">
     <rect x="40" y="24" width="8" height="8" fill="url(#sun)"/>

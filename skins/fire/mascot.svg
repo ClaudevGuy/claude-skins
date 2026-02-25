@@ -1,78 +1,80 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="136" height="128">
-  <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffeb3b"/><stop offset="40%" stop-color="#ff9800"/><stop offset="100%" stop-color="#f44336"/></linearGradient><filter id="fgw"><feGaussianBlur in="SourceGraphic" stdDeviation="1" result="b"><animate attributeName="stdDeviation" values="0.5;2;0.5" dur="0.3s" repeatCount="indefinite"/></feGaussianBlur><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-  <style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}#mascot{animation:breathe 3s ease-in-out infinite;transform-origin:68px 56px;}@keyframes ff{0%{opacity:.5;transform:translateY(0)}100%{opacity:1;transform:translateY(-1.5px)}}.f0{animation:ff .15s infinite alternate}.f1{animation:ff .15s .03s infinite alternate}.f2{animation:ff .15s .07s infinite alternate}.f3{animation:ff .15s .1s infinite alternate}.f4{animation:ff .15s .13s infinite alternate}.f5{animation:ff .15s .05s infinite alternate}</style>
+  <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffeb3b"/><stop offset="40%" stop-color="#ff9800"/><stop offset="100%" stop-color="#f44336"/></linearGradient><filter id="fgl"><feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <g transform="translate(68,56)">
   <g id="mascot">
+    <animateTransform attributeName="transform" type="scale" values="1;1.015;1" dur="3s" repeatCount="indefinite"/>
+    <g transform="translate(-68,-56)">
     <g id="body">
-    <rect x="40" y="24" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="24" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="24" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="24" width="8" height="8" fill="url(#fg)"/>
-    <rect x="32" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="40" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="56" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="64" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="72" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="96" y="32" width="8" height="8" fill="url(#fg)"/>
-    <rect x="24" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="32" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="40" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="56" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="64" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="72" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="96" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="104" y="40" width="8" height="8" fill="url(#fg)"/>
-    <rect x="24" y="48" width="8" height="8" fill="url(#fg)"/>
-    <rect x="32" y="48" width="8" height="8" fill="url(#fg)"/>
-    <rect x="56" y="48" width="8" height="8" fill="url(#fg)"/>
-    <rect x="64" y="48" width="8" height="8" fill="url(#fg)"/>
-    <rect x="72" y="48" width="8" height="8" fill="url(#fg)"/>
-    <rect x="96" y="48" width="8" height="8" fill="url(#fg)"/>
-    <rect x="104" y="48" width="8" height="8" fill="url(#fg)"/>
-    <rect x="24" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="32" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="40" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="56" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="64" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="72" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="96" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="104" y="56" width="8" height="8" fill="url(#fg)"/>
-    <rect x="24" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="32" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="40" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="56" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="64" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="72" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="96" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="104" y="64" width="8" height="8" fill="url(#fg)"/>
-    <rect x="32" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="40" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="56" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="64" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="72" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="96" y="72" width="8" height="8" fill="url(#fg)"/>
-    <rect x="40" y="80" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="80" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="80" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="80" width="8" height="8" fill="url(#fg)"/>
-    <rect x="40" y="88" width="8" height="8" fill="url(#fg)"/>
-    <rect x="48" y="88" width="8" height="8" fill="url(#fg)"/>
-    <rect x="80" y="88" width="8" height="8" fill="url(#fg)"/>
-    <rect x="88" y="88" width="8" height="8" fill="url(#fg)"/>
+    <rect x="40" y="24" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="24" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="24" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="24" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="32" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="40" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="56" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="64" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="72" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="96" y="32" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="24" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="32" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="40" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="56" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="64" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="72" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="96" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="104" y="40" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="24" y="48" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="32" y="48" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="56" y="48" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="64" y="48" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="72" y="48" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="96" y="48" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="104" y="48" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="24" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="32" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="40" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="56" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="64" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="72" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="96" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="104" y="56" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="24" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="32" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="40" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="56" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="64" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="72" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="96" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="104" y="64" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="32" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="40" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="56" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="64" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="72" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="96" y="72" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="40" y="80" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="80" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="80" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="80" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="40" y="88" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="48" y="88" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="80" y="88" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
+    <rect x="88" y="88" width="8" height="8" fill="url(#fg)" stroke="#000" stroke-opacity="0.2" stroke-width="0.5"/>
     </g>
     <g id="eyes">
     <rect x="40" y="48" width="8" height="8" fill="#1a0500"/>
@@ -81,12 +83,14 @@
     <rect x="88" y="48" width="8" height="8" fill="#1a0500"/>
     </g>
     <g id="extras">
-    <rect x="56" y="16" width="8" height="8" fill="#ff9800" class="f0" filter="url(#fgw)"/>
-    <rect x="64" y="16" width="8" height="8" fill="#ffeb3b" class="f1" filter="url(#fgw)"/>
-    <rect x="72" y="16" width="8" height="8" fill="#ff9800" class="f2" filter="url(#fgw)"/>
-    <rect x="64" y="8" width="8" height="8" fill="#ffeb3b" class="f3" filter="url(#fgw)"/>
-    <rect x="48" y="16" width="8" height="8" fill="#ff5722" class="f4" filter="url(#fgw)"/>
-    <rect x="80" y="16" width="8" height="8" fill="#ff5722" class="f5" filter="url(#fgw)"/>
+    <rect x="56" y="16" width="8" height="8" fill="#ff9800" filter="url(#fgl)"><animate attributeName="opacity" values="1;0.1;0.7;0.15;1" dur="0.3s" begin="0s" repeatCount="indefinite"/></rect>
+    <rect x="64" y="16" width="8" height="8" fill="#ffeb3b" filter="url(#fgl)"><animate attributeName="opacity" values="1;0.1;0.7;0.15;1" dur="0.3s" begin="0.07s" repeatCount="indefinite"/></rect>
+    <rect x="72" y="16" width="8" height="8" fill="#ff9800" filter="url(#fgl)"><animate attributeName="opacity" values="1;0.1;0.7;0.15;1" dur="0.3s" begin="0.14s" repeatCount="indefinite"/></rect>
+    <rect x="64" y="8" width="8" height="8" fill="#ffeb3b" filter="url(#fgl)"><animate attributeName="opacity" values="1;0.1;0.7;0.15;1" dur="0.3s" begin="0.04s" repeatCount="indefinite"/></rect>
+    <rect x="48" y="16" width="8" height="8" fill="#ff5722" filter="url(#fgl)"><animate attributeName="opacity" values="1;0.1;0.7;0.15;1" dur="0.3s" begin="0.18s" repeatCount="indefinite"/></rect>
+    <rect x="80" y="16" width="8" height="8" fill="#ff5722" filter="url(#fgl)"><animate attributeName="opacity" values="1;0.1;0.7;0.15;1" dur="0.3s" begin="0.11s" repeatCount="indefinite"/></rect>
     </g>
+    </g>
+  </g>
   </g>
 </svg>
