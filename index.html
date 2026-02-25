@@ -786,6 +786,18 @@ function lockAllLegendaryClaims(claimedSkin,serial){
       btn.style.color='#78909c';
     }
   });
+  // Show install instructions for the claimed legendary
+  var infoEl=document.querySelector('.legendary-claimed-info[data-skin="'+claimedSkin+'"]');
+  if(infoEl){
+    infoEl.style.display='block';
+    infoEl.innerHTML=
+      '<div style="background:rgba(105,240,174,.08);border:1px solid rgba(105,240,174,.3);border-radius:8px;padding:12px;margin-bottom:8px">'+
+        '<div style="font-weight:700;color:#69f0ae;margin-bottom:4px">\u2713 You own '+claimedSkin.charAt(0).toUpperCase()+claimedSkin.slice(1)+' #'+serial+'</div>'+
+        '<div style="font-size:.8rem;color:var(--text2)">Install your skin below:</div>'+
+      '</div>'+
+      '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
+      '<div class="install-step"><code>node bin/claude-skins.js apply '+claimedSkin+'</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply '+claimedSkin+'">Copy</button></div>';
+  }
 }
 
 // Claim a legendary skin
@@ -949,6 +961,12 @@ SKINS.forEach(s=>{
       }).join('')+
     '</div>':'')+
     supplyHtml+
+    (isLegendary?
+    '<div class="card-install">'+
+      '<div class="install-title">Numbered Edition</div>'+
+      '<div style="font-size:.85rem;color:var(--text2);line-height:1.5;margin-bottom:8px">This is a <strong style="color:var(--legendary)">limited edition</strong> skin. Claim your serial number above, then install via CLI.</div>'+
+      '<div class="legendary-claimed-info" data-skin="'+s.id+'" style="display:none"></div>'+
+    '</div>':
     '<div class="card-install">'+
       '<div class="install-title">Install Instructions</div>'+
       '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
@@ -960,7 +978,7 @@ SKINS.forEach(s=>{
         '<div class="quick-apply-label">Quick Apply</div>'+
         '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply '+installId+'</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply '+installId+'">Copy</button></div>'+
       '</div>'+
-    '</div>';
+    '</div>');
   card.addEventListener('click',e=>{
     if(e.target.closest('.copy-btn')||e.target.closest('.claim-btn'))return;
     if(isLocked)return; // prevent expanding locked cards
