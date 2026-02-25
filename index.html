@@ -123,16 +123,7 @@ a:hover{text-decoration:underline}
 .quick-apply{margin-top:8px;padding:12px 14px;background:linear-gradient(135deg,rgba(124,77,255,.08),rgba(0,229,255,.08));border:1px solid rgba(124,77,255,.2);border-radius:var(--radius-sm)}
 .quick-apply-label{font-size:.7rem;font-weight:700;color:var(--epic);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
 
-/* ============ HOW IT WORKS ============ */
-.how-section{max-width:900px;margin:0 auto;padding:60px 24px 80px}
-.section-title{font-size:1.8rem;font-weight:800;text-align:center;margin-bottom:40px;letter-spacing:-.02em}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-@media(max-width:640px){.steps{grid-template-columns:1fr}}
-.step{text-align:center;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius)}
-.step-icon{font-size:2.2rem;margin-bottom:12px}
-.step-num{font-size:.7rem;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
-.step-title{font-weight:700;margin-bottom:4px}
-.step-desc{font-size:.85rem;color:var(--text2)}
+/* ============ (HOW IT WORKS — replaced by INSTALL GUIDE above) ============ */
 
 /* ============ FOOTER ============ */
 .footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--text3);font-size:.85rem}
@@ -241,12 +232,6 @@ a:hover{text-decoration:underline}
   .theming-feat{padding:12px}
   .theming-feat-num{font-size:1.2rem}
   .theming-feat-label{font-size:.7rem}
-  .how-section{padding:40px 16px 60px}
-  .section-title{font-size:1.4rem;margin-bottom:24px}
-  .step{padding:16px}
-  .step-icon{font-size:1.6rem;margin-bottom:8px}
-  .step-title{font-size:.9rem}
-  .step-desc{font-size:.78rem}
   .footer{padding:24px 16px}
   .skin-card.expanded{max-width:100%}
   .quick-apply{padding:8px 10px}
@@ -257,6 +242,81 @@ a:hover{text-decoration:underline}
   .grid-section{padding:24px 16px 60px}
   .theming-section{padding:30px 16px 50px}
   .skin-card.expanded{max-width:100%}
+}
+
+/* ============ INSTALL GUIDE ============ */
+.guide-section{max-width:860px;margin:0 auto;padding:80px 24px 80px}
+.guide-header{text-align:center;margin-bottom:56px}
+.guide-title{font-size:clamp(2rem,5vw,3rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:12px;
+  background:linear-gradient(135deg,#7c4dff,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.guide-sub{color:var(--text2);font-size:clamp(.9rem,2vw,1.05rem);max-width:480px;margin:0 auto}
+
+/* Prerequisites */
+.prereq-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.prereq-title{font-size:.85rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);margin-bottom:16px}
+.prereq-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+.prereq-item{display:flex;align-items:center;gap:12px;font-size:.92rem;color:var(--text)}
+.prereq-check{width:22px;height:22px;border-radius:6px;background:rgba(105,240,174,.1);border:1px solid rgba(105,240,174,.25);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;color:#69f0ae}
+.prereq-item a{color:var(--uncommon);font-weight:600}
+
+/* Steps */
+.guide-steps{display:flex;flex-direction:column;gap:32px;margin-bottom:48px}
+.guide-step{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.guide-step-header{display:flex;align-items:center;gap:14px;padding:20px 24px 0}
+.step-number{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;flex-shrink:0;
+  background:linear-gradient(135deg,#7c4dff,#00e5ff);color:#fff}
+.step-label{font-size:1.05rem;font-weight:700;color:var(--text)}
+.guide-step-body{padding:12px 24px 20px 74px}
+.guide-step-body p{font-size:.88rem;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.guide-code{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.guide-code code{font-size:.8rem;color:var(--uncommon);word-break:break-all;flex:1}
+.guide-code .copy-btn{flex-shrink:0}
+.guide-example{margin-top:8px;padding-left:2px}
+.guide-example code{font-size:.78rem;color:var(--text3);display:block;margin-bottom:2px}
+.guide-output{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.7;color:var(--text2)}
+.guide-output .g{color:#69f0ae}
+.guide-output .y{color:#ffd700}
+.guide-output .d{color:var(--text3)}
+
+/* Quick one-liner */
+.quick-box{background:linear-gradient(135deg,rgba(124,77,255,.1),rgba(0,229,255,.1));border:1px solid rgba(124,77,255,.25);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.quick-box-label{font-size:.8rem;font-weight:800;color:var(--epic);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.quick-box-sub{font-size:.88rem;color:var(--text2);margin-bottom:14px}
+
+/* Restore */
+.restore-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.restore-box .restore-title{font-size:1rem;font-weight:700;margin-bottom:6px}
+.restore-box p{font-size:.88rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
+
+/* What gets changed */
+.changes-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.changes-title{font-size:1rem;font-weight:700;margin-bottom:16px}
+.changes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}
+.change-item{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--text2)}
+.change-item .ch{color:#69f0ae;font-size:.75rem;flex-shrink:0}
+
+/* FAQ */
+.faq-box{margin-bottom:16px}
+.faq-title{font-size:1rem;font-weight:700;margin-bottom:16px}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden}
+.faq-q{padding:14px 20px;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text);transition:background .2s;user-select:none}
+.faq-q:hover{background:var(--bg3)}
+.faq-arrow{font-size:.65rem;color:var(--text3);transition:transform .25s;flex-shrink:0}
+.faq-item.open .faq-arrow{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.faq-a-inner{padding:0 20px 16px;font-size:.85rem;color:var(--text2);line-height:1.6}
+.faq-item.open .faq-a{max-height:200px}
+
+/* Guide mobile */
+@media(max-width:640px){
+  .guide-section{padding:48px 16px 60px}
+  .guide-step-body{padding:12px 20px 20px 20px}
+  .prereq-box,.quick-box,.restore-box,.changes-box{padding:18px 16px}
+  .changes-grid{grid-template-columns:1fr}
+  .guide-step-header{padding:16px 20px 0}
+  .guide-code{padding:10px 12px}
+  .guide-code code{font-size:.72rem}
+  .guide-output{font-size:.65rem;padding:10px 12px}
 }
 
 /* ============ SCROLLBAR ============ */
@@ -378,14 +438,160 @@ a:hover{text-decoration:underline}
   <div class="skin-grid" id="skinGrid"></div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="how-section">
-  <h2 class="section-title">How It Works</h2>
-  <div class="steps">
-    <div class="step"><div class="step-icon">&#x1F4E6;</div><div class="step-num">Step 1</div><div class="step-title">Download</div><div class="step-desc">git clone the repo. Zero dependencies. No build tools.</div></div>
-    <div class="step"><div class="step-icon">&#x1F3A8;</div><div class="step-num">Step 2</div><div class="step-title">Pick your skin</div><div class="step-desc">25 skins across 6 rarity tiers. Browse the palette, find your vibe.</div></div>
-    <div class="step"><div class="step-icon">&#x26A1;</div><div class="step-num">Step 3</div><div class="step-title">Apply</div><div class="step-desc">Mascot, theme colors, terminal, favicon, status bar &mdash; everything changes. One command.</div></div>
+<!-- INSTALLATION GUIDE -->
+<section class="guide-section" id="installGuide">
+  <div class="guide-header">
+    <h2 class="guide-title">Installation Guide</h2>
+    <p class="guide-sub">Clone, scan, apply. Your entire editor transforms in under 60 seconds.</p>
   </div>
+
+  <!-- Prerequisites -->
+  <div class="prereq-box">
+    <div class="prereq-title">Prerequisites</div>
+    <ul class="prereq-list">
+      <li class="prereq-item"><span class="prereq-check">&#x2713;</span><span><a href="https://nodejs.org" target="_blank" rel="noopener">Node.js 18+</a> installed</span></li>
+      <li class="prereq-item"><span class="prereq-check">&#x2713;</span><span>VS Code or Cursor with the Claude Code extension</span></li>
+      <li class="prereq-item"><span class="prereq-check">&#x2713;</span><span>Git installed</span></li>
+    </ul>
+  </div>
+
+  <!-- Step-by-step -->
+  <div class="guide-steps">
+
+    <!-- Step 1 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">1</div>
+        <div class="step-label">Clone the repo</div>
+      </div>
+      <div class="guide-step-body">
+        <p>Grab the source. Zero dependencies &mdash; nothing to install.</p>
+        <div class="guide-code"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">2</div>
+        <div class="step-label">Scan your system</div>
+      </div>
+      <div class="guide-step-body">
+        <p>Finds your Claude Code installation and shows what can be customized.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js scan</code><button class="copy-btn" data-copy="node bin/claude-skins.js scan">Copy</button></div>
+        <div class="guide-output"><span class="g">&#x2713;</span> Found VS Code extension: claude-code v2.1.56<br><span class="g">&#x2713;</span> Patchable: mascot, logo, icon<br><span class="g">&#x2713;</span> Welcome art: dark + light variants<br><span class="g">&#x2713;</span> Webview mascot: inline SVG<br><span class="d">&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;</span><br><span class="y">Ready to apply skins.</span></div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">3</div>
+        <div class="step-label">Browse available skins</div>
+      </div>
+      <div class="guide-step-body">
+        <p>See all 25 skins with rarity tiers, color palettes, and ASCII previews right in your terminal.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js list</code><button class="copy-btn" data-copy="node bin/claude-skins.js list">Copy</button></div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">4</div>
+        <div class="step-label">Apply a skin</div>
+      </div>
+      <div class="guide-step-body">
+        <p>One command changes everything &mdash; mascot, editor theme, sidebar, terminal colors, status bar, cursor, brackets, and 99 color keys.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js apply &lt;skin-id&gt;</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply ">Copy</button></div>
+        <p>Examples:</p>
+        <div class="guide-example">
+          <code><span style="color:var(--text3)">$</span> <span style="color:var(--uncommon)">node bin/claude-skins.js apply fire</span></code>
+          <code><span style="color:var(--text3)">$</span> <span style="color:var(--uncommon)">node bin/claude-skins.js apply holographic</span></code>
+          <code><span style="color:var(--text3)">$</span> <span style="color:var(--uncommon)">node bin/claude-skins.js apply solana-degen</span></code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">5</div>
+        <div class="step-label">Reload VS Code</div>
+      </div>
+      <div class="guide-step-body">
+        <p>Trigger a window reload so VS Code picks up the new assets and theme.</p>
+        <div class="guide-code"><code>Ctrl+Shift+P &rarr; &quot;Reload Window&quot;</code><button class="copy-btn" data-copy="Ctrl+Shift+P">Copy</button></div>
+        <p>Or just close and reopen VS Code. That works too.</p>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">6</div>
+        <div class="step-label">Auto-reapply after updates <span style="font-size:.7rem;font-weight:500;color:var(--text3);margin-left:6px">optional</span></div>
+      </div>
+      <div class="guide-step-body">
+        <p>Claude Code updates can reset your skin. The watcher detects changes and re-applies automatically in the background.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js watch</code><button class="copy-btn" data-copy="node bin/claude-skins.js watch">Copy</button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick one-liner -->
+  <div class="quick-box">
+    <div class="quick-box-label">Quick Apply</div>
+    <div class="quick-box-sub">Want it fast? Pick a skin from above, then run one line:</div>
+    <div class="guide-code"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply fire</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply fire">Copy</button></div>
+  </div>
+
+  <!-- Undo / Restore -->
+  <div class="restore-box">
+    <div class="restore-title">Changed your mind?</div>
+    <p>Restore everything to default &mdash; original mascot, theme, and VS Code settings from backup.</p>
+    <div class="guide-code"><code>node bin/claude-skins.js restore</code><button class="copy-btn" data-copy="node bin/claude-skins.js restore">Copy</button></div>
+  </div>
+
+  <!-- What gets changed -->
+  <div class="changes-box">
+    <div class="changes-title">What Gets Changed</div>
+    <div class="changes-grid">
+      <div class="change-item"><span class="ch">&#x2713;</span> Welcome screen mascot</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Editor background &amp; foreground</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Sidebar &amp; activity bar colors</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Status bar</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Tab styling</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Terminal ANSI colors</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Cursor color</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Bracket pair colors</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Selection highlights</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Extension icon &amp; favicon</div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-box">
+    <div class="faq-title">FAQ</div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Is this safe?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. Every file is backed up before patching. Run <code style="color:var(--uncommon)">node bin/claude-skins.js restore</code> to undo everything and return to the original state.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Will it survive Claude Code updates?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Extensions updates may reset patched files. Use <code style="color:var(--uncommon)">node bin/claude-skins.js watch</code> to auto-reapply your skin whenever files change.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Can I make my own skin?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Drop a folder with a <code style="color:var(--uncommon)">manifest.json</code> + <code style="color:var(--uncommon)">mascot.svg</code> into the <code style="color:var(--uncommon)">skins/</code> directory. The tool picks it up automatically.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Does it work with Cursor?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. The scan command auto-detects both VS Code and Cursor installations. It patches whichever it finds.</div></div>
+    </div>
+  </div>
+
 </section>
 
 <!-- FOOTER -->
