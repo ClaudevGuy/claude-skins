@@ -52,6 +52,12 @@ async function kvIncr(key) {
   return data.result;
 }
 
+function getClientIP(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -77,6 +83,18 @@ module.exports = async function handler(req, res) {
       success: false,
       reason: 'invalid_skin',
       valid: Object.keys(NUMBERED_SKINS),
+    });
+  }
+
+  // Check if this IP already claimed ANY legendary skin
+  const ip = getClientIP(req);
+  const claimKey = `claimed:legendary:${ip}`;
+  const existingClaim = await kvGet(claimKey);
+  if (existingClaim) {
+    return res.status(409).json({
+      success: false,
+      reason: 'already_claimed',
+      claimed_skin: existingClaim,
     });
   }
 
@@ -114,7 +132,9 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  // Record this IP's claim so they can't claim again
   const serial = meta.max_supply - newRemaining;
+  await kvSet(claimKey, skin + ':' + serial);
 
   return res.status(200).json({
     success: true,

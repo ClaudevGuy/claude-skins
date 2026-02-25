@@ -505,6 +505,35 @@ function updateSupplyUI(skinId,info){
   }
 }
 
+// Check if user already claimed a legendary, lock all legendary buttons if so
+async function checkExistingClaim(){
+  try{
+    const res=await fetch('/api/check-claim');
+    const data=await res.json();
+    if(data.claimed){
+      lockAllLegendaryClaims(data.skin,data.serial);
+    }
+  }catch(e){}
+}
+
+// Lock all legendary claim buttons — user already used their one claim
+function lockAllLegendaryClaims(claimedSkin,serial){
+  document.querySelectorAll('.claim-btn').forEach(function(btn){
+    var skinId=btn.dataset.skin;
+    if(skinId===claimedSkin){
+      btn.className='claim-btn claimed';
+      btn.textContent='\u2713 Claimed #'+serial;
+      btn.disabled=true;
+    }else{
+      btn.className='claim-btn claimed';
+      btn.textContent='1 Legendary per user';
+      btn.disabled=true;
+      btn.style.background='#37474f';
+      btn.style.color='#78909c';
+    }
+  });
+}
+
 // Claim a legendary skin
 async function claimSkin(skinId,btn){
   if(btn.disabled)return;
@@ -521,10 +550,16 @@ async function claimSkin(skinId,btn){
       btn.textContent='\u2713 Claimed #'+data.serial+' of '+data.max;
       supplyState[skinId]={max:data.max,remaining:data.remaining,claimed:data.max-data.remaining};
       updateSupplyUI(skinId,supplyState[skinId]);
+      // Lock the OTHER legendary buttons too
+      lockAllLegendaryClaims(skinId,data.serial);
     }else if(data.reason==='sold_out'){
       btn.textContent='SOLD OUT';
       supplyState[skinId]={max:data.max,remaining:0,claimed:data.max};
       updateSupplyUI(skinId,supplyState[skinId]);
+    }else if(data.reason==='already_claimed'){
+      // They already claimed — parse which one and lock everything
+      var parts=data.claimed_skin.split(':');
+      lockAllLegendaryClaims(parts[0],parseInt(parts[1],10));
     }else{
       btn.disabled=false;btn.textContent='Claim \u2014 Error';
       setTimeout(function(){btn.textContent='Claim Your Number';btn.className='claim-btn available';},2000);
@@ -685,8 +720,8 @@ SKINS.forEach(s=>{
 // Load all SVGs from skins/ directory
 loadAllSVGs();
 
-// Fetch supply data for legendary skins
-fetchSupply();
+// Fetch supply data for legendary skins, then check user's claim status
+fetchSupply().then(function(){ checkExistingClaim(); });
 
 // Copy buttons
 document.addEventListener('click',e=>{
