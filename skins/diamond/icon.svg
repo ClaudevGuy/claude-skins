@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="32" height="32">
   <defs><filter id="sp"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<rect x="40" y="24" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
+  <style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}#mascot{animation:breathe 3s ease-in-out infinite;transform-origin:68px 56px;}</style>
+  <g id="mascot">
+    <g id="body">
+    <rect x="40" y="24" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
     <rect x="48" y="24" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
     <rect x="80" y="24" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
     <rect x="88" y="24" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
@@ -70,13 +73,18 @@
     <rect x="48" y="88" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
     <rect x="80" y="88" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
     <rect x="88" y="88" width="8" height="8" fill="#e0f7fa" stroke="#80deea" stroke-width="0.5" filter="url(#sp)"/>
+    </g>
+    <g id="eyes">
     <rect x="40" y="48" width="8" height="8" fill="#006064"/>
     <rect x="48" y="48" width="8" height="8" fill="#006064"/>
     <rect x="80" y="48" width="8" height="8" fill="#006064"/>
     <rect x="88" y="48" width="8" height="8" fill="#006064"/>
+    </g>
+    <g id="extras">
     <rect x="16" y="32" width="8" height="8" fill="#fff" filter="url(#sp)"/>
     <rect x="112" y="40" width="8" height="8" fill="#fff" filter="url(#sp)"/>
     <rect x="24" y="80" width="8" height="8" fill="#fff" filter="url(#sp)"/>
     <rect x="104" y="88" width="8" height="8" fill="#fff" filter="url(#sp)"/>
-    
+    </g>
+  </g>
 </svg>

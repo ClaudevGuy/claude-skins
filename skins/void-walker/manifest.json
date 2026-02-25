@@ -12,6 +12,8 @@
   },
   "colors": {
     "primary": "#000",
-    "accent": "#7c4dff"
+    "accent": "#7c4dff",
+    "eyes": "#b388ff",
+    "outline": "#4a148c"
   }
 }

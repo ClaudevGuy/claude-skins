@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="32" height="32">
-<rect x="40" y="24" width="8" height="8" fill="#5c6bc0"/>
+  <style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}#mascot{animation:breathe 3s ease-in-out infinite;transform-origin:68px 56px;}</style>
+  <g id="mascot">
+    <g id="body">
+    <rect x="40" y="24" width="8" height="8" fill="#5c6bc0"/>
     <rect x="48" y="24" width="8" height="8" fill="#5c6bc0"/>
     <rect x="80" y="24" width="8" height="8" fill="#5c6bc0"/>
     <rect x="88" y="24" width="8" height="8" fill="#5c6bc0"/>
@@ -69,11 +72,16 @@
     <rect x="48" y="88" width="8" height="8" fill="#5c6bc0"/>
     <rect x="80" y="88" width="8" height="8" fill="#5c6bc0"/>
     <rect x="88" y="88" width="8" height="8" fill="#5c6bc0"/>
+    </g>
+    <g id="eyes">
     <rect x="40" y="48" width="8" height="8" fill="#0d0d2b"/>
     <rect x="48" y="48" width="8" height="8" fill="#0d0d2b"/>
     <rect x="80" y="48" width="8" height="8" fill="#0d0d2b"/>
     <rect x="88" y="48" width="8" height="8" fill="#0d0d2b"/>
-    
+    </g>
+    <g id="acc" class="laser">
     <rect x="40" y="16" width="56" height="8" fill="#1a1a1a"/><rect x="48" y="8" width="40" height="8" fill="#1a1a1a"/><rect x="48" y="0" width="40" height="8" fill="#222"/><rect x="56" y="8" width="24" height="8" fill="#333"/>
 <rect x="32" y="48" width="24" height="8" fill="#111" rx="1"/><rect x="72" y="48" width="24" height="8" fill="#111" rx="1"/><rect x="56" y="48" width="16" height="3" fill="#333"/>
+    </g>
+  </g>
 </svg>

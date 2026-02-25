@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="32" height="32">
   <defs><filter id="dg"><feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<rect x="40" y="24" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
+  <style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}#mascot{animation:breathe 3s ease-in-out infinite;transform-origin:68px 56px;}</style>
+  <g id="mascot">
+    <g id="body">
+    <rect x="40" y="24" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
     <rect x="48" y="24" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
     <rect x="80" y="24" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
     <rect x="88" y="24" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
@@ -70,10 +73,15 @@
     <rect x="48" y="88" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
     <rect x="80" y="88" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
     <rect x="88" y="88" width="8" height="8" fill="#8b0000" stroke="#b71c1c" stroke-width="0.5" filter="url(#dg)"/>
+    </g>
+    <g id="eyes">
     <rect x="40" y="48" width="8" height="8" fill="#ff4444"/>
     <rect x="48" y="48" width="8" height="8" fill="#ff4444"/>
     <rect x="80" y="48" width="8" height="8" fill="#ff4444"/>
     <rect x="88" y="48" width="8" height="8" fill="#ff4444"/>
-    
+    </g>
+    <g id="acc" class="laser">
     <rect x="24" y="16" width="8" height="8" fill="#cc0000"/><rect x="32" y="8" width="8" height="8" fill="#ff1a1a"/><rect x="104" y="16" width="8" height="8" fill="#cc0000"/><rect x="96" y="8" width="8" height="8" fill="#ff1a1a"/>
+    </g>
+  </g>
 </svg>

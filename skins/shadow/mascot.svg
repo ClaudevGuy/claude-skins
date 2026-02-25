@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="136" height="128">
-  <defs><filter id="eg"><feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<rect x="40" y="24" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
+  <defs><filter id="eg"><feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="sgf"><feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"><animate attributeName="stdDeviation" values="1;4;1" dur="3s" repeatCount="indefinite"/></feGaussianBlur><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}#mascot{animation:breathe 3s ease-in-out infinite;transform-origin:68px 56px;}@keyframes ep{0%,100%{opacity:.6}50%{opacity:1}}@keyframes blink{0%,92%,96%,100%{transform:scaleY(1)}94%{transform:scaleY(0)}}#eyes{animation:ep 3s ease infinite,blink 5s ease infinite;transform-origin:64px 48px}</style>
+  <g id="mascot">
+    <g id="body">
+    <rect x="40" y="24" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
     <rect x="48" y="24" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
     <rect x="80" y="24" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
     <rect x="88" y="24" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
@@ -70,10 +73,12 @@
     <rect x="48" y="88" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
     <rect x="80" y="88" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
     <rect x="88" y="88" width="8" height="8" fill="#1a1a2e" stroke="#2d2d44" stroke-width="0.5"/>
-    <rect x="40" y="48" width="8" height="8" fill="#ff0044"/>
-    <rect x="48" y="48" width="8" height="8" fill="#ff0044"/>
-    <rect x="80" y="48" width="8" height="8" fill="#ff0044"/>
-    <rect x="88" y="48" width="8" height="8" fill="#ff0044"/>
-    
-    
+    </g>
+    <g id="eyes">
+    <rect x="40" y="48" width="8" height="8" fill="#ff0044" filter="url(#sgf)"/>
+    <rect x="48" y="48" width="8" height="8" fill="#ff0044" filter="url(#sgf)"/>
+    <rect x="80" y="48" width="8" height="8" fill="#ff0044" filter="url(#sgf)"/>
+    <rect x="88" y="48" width="8" height="8" fill="#ff0044" filter="url(#sgf)"/>
+    </g>
+  </g>
 </svg>

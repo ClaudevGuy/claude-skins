@@ -12,7 +12,8 @@
   },
   "colors": {
     "primary": "#ffd700",
-    "accent": "#ff6f00"
+    "accent": "#ff6f00",
+    "outline": "#fff9c4"
   },
   "max_supply": 500,
   "serial_number": null

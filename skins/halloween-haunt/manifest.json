@@ -12,7 +12,9 @@
   },
   "colors": {
     "primary": "#ff6f00",
-    "accent": "#1a0a00"
+    "accent": "#1a0a00",
+    "eyes": "#76ff03",
+    "outline": "#e65100"
   },
   "season": "Halloween 2026",
   "available_from": "2026-10-15",

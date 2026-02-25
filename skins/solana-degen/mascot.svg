@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 128" width="136" height="128">
-  <defs><linearGradient id="sol" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#14f195"/><stop offset="100%" stop-color="#9945ff"/></linearGradient><filter id="sg"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<rect x="40" y="24" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
+  <defs><linearGradient id="sol" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#14f195"/><stop offset="100%" stop-color="#9945ff"/></linearGradient><filter id="sg"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="sglow"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"><animate attributeName="stdDeviation" values="1.5;3;1.5" dur="3s" repeatCount="indefinite"/></feGaussianBlur><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <style>@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}#mascot{animation:breathe 3s ease-in-out infinite;transform-origin:68px 56px;}</style>
+  <g id="mascot">
+    <g id="body">
+    <rect x="40" y="24" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
     <rect x="48" y="24" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
     <rect x="80" y="24" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
     <rect x="88" y="24" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
@@ -70,10 +73,15 @@
     <rect x="48" y="88" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
     <rect x="80" y="88" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
     <rect x="88" y="88" width="8" height="8" fill="url(#sol)" filter="url(#sg)"/>
+    </g>
+    <g id="eyes">
     <rect x="40" y="48" width="8" height="8" fill="#0a0520"/>
     <rect x="48" y="48" width="8" height="8" fill="#0a0520"/>
     <rect x="80" y="48" width="8" height="8" fill="#0a0520"/>
     <rect x="88" y="48" width="8" height="8" fill="#0a0520"/>
-    
+    </g>
+    <g id="acc" class="laser">
     <circle cx="68" cy="68" r="5.6" fill="none" stroke="#14f195" stroke-width="1.5"/><circle cx="68" cy="68" r="2.4" fill="#14f195"/>
+    </g>
+  </g>
 </svg>

@@ -12,7 +12,8 @@
   },
   "colors": {
     "primary": "#e3f2fd",
-    "accent": "#90caf9"
+    "accent": "#90caf9",
+    "outline": "#e3f2fd"
   },
   "season": "Winter 2026",
   "available_from": "2026-12-01",

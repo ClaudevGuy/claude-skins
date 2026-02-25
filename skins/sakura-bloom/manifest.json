@@ -12,7 +12,8 @@
   },
   "colors": {
     "primary": "#f8bbd0",
-    "accent": "#f06292"
+    "accent": "#f06292",
+    "outline": "#f8bbd0"
   },
   "season": "Spring 2026",
   "available_from": "2026-03-01",
