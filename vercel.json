@@ -1,5 +1,6 @@
 {
   "buildCommand": "npm run build",
+  "outputDirectory": ".",
   "functions": {
     "api/**/*.js": {
       "memory": 128,
