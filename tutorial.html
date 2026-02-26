@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tutorial Generator — Claude Code Toolkit</title>
+<meta name="description" content="Paste any URL, get an AI-generated animated tutorial video. Powered by real browser screenshots and Claude AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a0a0f;--bg2:#0e0e18;--bg3:#141422;--bg4:#1a1a2e;
+  --text:#e0e0e0;--text2:#8888aa;--text3:#555577;
+  --accent:#7c4dff;--accent2:#00e5ff;--accent3:#e040fb;
+  --border:#1a1a2e;--card:#0c0c16;--card-hover:#111122;
+  --radius:16px;--radius-sm:8px;
+  --nav-bg:#0d0d14;--nav-border:rgba(255,255,255,.08);
+  --glass-bg:rgba(12,12,22,.6);--glass-border:rgba(255,255,255,.06);
+  --input-bg:#0e0e18;--input-border:#1a1a2e;--input-focus:#7c4dff;
+  --scrollbar-track:#0a0a0f;--scrollbar-thumb:#1a1a2e;--scrollbar-hover:#555577;
+}
+[data-theme="light"]{
+  --bg:#f0f0f5;--bg2:#e8e8f0;--bg3:#dddde8;--bg4:#d0d0dd;
+  --text:#1a1a2e;--text2:#555577;--text3:#8888aa;
+  --border:#c8c8d8;--card:#ffffff;--card-hover:#f5f5fa;
+  --nav-bg:#f5f5fa;--nav-border:rgba(0,0,0,.06);
+  --glass-bg:rgba(255,255,255,.6);--glass-border:rgba(0,0,0,.06);
+  --input-bg:#ffffff;--input-border:#c8c8d8;--input-focus:#7c4dff;
+  --scrollbar-track:#f0f0f5;--scrollbar-thumb:#c8c8d8;--scrollbar-hover:#8888aa;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased;padding-top:50px;transition:background .4s,color .4s}
+code,pre,.mono{font-family:'JetBrains Mono',monospace}
+a{color:inherit;text-decoration:none}
+
+/* ============ NAV ============ */
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:var(--nav-bg);border-bottom:1px solid var(--nav-border);font-family:'Inter',system-ui,sans-serif;transition:background .3s,border-color .3s}
+.nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-brand{font-size:.85rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.01em;white-space:nowrap;transition:color .3s}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:var(--text2);text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
+.nav-toggle span{display:block;width:20px;height:2px;background:var(--text2);border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:var(--nav-bg);border-bottom:1px solid var(--nav-border);flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+[data-theme="light"] .nav-link:hover{background:rgba(0,0,0,.04)}
+[data-theme="light"] .nav-link.active{background:rgba(124,77,255,.08)}
+
+/* ============ THEME TOGGLE ============ */
+.theme-toggle{position:fixed;top:58px;right:16px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.theme-toggle:hover{transform:scale(1.1);border-color:var(--text3)}
+@media(max-width:480px){.theme-toggle{top:54px;right:10px;width:38px;height:38px;font-size:1rem}}
+
+/* ============ HERO ============ */
+.hero{text-align:center;padding:80px 24px 40px;max-width:800px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:40px;border:1px solid rgba(124,77,255,.25);background:rgba(124,77,255,.06);color:var(--accent);font-size:.72rem;font-weight:600;letter-spacing:.03em;margin-bottom:24px;backdrop-filter:blur(10px)}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#69f0ae;animation:dotBlink 2s ease-in-out infinite}
+@keyframes dotBlink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(2.2rem,6vw,3.5rem);font-weight:900;letter-spacing:-.04em;line-height:1;margin-bottom:16px;
+  background:linear-gradient(135deg,var(--text),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:clamp(.9rem,2vw,1.1rem);color:var(--text2);max-width:500px;margin:0 auto 8px;line-height:1.7}
+.hero .powered{font-size:.78rem;color:var(--text3);margin-top:4px}
+
+/* ============ INPUT SECTION ============ */
+.input-section{max-width:700px;margin:0 auto;padding:0 24px 40px}
+.input-group{display:flex;gap:12px;margin-bottom:12px}
+.url-input{flex:1;padding:14px 20px;border-radius:12px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);font-size:.95rem;font-family:inherit;outline:none;transition:all .3s}
+.url-input:focus{border-color:var(--input-focus);box-shadow:0 0 0 3px rgba(124,77,255,.15)}
+.url-input::placeholder{color:var(--text3)}
+.generate-btn{padding:14px 28px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c4dff,#5c34d4);color:#fff;font-weight:700;font-size:.95rem;cursor:pointer;white-space:nowrap;transition:all .3s;font-family:inherit;position:relative;overflow:hidden}
+.generate-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,77,255,.4)}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed}
+.input-hint{font-size:.78rem;color:var(--text3);text-align:center}
+.input-error{font-size:.82rem;color:#ff4081;text-align:center;margin-top:8px;display:none}
+@media(max-width:600px){.input-group{flex-direction:column}.generate-btn{width:100%}}
+
+/* ============ LOADING ============ */
+.loading-section{max-width:600px;margin:0 auto;padding:0 24px 40px;display:none}
+.loading-steps{display:flex;flex-direction:column;gap:16px}
+.loading-step{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:12px;background:var(--card);border:1px solid var(--border);transition:all .4s}
+.loading-step.active{border-color:var(--accent);background:rgba(124,77,255,.04)}
+.loading-step.done{border-color:rgba(105,240,174,.2)}
+.loading-step-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;border:2px solid var(--border);color:var(--text3);transition:all .4s}
+.loading-step.active .loading-step-icon{border-color:var(--accent);color:var(--accent);animation:spinIcon 1s linear infinite}
+.loading-step.done .loading-step-icon{border-color:#69f0ae;background:#69f0ae;color:#0a0a0f}
+@keyframes spinIcon{to{transform:rotate(360deg)}}
+.loading-step-text{font-size:.88rem;font-weight:600;color:var(--text2);transition:color .3s}
+.loading-step.active .loading-step-text{color:var(--text)}
+.loading-step.done .loading-step-text{color:var(--text)}
+
+/* ============ PLAYER ============ */
+.player-section{max-width:1000px;margin:0 auto;padding:0 24px 40px;display:none}
+.canvas-wrap{position:relative;width:100%;aspect-ratio:16/10;background:#000;border-radius:12px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.canvas-wrap canvas{width:100%;height:100%;display:block}
+.canvas-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .3s;border-radius:12px}
+.canvas-overlay.visible{opacity:1;pointer-events:auto}
+.canvas-overlay-btn{width:72px;height:72px;border-radius:50%;background:rgba(124,77,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.canvas-overlay-btn:hover{transform:scale(1.1);background:rgba(124,77,255,1)}
+.canvas-overlay-btn svg{width:28px;height:28px;fill:#fff;margin-left:4px}
+.recording-badge{position:absolute;top:12px;left:12px;padding:6px 14px;border-radius:20px;background:rgba(255,64,129,.9);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.05em;display:none;align-items:center;gap:6px;z-index:10}
+.recording-badge.visible{display:flex}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:recBlink 1s ease-in-out infinite}
+@keyframes recBlink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ============ CONTROLS ============ */
+.controls{display:flex;align-items:center;gap:12px;padding:16px 0;flex-wrap:wrap}
+.ctrl-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ctrl-btn:hover{border-color:var(--accent);background:rgba(124,77,255,.06)}
+.ctrl-btn svg{width:18px;height:18px;fill:currentColor}
+.progress-wrap{flex:1;min-width:120px;height:6px;background:var(--bg3);border-radius:3px;cursor:pointer;position:relative}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .1s;width:0}
+.step-indicator{font-size:.78rem;font-weight:600;color:var(--text2);white-space:nowrap}
+.speed-selector{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:2px;flex-shrink:0}
+.speed-btn{padding:4px 8px;border-radius:6px;border:none;background:none;color:var(--text3);font-size:.7rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit}
+.speed-btn.active{background:var(--accent);color:#fff}
+.speed-btn:hover:not(.active){color:var(--text)}
+
+/* ============ STEP LIST ============ */
+.step-list{display:flex;gap:10px;overflow-x:auto;padding:8px 0 16px;-webkit-overflow-scrolling:touch}
+.step-list::-webkit-scrollbar{height:4px}
+.step-list::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+.step-chip{padding:8px 16px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;white-space:nowrap;transition:all .3s;flex-shrink:0;font-size:.78rem;font-weight:600;color:var(--text2);font-family:inherit}
+.step-chip:hover{border-color:var(--accent);color:var(--text)}
+.step-chip.active{border-color:var(--accent);background:rgba(124,77,255,.1);color:var(--accent)}
+
+/* ============ EXPORT ============ */
+.export-section{display:flex;gap:12px;padding:8px 0 16px;flex-wrap:wrap}
+.export-btn{padding:10px 20px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.82rem;font-weight:600;transition:all .3s;font-family:inherit;display:flex;align-items:center;gap:8px}
+.export-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.export-btn:disabled{opacity:.4;cursor:not-allowed}
+.export-btn svg{width:16px;height:16px;fill:currentColor}
+
+/* ============ SETUP NOTICE ============ */
+.setup-notice{max-width:700px;margin:0 auto;padding:0 24px 40px;display:none}
+.setup-box{background:var(--card);border:1px solid rgba(255,145,0,.2);border-radius:14px;padding:28px;color:var(--text)}
+.setup-box h3{font-size:1rem;font-weight:700;margin-bottom:12px;color:#ff9100}
+.setup-box ol{padding-left:20px;font-size:.88rem;color:var(--text2);line-height:1.8}
+.setup-box code{background:var(--bg2);padding:2px 8px;border-radius:4px;font-size:.82rem;color:var(--accent)}
+
+/* ============ FOOTER ============ */
+.footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--text3);font-size:.85rem}
+.footer a{color:var(--text2);transition:color .2s}
+.footer a:hover{color:var(--accent)}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--scrollbar-track)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--scrollbar-hover)}
+
+/* ============ THEME TRANSITIONS ============ */
+*{transition-property:background-color,border-color,color,fill,stroke,box-shadow;transition-duration:0s}
+body,body *{transition-duration:.3s}
+
+/* ============ LIGHT MODE ============ */
+[data-theme="light"] .toolkit-nav{border-bottom-color:rgba(0,0,0,.06)}
+[data-theme="light"] .canvas-wrap{box-shadow:0 8px 40px rgba(0,0,0,.1)}
+[data-theme="light"] .hero-badge{background:rgba(124,77,255,.04);border-color:rgba(124,77,255,.15)}
+[data-theme="light"] .loading-step{box-shadow:0 2px 8px rgba(0,0,0,.04)}
+[data-theme="light"] .ctrl-btn{box-shadow:0 1px 4px rgba(0,0,0,.04)}
+[data-theme="light"] .export-btn{box-shadow:0 1px 4px rgba(0,0,0,.04)}
+
+/* ============ MOBILE ============ */
+@media(max-width:480px){
+  .hero{padding:60px 16px 24px}
+  .hero h1{font-size:2rem}
+  .input-section{padding:0 16px 24px}
+  .player-section{padding:0 12px 24px}
+  .controls{gap:8px;padding:12px 0}
+  .ctrl-btn{width:36px;height:36px}
+  .export-section{flex-direction:column}
+  .export-btn{width:100%;justify-content:center}
+  .step-list{padding:4px 0 12px}
+  .speed-selector{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Home</a><a href="skins.html" class="nav-link">Skins</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link">Replayer</a><a href="tutorial.html" class="nav-link active">Tutorial</a></div></div></nav>
+
+<button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">&#x1F319;</button>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span> AI-Powered</div>
+  <h1>Tutorial Generator</h1>
+  <p>Paste any URL. Get an AI-generated tutorial video in seconds.</p>
+  <p class="powered">Powered by real browser screenshots + Claude AI</p>
+</section>
+
+<!-- ========== INPUT ========== -->
+<section class="input-section">
+  <div class="input-group">
+    <input type="url" class="url-input" id="urlInput" placeholder="https://example.com" autocomplete="url" spellcheck="false">
+    <button class="generate-btn" id="generateBtn">Generate Tutorial</button>
+  </div>
+  <p class="input-hint">Takes ~15-20 seconds to generate</p>
+  <p class="input-error" id="inputError"></p>
+</section>
+
+<!-- ========== LOADING ========== -->
+<section class="loading-section" id="loadingSection">
+  <div class="loading-steps">
+    <div class="loading-step" id="loadStep1">
+      <div class="loading-step-icon">&#9679;</div>
+      <span class="loading-step-text">Loading page in headless browser...</span>
+    </div>
+    <div class="loading-step" id="loadStep2">
+      <div class="loading-step-icon">&#9679;</div>
+      <span class="loading-step-text">Analyzing page with AI...</span>
+    </div>
+    <div class="loading-step" id="loadStep3">
+      <div class="loading-step-icon">&#9679;</div>
+      <span class="loading-step-text">Building tutorial animation...</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SETUP NOTICE ========== -->
+<section class="setup-notice" id="setupNotice">
+  <div class="setup-box">
+    <h3>&#9888;&#65039; API Key Required</h3>
+    <p style="margin-bottom:12px;font-size:.88rem;color:var(--text2)">To use the Tutorial Generator, add your Anthropic API key to your Vercel project:</p>
+    <ol>
+      <li>Go to your <strong>Vercel dashboard</strong> &rarr; Project Settings &rarr; Environment Variables</li>
+      <li>Add: <code>ANTHROPIC_API_KEY</code> = <code>your-key-here</code></li>
+      <li>Redeploy the project</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ========== PLAYER ========== -->
+<section class="player-section" id="playerSection">
+  <div class="canvas-wrap" id="canvasWrap">
+    <span class="recording-badge" id="recordBadge"><span class="rec-dot"></span> REC</span>
+    <canvas id="tutorialCanvas" width="1280" height="800"></canvas>
+    <div class="canvas-overlay" id="canvasOverlay">
+      <button class="canvas-overlay-btn" id="overlayPlayBtn" aria-label="Play">
+        <svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="playPauseBtn" title="Play / Pause" aria-label="Play Pause">
+      <svg id="playIcon" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>
+      <svg id="pauseIcon" viewBox="0 0 24 24" style="display:none"><rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/></svg>
+    </button>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <span class="step-indicator" id="stepIndicator">Step 0 / 0</span>
+    <div class="speed-selector">
+      <button class="speed-btn" data-speed="0.5">0.5x</button>
+      <button class="speed-btn active" data-speed="1">1x</button>
+      <button class="speed-btn" data-speed="1.5">1.5x</button>
+      <button class="speed-btn" data-speed="2">2x</button>
+    </div>
+    <button class="ctrl-btn" id="fullscreenBtn" title="Fullscreen" aria-label="Fullscreen">
+      <svg viewBox="0 0 24 24"><path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/></svg>
+    </button>
+  </div>
+
+  <div class="step-list" id="stepList"></div>
+
+  <div class="export-section">
+    <button class="export-btn" id="exportWebmBtn">
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      Download WebM
+    </button>
+    <button class="export-btn" id="exportGifBtn">
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      Download GIF
+    </button>
+    <button class="export-btn" id="shareLinkBtn">
+      <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+      Copy Link
+    </button>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>Built by <a href="https://x.com/ClaudeGuy_" target="_blank" rel="noopener">ClaudevGuy</a> &middot; <a href="https://github.com/ClaudevGuy/claude-skins" target="_blank" rel="noopener">GitHub</a></p>
+</footer>
+
+<script>
+/* ============================================================
+   NAV TOGGLE
+   ============================================================ */
+document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open')});
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+(function(){
+  var toggle=document.getElementById('themeToggle');
+  var saved=localStorage.getItem('claude-skins-theme');
+  if(saved==='light'){document.documentElement.setAttribute('data-theme','light');toggle.textContent='\u2600\uFE0F';}
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='light';
+    if(isLight){document.documentElement.removeAttribute('data-theme');toggle.textContent='\uD83C\uDF19';localStorage.setItem('claude-skins-theme','dark');}
+    else{document.documentElement.setAttribute('data-theme','light');toggle.textContent='\u2600\uFE0F';localStorage.setItem('claude-skins-theme','light');}
+  });
+})();
+
+/* ============================================================
+   MAIN APP
+   ============================================================ */
+(function(){
+
+  var urlInput = document.getElementById('urlInput');
+  var generateBtn = document.getElementById('generateBtn');
+  var inputError = document.getElementById('inputError');
+  var loadingSection = document.getElementById('loadingSection');
+  var setupNotice = document.getElementById('setupNotice');
+  var playerSection = document.getElementById('playerSection');
+  var canvas = document.getElementById('tutorialCanvas');
+  var ctx = canvas.getContext('2d');
+
+  // State
+  var screenshotImg = null;
+  var tutorialData = null;
+  var animState = {
+    playing: false,
+    currentStep: 0,
+    phase: 'idle',       // idle | zooming_out | moving | zooming_in | holding | clicking
+    phaseStart: 0,
+    cursorX: 640, cursorY: 400,
+    prevX: 640, prevY: 400,
+    targetX: 640, targetY: 400,
+    currentZoom: 1.0,
+    targetZoom: 1.0,
+    prevZoom: 1.0,
+    speed: 1,
+    holdElapsed: 0,
+    clickPhase: 0,
+    totalElapsed: 0,
+    finished: false
+  };
+  var lastTimestamp = 0;
+  var animFrameId = null;
+
+  // Phase durations (ms)
+  var ZOOM_OUT_DUR = 500;
+  var MOVE_DUR = 800;
+  var ZOOM_IN_DUR = 500;
+  var CLICK_DUR = 400;
+
+  // ---- Easing ----
+  function easeInOutCubic(t){ return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
+  function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+
+  // ---- Generate flow ----
+  generateBtn.addEventListener('click', startGeneration);
+  urlInput.addEventListener('keydown', function(e){ if(e.key==='Enter') startGeneration(); });
+
+  function showError(msg){
+    inputError.textContent=msg;
+    inputError.style.display='block';
+  }
+  function hideError(){
+    inputError.style.display='none';
+  }
+
+  function setLoadingStep(step,state){
+    var el=document.getElementById('loadStep'+step);
+    el.className='loading-step'+(state==='active'?' active':state==='done'?' done':'');
+    if(state==='done') el.querySelector('.loading-step-icon').textContent='\u2713';
+  }
+
+  async function startGeneration(){
+    var url=urlInput.value.trim();
+    hideError();
+
+    if(!url){showError('Please enter a URL');return;}
+    if(!/^https?:\/\//i.test(url)){showError('Please enter a valid URL starting with http:// or https://');return;}
+
+    generateBtn.disabled=true;
+    playerSection.style.display='none';
+    setupNotice.style.display='none';
+    loadingSection.style.display='block';
+
+    // Reset loading steps
+    for(var i=1;i<=3;i++){
+      setLoadingStep(i,'');
+      document.getElementById('loadStep'+i).querySelector('.loading-step-icon').textContent='\u25CF';
+    }
+
+    try{
+      // Step 1: Screenshot
+      setLoadingStep(1,'active');
+      var ssResp=await fetch('/api/tutorial/screenshot',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({url:url})
+      });
+      var ssData=await ssResp.json();
+
+      if(!ssResp.ok){
+        showError(ssData.error||'Failed to load page');
+        loadingSection.style.display='none';
+        generateBtn.disabled=false;
+        return;
+      }
+      setLoadingStep(1,'done');
+
+      // Step 2: Analyze
+      setLoadingStep(2,'active');
+      var anResp=await fetch('/api/tutorial/analyze',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          screenshot:ssData.screenshot,
+          elements:ssData.elements,
+          pageInfo:ssData.pageInfo
+        })
+      });
+      var anData=await anResp.json();
+
+      if(anData.setup){
+        setupNotice.style.display='block';
+        loadingSection.style.display='none';
+        generateBtn.disabled=false;
+        return;
+      }
+      if(!anResp.ok||!anData.steps){
+        showError(anData.error||'Failed to analyze page');
+        loadingSection.style.display='none';
+        generateBtn.disabled=false;
+        return;
+      }
+      setLoadingStep(2,'done');
+
+      // Step 3: Build animation
+      setLoadingStep(3,'active');
+      tutorialData=anData;
+
+      // Load screenshot image
+      screenshotImg=new Image();
+      await new Promise(function(resolve,reject){
+        screenshotImg.onload=resolve;
+        screenshotImg.onerror=reject;
+        screenshotImg.src='data:image/png;base64,'+ssData.screenshot;
+      });
+
+      buildStepList();
+      initAnimation();
+
+      setLoadingStep(3,'done');
+
+      setTimeout(function(){
+        loadingSection.style.display='none';
+        playerSection.style.display='block';
+        showOverlay();
+      },400);
+
+    }catch(err){
+      showError('Network error: '+err.message);
+      loadingSection.style.display='none';
+    }
+    generateBtn.disabled=false;
+  }
+
+  // ---- Step list ----
+  function buildStepList(){
+    var list=document.getElementById('stepList');
+    list.innerHTML='';
+    tutorialData.steps.forEach(function(step,i){
+      var chip=document.createElement('button');
+      chip.className='step-chip'+(i===0?' active':'');
+      chip.textContent=(i+1)+'. '+(step.elementText||step.callout||'Step');
+      chip.addEventListener('click',function(){ jumpToStep(i); });
+      list.appendChild(chip);
+    });
+    updateStepIndicator();
+  }
+
+  function updateStepIndicator(){
+    document.getElementById('stepIndicator').textContent='Step '+(animState.currentStep+1)+' / '+tutorialData.steps.length;
+    var chips=document.querySelectorAll('.step-chip');
+    chips.forEach(function(c,i){c.classList.toggle('active',i===animState.currentStep);});
+  }
+
+  // ---- Animation ----
+  function initAnimation(){
+    animState.currentStep=0;
+    animState.phase='idle';
+    animState.cursorX=640;
+    animState.cursorY=400;
+    animState.currentZoom=1.0;
+    animState.playing=false;
+    animState.finished=false;
+    animState.totalElapsed=0;
+    lastTimestamp=0;
+    drawStaticFrame();
+  }
+
+  function resetAnimation(){
+    if(animFrameId) cancelAnimationFrame(animFrameId);
+    animState.currentStep=0;
+    animState.phase='idle';
+    animState.cursorX=640;
+    animState.cursorY=400;
+    animState.currentZoom=1.0;
+    animState.playing=false;
+    animState.finished=false;
+    animState.totalElapsed=0;
+    lastTimestamp=0;
+    updateStepIndicator();
+  }
+
+  function startPlaying(){
+    if(animState.finished){
+      resetAnimation();
+    }
+    animState.playing=true;
+    animState.phase='moving';
+    animState.phaseStart=performance.now();
+    var step=tutorialData.steps[0];
+    animState.prevX=animState.cursorX;
+    animState.prevY=animState.cursorY;
+    animState.targetX=step.x;
+    animState.targetY=step.y;
+    animState.targetZoom=step.zoom||1.5;
+    animState.prevZoom=1.0;
+    updatePlayPauseUI();
+    hideOverlay();
+    lastTimestamp=performance.now();
+    if(animFrameId) cancelAnimationFrame(animFrameId);
+    animFrameId=requestAnimationFrame(animate);
+  }
+
+  function togglePlayPause(){
+    if(!tutorialData) return;
+    if(animState.finished){
+      startPlaying();
+      return;
+    }
+    if(animState.phase==='idle'){
+      startPlaying();
+      return;
+    }
+    animState.playing=!animState.playing;
+    if(animState.playing){
+      lastTimestamp=performance.now();
+      hideOverlay();
+      animFrameId=requestAnimationFrame(animate);
+    }else{
+      showOverlay();
+    }
+    updatePlayPauseUI();
+  }
+
+  function updatePlayPauseUI(){
+    document.getElementById('playIcon').style.display=animState.playing?'none':'block';
+    document.getElementById('pauseIcon').style.display=animState.playing?'block':'none';
+  }
+
+  function showOverlay(){document.getElementById('canvasOverlay').classList.add('visible');}
+  function hideOverlay(){document.getElementById('canvasOverlay').classList.remove('visible');}
+
+  function jumpToStep(idx){
+    if(!tutorialData||idx<0||idx>=tutorialData.steps.length) return;
+    resetAnimation();
+    animState.currentStep=idx;
+    var step=tutorialData.steps[idx];
+    animState.cursorX=step.x;
+    animState.cursorY=step.y;
+    animState.currentZoom=step.zoom||1.5;
+    animState.phase='holding';
+    animState.phaseStart=performance.now();
+    animState.holdElapsed=0;
+    animState.playing=true;
+    updatePlayPauseUI();
+    updateStepIndicator();
+    hideOverlay();
+    lastTimestamp=performance.now();
+    animFrameId=requestAnimationFrame(animate);
+  }
+
+  function animate(timestamp){
+    if(!animState.playing){
+      drawFrame();
+      return;
+    }
+    var dt=(timestamp-lastTimestamp)*animState.speed;
+    lastTimestamp=timestamp;
+    animState.totalElapsed+=dt;
+
+    var step=tutorialData.steps[animState.currentStep];
+    var elapsed=timestamp-animState.phaseStart;
+    elapsed*=animState.speed;
+
+    switch(animState.phase){
+      case 'moving':
+        var t=Math.min(elapsed/MOVE_DUR,1);
+        var e=easeInOutCubic(t);
+        animState.cursorX=animState.prevX+(animState.targetX-animState.prevX)*e;
+        animState.cursorY=animState.prevY+(animState.targetY-animState.prevY)*e;
+        if(t>=1){
+          animState.cursorX=animState.targetX;
+          animState.cursorY=animState.targetY;
+          animState.phase='zooming_in';
+          animState.phaseStart=performance.now();
+          animState.prevZoom=animState.currentZoom;
+        }
+        break;
+
+      case 'zooming_in':
+        var t=Math.min(elapsed/ZOOM_IN_DUR,1);
+        var e=easeOutCubic(t);
+        animState.currentZoom=animState.prevZoom+(animState.targetZoom-animState.prevZoom)*e;
+        if(t>=1){
+          animState.currentZoom=animState.targetZoom;
+          animState.phase='holding';
+          animState.phaseStart=performance.now();
+          animState.holdElapsed=0;
+          animState.clickPhase=0;
+        }
+        break;
+
+      case 'holding':
+        animState.holdElapsed=elapsed;
+        var stepDur=step.duration||3000;
+        // Click animation midway through hold
+        if(step.action==='click'&&animState.clickPhase===0&&elapsed>stepDur*0.4){
+          animState.clickPhase=1;
+          animState.clickStart=performance.now();
+        }
+        if(animState.clickPhase===1){
+          var clickElapsed=(performance.now()-animState.clickStart)*animState.speed;
+          if(clickElapsed>CLICK_DUR) animState.clickPhase=2;
+        }
+        if(elapsed>=stepDur){
+          // Move to next step or finish
+          if(animState.currentStep<tutorialData.steps.length-1){
+            animState.phase='zooming_out';
+            animState.phaseStart=performance.now();
+            animState.prevZoom=animState.currentZoom;
+          }else{
+            // Finished
+            animState.playing=false;
+            animState.finished=true;
+            updatePlayPauseUI();
+            showOverlay();
+          }
+        }
+        break;
+
+      case 'zooming_out':
+        var t=Math.min(elapsed/ZOOM_OUT_DUR,1);
+        var e=easeOutCubic(t);
+        animState.currentZoom=animState.prevZoom+(1.0-animState.prevZoom)*e;
+        if(t>=1){
+          animState.currentZoom=1.0;
+          animState.currentStep++;
+          updateStepIndicator();
+          var nextStep=tutorialData.steps[animState.currentStep];
+          animState.phase='moving';
+          animState.phaseStart=performance.now();
+          animState.prevX=animState.cursorX;
+          animState.prevY=animState.cursorY;
+          animState.targetX=nextStep.x;
+          animState.targetY=nextStep.y;
+          animState.targetZoom=nextStep.zoom||1.5;
+        }
+        break;
+    }
+
+    drawFrame();
+    updateProgress();
+    animFrameId=requestAnimationFrame(animate);
+  }
+
+  // ---- Drawing ----
+  function drawStaticFrame(){
+    if(!screenshotImg) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(screenshotImg,0,0,canvas.width,canvas.height);
+    drawCursor(animState.cursorX,animState.cursorY);
+    drawStepBadge();
+  }
+
+  function drawFrame(){
+    if(!screenshotImg) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    var zoom=animState.currentZoom;
+    var focusX=animState.cursorX;
+    var focusY=animState.cursorY;
+
+    ctx.save();
+
+    if(zoom>1.001){
+      var translateX=-(focusX*zoom-canvas.width/2);
+      var translateY=-(focusY*zoom-canvas.height/2);
+      var maxTX=0;
+      var maxTY=0;
+      var minTX=canvas.width-canvas.width*zoom;
+      var minTY=canvas.height-canvas.height*zoom;
+      translateX=Math.min(maxTX,Math.max(translateX,minTX));
+      translateY=Math.min(maxTY,Math.max(translateY,minTY));
+      ctx.translate(translateX,translateY);
+      ctx.scale(zoom,zoom);
+    }
+
+    ctx.drawImage(screenshotImg,0,0,canvas.width,canvas.height);
+
+    // Draw highlight box during hold phase
+    if(animState.phase==='holding'||animState.phase==='zooming_in'){
+      var step=tutorialData.steps[animState.currentStep];
+      drawHighlight(step,animState.holdElapsed||0);
+    }
+
+    ctx.restore();
+
+    // Draw cursor (screen space)
+    var cursorScreenX=animState.cursorX;
+    var cursorScreenY=animState.cursorY;
+    if(zoom>1.001){
+      var translateX=-(focusX*zoom-canvas.width/2);
+      var translateY=-(focusY*zoom-canvas.height/2);
+      var maxTX=0;var maxTY=0;
+      var minTX=canvas.width-canvas.width*zoom;
+      var minTY=canvas.height-canvas.height*zoom;
+      translateX=Math.min(maxTX,Math.max(translateX,minTX));
+      translateY=Math.min(maxTY,Math.max(translateY,minTY));
+      cursorScreenX=animState.cursorX*zoom+translateX;
+      cursorScreenY=animState.cursorY*zoom+translateY;
+    }
+
+    // Click ripple
+    if(animState.clickPhase===1){
+      var clickElapsed=(performance.now()-animState.clickStart)*animState.speed;
+      var t=Math.min(clickElapsed/CLICK_DUR,1);
+      ctx.beginPath();
+      ctx.arc(cursorScreenX,cursorScreenY,30*t,0,Math.PI*2);
+      ctx.strokeStyle='rgba(124,77,255,'+(0.6*(1-t))+')';
+      ctx.lineWidth=2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cursorScreenX,cursorScreenY,15*t,0,Math.PI*2);
+      ctx.fillStyle='rgba(124,77,255,'+(0.3*(1-t))+')';
+      ctx.fill();
+    }
+
+    drawCursor(cursorScreenX,cursorScreenY,animState.clickPhase===1);
+
+    // Draw callout during hold
+    if(animState.phase==='holding'){
+      var step=tutorialData.steps[animState.currentStep];
+      var fadeIn=Math.min(animState.holdElapsed/300,1);
+      drawCallout(step,cursorScreenX,cursorScreenY,fadeIn);
+    }
+
+    drawStepBadge();
+  }
+
+  function drawCursor(x,y,pressed){
+    ctx.save();
+    ctx.translate(x,y);
+    if(pressed) ctx.scale(0.85,0.85);
+
+    // Drop shadow
+    ctx.shadowColor='rgba(0,0,0,.4)';
+    ctx.shadowBlur=6;
+    ctx.shadowOffsetX=1;
+    ctx.shadowOffsetY=2;
+
+    // Cursor shape (macOS style pointer)
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(0,19);
+    ctx.lineTo(5,15);
+    ctx.lineTo(9,23);
+    ctx.lineTo(12,21);
+    ctx.lineTo(8,14);
+    ctx.lineTo(14,14);
+    ctx.closePath();
+    ctx.fillStyle='#fff';
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.shadowOffsetX=0;
+    ctx.shadowOffsetY=0;
+    ctx.strokeStyle='#000';
+    ctx.lineWidth=1.2;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawHighlight(step,elapsed){
+    // Find element bounding box near the step coordinates
+    var w=80,h=36;
+    // Try to find the element to get real dimensions
+    var elData=findElementNear(step.x,step.y);
+    if(elData){
+      w=elData.rect.width+12;
+      h=elData.rect.height+12;
+    }
+    var x=step.x-w/2;
+    var y=step.y-h/2;
+
+    var pulseAlpha=0.4+0.2*Math.sin(elapsed*0.005);
+
+    ctx.save();
+    ctx.strokeStyle='rgba(124,77,255,'+pulseAlpha+')';
+    ctx.lineWidth=2;
+    ctx.shadowColor='rgba(124,77,255,.3)';
+    ctx.shadowBlur=16;
+
+    // Rounded rect
+    var r=8;
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.fillStyle='rgba(124,77,255,'+(pulseAlpha*0.1)+')';
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawCallout(step,screenX,screenY,alpha){
+    if(alpha<=0) return;
+    ctx.save();
+    ctx.globalAlpha=alpha;
+
+    var text=step.callout||'';
+    ctx.font='600 15px Inter, system-ui, sans-serif';
+    var metrics=ctx.measureText(text);
+    var tw=metrics.width;
+    var padding=14;
+    var boxW=tw+padding*2;
+    var boxH=36;
+    var arrowH=8;
+
+    // Position: above the cursor if there's room, else below
+    var boxX=screenX-boxW/2;
+    var boxY=screenY-50-boxH-arrowH;
+    var arrowDir='down';
+
+    if(boxY<10){
+      boxY=screenY+30;
+      arrowDir='up';
+    }
+    if(boxX<10) boxX=10;
+    if(boxX+boxW>canvas.width-10) boxX=canvas.width-10-boxW;
+
+    // Box shadow
+    ctx.shadowColor='rgba(0,0,0,.3)';
+    ctx.shadowBlur=12;
+    ctx.shadowOffsetY=4;
+
+    // Box
+    var r=8;
+    ctx.fillStyle='rgba(20,20,34,.92)';
+    ctx.beginPath();
+    ctx.moveTo(boxX+r,boxY);ctx.lineTo(boxX+boxW-r,boxY);ctx.quadraticCurveTo(boxX+boxW,boxY,boxX+boxW,boxY+r);
+    ctx.lineTo(boxX+boxW,boxY+boxH-r);ctx.quadraticCurveTo(boxX+boxW,boxY+boxH,boxX+boxW-r,boxY+boxH);
+    ctx.lineTo(boxX+r,boxY+boxH);ctx.quadraticCurveTo(boxX,boxY+boxH,boxX,boxY+boxH-r);
+    ctx.lineTo(boxX,boxY+r);ctx.quadraticCurveTo(boxX,boxY,boxX+r,boxY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Arrow
+    ctx.shadowBlur=0;
+    ctx.shadowOffsetY=0;
+    var arrowX=Math.min(Math.max(screenX,boxX+16),boxX+boxW-16);
+    ctx.beginPath();
+    if(arrowDir==='down'){
+      ctx.moveTo(arrowX-6,boxY+boxH);
+      ctx.lineTo(arrowX,boxY+boxH+arrowH);
+      ctx.lineTo(arrowX+6,boxY+boxH);
+    }else{
+      ctx.moveTo(arrowX-6,boxY);
+      ctx.lineTo(arrowX,boxY-arrowH);
+      ctx.lineTo(arrowX+6,boxY);
+    }
+    ctx.fillStyle='rgba(20,20,34,.92)';
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle='rgba(124,77,255,.4)';
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(boxX+r,boxY);ctx.lineTo(boxX+boxW-r,boxY);ctx.quadraticCurveTo(boxX+boxW,boxY,boxX+boxW,boxY+r);
+    ctx.lineTo(boxX+boxW,boxY+boxH-r);ctx.quadraticCurveTo(boxX+boxW,boxY+boxH,boxX+boxW-r,boxY+boxH);
+    ctx.lineTo(boxX+r,boxY+boxH);ctx.quadraticCurveTo(boxX,boxY+boxH,boxX,boxY+boxH-r);
+    ctx.lineTo(boxX,boxY+r);ctx.quadraticCurveTo(boxX,boxY,boxX+r,boxY);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Text
+    ctx.fillStyle='#fff';
+    ctx.font='600 15px Inter, system-ui, sans-serif';
+    ctx.textBaseline='middle';
+    ctx.fillText(text,boxX+padding,boxY+boxH/2);
+
+    ctx.restore();
+  }
+
+  function drawStepBadge(){
+    if(!tutorialData) return;
+    ctx.save();
+    var text=(animState.currentStep+1)+'/'+tutorialData.steps.length;
+    ctx.font='700 13px Inter, system-ui, sans-serif';
+    var tw=ctx.measureText(text).width;
+    var bw=tw+20;
+    var bh=28;
+    var bx=16;
+    var by=16;
+
+    ctx.fillStyle='rgba(10,10,15,.75)';
+    ctx.beginPath();
+    ctx.moveTo(bx+6,by);ctx.lineTo(bx+bw-6,by);ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+6);
+    ctx.lineTo(bx+bw,by+bh-6);ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-6,by+bh);
+    ctx.lineTo(bx+6,by+bh);ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-6);
+    ctx.lineTo(bx,by+6);ctx.quadraticCurveTo(bx,by,bx+6,by);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle='rgba(124,77,255,.4)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+
+    ctx.fillStyle='#fff';
+    ctx.textBaseline='middle';
+    ctx.fillText(text,bx+10,by+bh/2);
+    ctx.restore();
+  }
+
+  function findElementNear(x,y){
+    if(!tutorialData||!tutorialData._elements) return null;
+    var best=null, bestDist=Infinity;
+    tutorialData._elements.forEach(function(el){
+      var cx=el.rect.x+el.rect.width/2;
+      var cy=el.rect.y+el.rect.height/2;
+      var dist=Math.abs(cx-x)+Math.abs(cy-y);
+      if(dist<bestDist){bestDist=dist;best=el;}
+    });
+    return(bestDist<100)?best:null;
+  }
+
+  // ---- Progress bar ----
+  function calculateTotalDuration(){
+    if(!tutorialData) return 0;
+    var total=0;
+    tutorialData.steps.forEach(function(s,i){
+      if(i>0) total+=ZOOM_OUT_DUR+MOVE_DUR;
+      total+=ZOOM_IN_DUR+(s.duration||3000);
+    });
+    return total;
+  }
+
+  function updateProgress(){
+    var total=calculateTotalDuration();
+    if(total===0) return;
+    // Approximate current time
+    var elapsed=0;
+    for(var i=0;i<animState.currentStep;i++){
+      if(i>0) elapsed+=ZOOM_OUT_DUR+MOVE_DUR;
+      elapsed+=ZOOM_IN_DUR+(tutorialData.steps[i].duration||3000);
+    }
+    if(animState.currentStep>0) elapsed+=ZOOM_OUT_DUR+MOVE_DUR;
+    // Add current phase progress
+    switch(animState.phase){
+      case 'moving': break; // already counted
+      case 'zooming_in': elapsed+=0; break;
+      case 'holding': elapsed+=ZOOM_IN_DUR+(animState.holdElapsed||0); break;
+      case 'zooming_out': elapsed+=ZOOM_IN_DUR+(tutorialData.steps[animState.currentStep].duration||3000); break;
+    }
+    var pct=Math.min(100,elapsed/total*100);
+    document.getElementById('progressFill').style.width=pct+'%';
+  }
+
+  // ---- Controls ----
+  document.getElementById('playPauseBtn').addEventListener('click',togglePlayPause);
+  document.getElementById('overlayPlayBtn').addEventListener('click',function(){
+    if(animState.phase==='idle'||animState.finished) startPlaying();
+    else togglePlayPause();
+  });
+
+  document.getElementById('fullscreenBtn').addEventListener('click',function(){
+    var wrap=document.getElementById('canvasWrap');
+    if(wrap.requestFullscreen) wrap.requestFullscreen();
+    else if(wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+  });
+
+  // Progress bar click
+  document.getElementById('progressWrap').addEventListener('click',function(e){
+    if(!tutorialData) return;
+    var rect=this.getBoundingClientRect();
+    var pct=(e.clientX-rect.left)/rect.width;
+    var total=calculateTotalDuration();
+    var target=pct*total;
+    // Find which step this corresponds to
+    var elapsed=0;
+    for(var i=0;i<tutorialData.steps.length;i++){
+      var stepDur=(i>0?ZOOM_OUT_DUR+MOVE_DUR:0)+ZOOM_IN_DUR+(tutorialData.steps[i].duration||3000);
+      if(elapsed+stepDur>target){
+        jumpToStep(i);
+        return;
+      }
+      elapsed+=stepDur;
+    }
+    jumpToStep(tutorialData.steps.length-1);
+  });
+
+  // Speed buttons
+  document.querySelectorAll('.speed-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.speed-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      animState.speed=parseFloat(btn.getAttribute('data-speed'));
+    });
+  });
+
+  // ---- Export WebM ----
+  document.getElementById('exportWebmBtn').addEventListener('click',async function(){
+    if(!tutorialData||!screenshotImg) return;
+    var btn=this;
+    btn.disabled=true;
+    btn.textContent='Recording...';
+    document.getElementById('recordBadge').classList.add('visible');
+
+    var stream=canvas.captureStream(30);
+    var mimeType='video/webm;codecs=vp9';
+    if(!MediaRecorder.isTypeSupported(mimeType)){
+      mimeType='video/webm';
+    }
+    var recorder=new MediaRecorder(stream,{mimeType:mimeType,videoBitsPerSecond:5000000});
+    var chunks=[];
+    recorder.ondataavailable=function(e){chunks.push(e.data);};
+    recorder.onstop=function(){
+      var blob=new Blob(chunks,{type:'video/webm'});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');
+      a.href=url;
+      a.download='tutorial-'+Date.now()+'.webm';
+      a.click();
+      URL.revokeObjectURL(url);
+      btn.disabled=false;
+      btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/></svg> Download WebM';
+      document.getElementById('recordBadge').classList.remove('visible');
+    };
+
+    resetAnimation();
+    animState.playing=true;
+    animState.phase='moving';
+    animState.phaseStart=performance.now();
+    var step=tutorialData.steps[0];
+    animState.prevX=animState.cursorX;animState.prevY=animState.cursorY;
+    animState.targetX=step.x;animState.targetY=step.y;
+    animState.targetZoom=step.zoom||1.5;animState.prevZoom=1.0;
+    updatePlayPauseUI();
+    hideOverlay();
+    lastTimestamp=performance.now();
+
+    recorder.start();
+    animFrameId=requestAnimationFrame(animate);
+
+    var total=calculateTotalDuration()/animState.speed;
+    setTimeout(function(){
+      recorder.stop();
+      animState.playing=false;
+      animState.finished=true;
+      updatePlayPauseUI();
+      showOverlay();
+    },total+1500);
+  });
+
+  // ---- Export GIF ----
+  document.getElementById('exportGifBtn').addEventListener('click',async function(){
+    if(!tutorialData||!screenshotImg) return;
+    if(typeof GIF==='undefined'){
+      // Load gif.js on demand
+      var script=document.createElement('script');
+      script.src='https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js';
+      script.onload=function(){doGifExport();};
+      document.head.appendChild(script);
+    }else{
+      doGifExport();
+    }
+  });
+
+  function doGifExport(){
+    var btn=document.getElementById('exportGifBtn');
+    btn.disabled=true;
+    btn.textContent='Generating GIF...';
+
+    var gif=new GIF({
+      workers:2,quality:10,
+      width:640,height:400,
+      workerScript:'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+    });
+
+    // Capture frames by stepping through animation
+    resetAnimation();
+    var total=calculateTotalDuration();
+    var interval=150; // capture every 150ms
+    var tmpCanvas=document.createElement('canvas');
+    tmpCanvas.width=640;tmpCanvas.height=400;
+    var tmpCtx=tmpCanvas.getContext('2d');
+
+    var frames=Math.ceil(total/interval);
+    var captured=0;
+
+    function captureNext(){
+      if(captured>=frames){
+        gif.on('finished',function(blob){
+          var url=URL.createObjectURL(blob);
+          var a=document.createElement('a');
+          a.href=url;a.download='tutorial-'+Date.now()+'.gif';a.click();
+          URL.revokeObjectURL(url);
+          btn.disabled=false;
+          btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/></svg> Download GIF';
+        });
+        gif.render();
+        return;
+      }
+      // Simulate one frame step
+      animState.playing=true;
+      var now=performance.now();
+      animState.phaseStart=now-interval*captured;
+      // Simple: just draw the current state
+      drawFrame();
+      tmpCtx.drawImage(canvas,0,0,640,400);
+      gif.addFrame(tmpCtx,{delay:interval,copy:true});
+      captured++;
+
+      // Advance the animation state manually
+      var fakeTs=performance.now();
+      lastTimestamp=fakeTs-interval;
+      animate(fakeTs);
+      animState.playing=false;
+
+      setTimeout(captureNext,5);
+    }
+    // Start from beginning
+    animState.playing=true;
+    animState.phase='moving';
+    animState.phaseStart=performance.now();
+    var step=tutorialData.steps[0];
+    animState.prevX=640;animState.prevY=400;
+    animState.targetX=step.x;animState.targetY=step.y;
+    animState.targetZoom=step.zoom||1.5;animState.prevZoom=1.0;
+    lastTimestamp=performance.now();
+    captureNext();
+  }
+
+  // ---- Share link ----
+  document.getElementById('shareLinkBtn').addEventListener('click',function(){
+    var url=window.location.origin+'/tutorial.html';
+    navigator.clipboard.writeText(url).then(function(){
+      var btn=document.getElementById('shareLinkBtn');
+      var orig=btn.innerHTML;
+      btn.textContent='Copied!';
+      setTimeout(function(){btn.innerHTML=orig;},2000);
+    });
+  });
+
+  // ---- Store elements reference for highlight sizing ----
+  var origFetch=window.fetch;
+  var origStartGen=startGeneration;
+  // Patch: after analyze response, store elements on tutorialData
+  var _origGeneration=startGeneration;
+  // We'll patch this inline: save elements on tutorialData._elements
+  // Done below in the startGeneration function already.
+  // Actually, let's just save it when we get the screenshot data
+  var _savedElements=null;
+  var _origStartGeneration=startGeneration;
+
+  // Override startGeneration to capture elements
+  startGeneration=async function(){
+    var url=urlInput.value.trim();
+    hideError();
+    if(!url){showError('Please enter a URL');return;}
+    if(!/^https?:\/\//i.test(url)){showError('Please enter a valid URL starting with http:// or https://');return;}
+
+    generateBtn.disabled=true;
+    playerSection.style.display='none';
+    setupNotice.style.display='none';
+    loadingSection.style.display='block';
+    for(var i=1;i<=3;i++){
+      setLoadingStep(i,'');
+      document.getElementById('loadStep'+i).querySelector('.loading-step-icon').textContent='\u25CF';
+    }
+
+    try{
+      setLoadingStep(1,'active');
+      var ssResp=await fetch('/api/tutorial/screenshot',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({url:url})
+      });
+      var ssData=await ssResp.json();
+      if(!ssResp.ok){showError(ssData.error||'Failed to load page');loadingSection.style.display='none';generateBtn.disabled=false;return;}
+      setLoadingStep(1,'done');
+
+      _savedElements=ssData.elements;
+
+      setLoadingStep(2,'active');
+      var anResp=await fetch('/api/tutorial/analyze',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({screenshot:ssData.screenshot,elements:ssData.elements,pageInfo:ssData.pageInfo})
+      });
+      var anData=await anResp.json();
+      if(anData.setup){setupNotice.style.display='block';loadingSection.style.display='none';generateBtn.disabled=false;return;}
+      if(!anResp.ok||!anData.steps){showError(anData.error||'Failed to analyze page');loadingSection.style.display='none';generateBtn.disabled=false;return;}
+      setLoadingStep(2,'done');
+
+      setLoadingStep(3,'active');
+      tutorialData=anData;
+      tutorialData._elements=_savedElements;
+
+      screenshotImg=new Image();
+      await new Promise(function(resolve,reject){
+        screenshotImg.onload=resolve;screenshotImg.onerror=reject;
+        screenshotImg.src='data:image/png;base64,'+ssData.screenshot;
+      });
+
+      buildStepList();
+      initAnimation();
+      setLoadingStep(3,'done');
+
+      setTimeout(function(){
+        loadingSection.style.display='none';
+        playerSection.style.display='block';
+        showOverlay();
+        drawStaticFrame();
+      },400);
+
+    }catch(err){
+      showError('Network error: '+err.message);
+      loadingSection.style.display='none';
+    }
+    generateBtn.disabled=false;
+  };
+
+})();
+</script>
+</body>
+</html>
