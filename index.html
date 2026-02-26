@@ -152,53 +152,75 @@ a{color:inherit;text-decoration:none}
 .section-sub{font-size:clamp(.9rem,2vw,1.1rem);color:var(--text2);max-width:560px;margin:0 auto;line-height:1.7}
 
 /* ============ TOOLS SHOWCASE ============ */
-.tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-@media(max-width:900px){.tools-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.tools-grid{grid-template-columns:1fr}}
+.tools-wrap{position:relative}
+.tools-wrap::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:1000px;height:1000px;
+  background:radial-gradient(circle,rgba(124,77,255,.03) 0%,transparent 60%);pointer-events:none}
 
-.tool-card{position:relative;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius);padding:36px 28px;
-  transition:all .4s cubic-bezier(.16,1,.3,1);cursor:pointer;overflow:hidden;
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  text-decoration:none;display:block;color:var(--text)}
-.tool-card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);padding:1px;
-  background:linear-gradient(135deg,transparent,rgba(124,77,255,.2),transparent);
+.tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;position:relative;z-index:1}
+.tools-grid-bottom{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;margin-top:28px;
+  max-width:67%;margin-left:auto;margin-right:auto;position:relative;z-index:1}
+@media(max-width:900px){.tools-grid{grid-template-columns:repeat(2,1fr)}.tools-grid-bottom{max-width:100%}}
+@media(max-width:600px){.tools-grid,.tools-grid-bottom{grid-template-columns:1fr;max-width:100%}}
+
+.tool-card{
+  --tc:#7c4dff;--tc2:#e040fb;--tc-glow:rgba(124,77,255,.15);
+  --tc-bg:rgba(124,77,255,.06);--tc-border:rgba(124,77,255,.12);
+  position:relative;background:var(--card);border:1px solid var(--border);border-radius:20px;
+  transition:all .5s cubic-bezier(.16,1,.3,1);cursor:pointer;overflow:hidden;
+  text-decoration:none;display:flex;flex-direction:column;color:var(--text)}
+.tool-card:hover{transform:translateY(-12px);text-decoration:none;
+  border-color:var(--tc);
+  box-shadow:0 25px 60px -12px var(--tc-glow),0 0 0 1px var(--tc)}
+
+/* Gradient border on hover */
+.tool-card::before{content:'';position:absolute;inset:-1px;border-radius:21px;padding:1px;
+  background:linear-gradient(135deg,var(--tc),transparent 40%,transparent 60%,var(--tc2));
   -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .4s}
-.tool-card::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;
-  background:radial-gradient(600px circle at var(--mouse-x,50%) var(--mouse-y,50%),rgba(124,77,255,.06),transparent 40%);
-  opacity:0;transition:opacity .4s;pointer-events:none}
-.tool-card:hover{transform:translateY(-8px) scale(1.01);border-color:rgba(124,77,255,.2);
-  box-shadow:0 20px 60px rgba(0,0,0,.3),0 0 40px rgba(124,77,255,.08);text-decoration:none}
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .5s;z-index:2;pointer-events:none}
 .tool-card:hover::before{opacity:1}
-.tool-card:hover::after{opacity:1}
 
-.tool-card-icon{font-size:2.5rem;margin-bottom:20px;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3));
-  animation:iconFloat 4s ease-in-out infinite;will-change:transform}
-@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+/* Gradient header area */
+.tool-card-header{position:relative;padding:32px 28px 24px;overflow:hidden}
+.tool-card-header::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--tc),var(--tc2));opacity:.04;transition:opacity .5s}
+.tool-card-header::after{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;
+  background:radial-gradient(circle,var(--tc-glow),transparent 70%);transition:all .6s;opacity:.6}
+.tool-card:hover .tool-card-header::before{opacity:.1}
+.tool-card:hover .tool-card-header::after{opacity:1;transform:scale(1.5)}
 
-.tool-card-name{font-size:1.15rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px;
-  transition:color .3s}
-.tool-card:hover .tool-card-name{color:var(--accent)}
+/* Icon container */
+.tool-card-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--tc),var(--tc2));
+  box-shadow:0 8px 24px var(--tc-glow);
+  transition:all .5s cubic-bezier(.16,1,.3,1);position:relative;z-index:1}
+.tool-card-icon svg{width:26px;height:26px}
+.tool-card:hover .tool-card-icon{transform:scale(1.12) rotate(-5deg);box-shadow:0 14px 40px var(--tc-glow)}
 
-.tool-card-desc{font-size:.88rem;color:var(--text2);line-height:1.6;margin-bottom:20px}
+/* Card body */
+.tool-card-body{padding:20px 28px 28px;flex:1;display:flex;flex-direction:column}
+.tool-card-name{font-size:1.12rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;transition:color .3s}
+.tool-card:hover .tool-card-name{color:var(--tc)}
+.tool-card-desc{font-size:.86rem;color:var(--text2);line-height:1.7;margin-bottom:16px;flex:1}
 
-.tool-card-link{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;color:var(--accent);
+/* Feature tags */
+.tool-card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.tool-card-tag{font-size:.68rem;font-weight:700;letter-spacing:.03em;
+  padding:4px 10px;border-radius:20px;
+  background:var(--tc-bg);color:var(--tc);border:1px solid var(--tc-border);white-space:nowrap}
+
+/* Explore link */
+.tool-card-link{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;font-weight:700;color:var(--tc);
   transition:all .3s;letter-spacing:.02em}
-.tool-card-link-arrow{display:inline-block;transition:transform .3s}
-.tool-card:hover .tool-card-link-arrow{transform:translateX(4px)}
+.tool-card-link-arrow{display:inline-block;transition:transform .4s cubic-bezier(.16,1,.3,1)}
+.tool-card:hover .tool-card-link-arrow{transform:translateX(6px)}
 
-/* Card stagger delays */
-.tool-card:nth-child(1){transition-delay:.0s}
-.tool-card:nth-child(2){transition-delay:.05s}
-.tool-card:nth-child(3){transition-delay:.1s}
-.tool-card:nth-child(4){transition-delay:.15s}
-.tool-card:nth-child(5){transition-delay:.2s}
-
-/* Card shimmer glow line */
-.tool-card-glow{position:absolute;top:0;left:-100%;width:100%;height:2px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);
-  transition:left .6s cubic-bezier(.16,1,.3,1)}
-.tool-card:hover .tool-card-glow{left:100%}
+/* Per-card color themes */
+.tool-skins{--tc:#7c4dff;--tc2:#b388ff;--tc-glow:rgba(124,77,255,.2);--tc-bg:rgba(124,77,255,.06);--tc-border:rgba(124,77,255,.12)}
+.tool-generator{--tc:#00b0ff;--tc2:#40c4ff;--tc-glow:rgba(0,176,255,.2);--tc-bg:rgba(0,176,255,.06);--tc-border:rgba(0,176,255,.12)}
+.tool-prompts{--tc:#00c853;--tc2:#69f0ae;--tc-glow:rgba(0,200,83,.2);--tc-bg:rgba(0,200,83,.06);--tc-border:rgba(0,200,83,.12)}
+.tool-rules{--tc:#ff9100;--tc2:#ffab40;--tc-glow:rgba(255,145,0,.2);--tc-bg:rgba(255,145,0,.06);--tc-border:rgba(255,145,0,.12)}
+.tool-replayer{--tc:#ff4081;--tc2:#ff80ab;--tc-glow:rgba(255,64,129,.2);--tc-bg:rgba(255,64,129,.06);--tc-border:rgba(255,64,129,.12)}
 
 /* ============ FEATURES SECTION ============ */
 .features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
@@ -280,8 +302,11 @@ body,body *{transition-duration:.3s}
 
 /* ============ LIGHT MODE OVERRIDES ============ */
 [data-theme="light"] .toolkit-nav{border-bottom-color:rgba(0,0,0,.06)}
-[data-theme="light"] .tool-card{box-shadow:0 2px 12px rgba(0,0,0,.04)}
-[data-theme="light"] .tool-card:hover{box-shadow:0 20px 60px rgba(0,0,0,.1),0 0 40px rgba(124,77,255,.06)}
+[data-theme="light"] .tool-card{box-shadow:0 2px 20px rgba(0,0,0,.06)}
+[data-theme="light"] .tool-card:hover{box-shadow:0 25px 60px -12px var(--tc-glow),0 4px 24px rgba(0,0,0,.08)}
+[data-theme="light"] .tool-card-header::before{opacity:.03}
+[data-theme="light"] .tool-card:hover .tool-card-header::before{opacity:.07}
+[data-theme="light"] .tool-card-tag{background:var(--tc-bg);border-color:var(--tc-border)}
 [data-theme="light"] .feature-card{box-shadow:0 2px 12px rgba(0,0,0,.04)}
 [data-theme="light"] .cta-box{box-shadow:0 4px 30px rgba(0,0,0,.06)}
 [data-theme="light"] .stat-item::after{background:var(--border)}
@@ -302,10 +327,14 @@ body,body *{transition-duration:.3s}
   .section{padding:60px 16px}
   .section-header{margin-bottom:40px}
   .section-title{font-size:1.8rem}
-  .tool-card{padding:24px 20px}
-  .tool-card-icon{font-size:2rem;margin-bottom:14px}
+  .tool-card-header{padding:24px 20px 20px}
+  .tool-card-body{padding:16px 20px 24px}
+  .tool-card-icon{width:48px;height:48px;border-radius:14px}
+  .tool-card-icon svg{width:22px;height:22px}
   .tool-card-name{font-size:1rem}
-  .tool-card-desc{font-size:.82rem;margin-bottom:14px}
+  .tool-card-desc{font-size:.82rem;margin-bottom:12px}
+  .tool-card-tags{margin-bottom:14px}
+  .tools-grid-bottom{max-width:100%}
   .feature-card{padding:24px 18px}
   .stats-inner{gap:16px}
   .stat-item{padding:20px 8px}
@@ -387,48 +416,99 @@ body,body *{transition-duration:.3s}
     <p class="section-sub">Five powerful tools designed to supercharge your Claude Code workflow. All free, all open source.</p>
   </div>
 
+  <div class="tools-wrap">
   <div class="tools-grid">
 
-    <a href="skins.html" class="tool-card reveal" style="transition-delay:.05s">
-      <div class="tool-card-glow"></div>
-      <span class="tool-card-icon" style="animation-delay:0s">&#127912;</span>
-      <h3 class="tool-card-name">Skins Collection</h3>
-      <p class="tool-card-desc">26 collectible mascot skins across 6 rarity tiers. Transform your Claude Code mascot, sidebar, terminal and status bar.</p>
-      <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+    <a href="skins.html" class="tool-card tool-skins reveal" style="transition-delay:.05s">
+      <div class="tool-card-header">
+        <div class="tool-card-icon">
+          <svg viewBox="0 0 24 24" fill="white"><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="7" r="2.5" opacity=".8"/><circle cx="7" cy="17" r="2.5" opacity=".6"/><circle cx="17" cy="17" r="2.5" opacity=".9"/></svg>
+        </div>
+      </div>
+      <div class="tool-card-body">
+        <h3 class="tool-card-name">Skins Collection</h3>
+        <p class="tool-card-desc">Transform your Claude Code mascot, sidebar, terminal and status bar with collectible themes.</p>
+        <div class="tool-card-tags">
+          <span class="tool-card-tag">26 Skins</span>
+          <span class="tool-card-tag">6 Rarities</span>
+        </div>
+        <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+      </div>
     </a>
 
-    <a href="generator.html" class="tool-card reveal" style="transition-delay:.1s">
-      <div class="tool-card-glow"></div>
-      <span class="tool-card-icon" style="animation-delay:-.8s">&#128221;</span>
-      <h3 class="tool-card-name">CLAUDE.md Generator</h3>
-      <p class="tool-card-desc">Generate the perfect context file for Claude Code. Step-by-step wizard creates a production-ready CLAUDE.md.</p>
-      <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+    <a href="generator.html" class="tool-card tool-generator reveal" style="transition-delay:.1s">
+      <div class="tool-card-header">
+        <div class="tool-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+        </div>
+      </div>
+      <div class="tool-card-body">
+        <h3 class="tool-card-name">CLAUDE.md Generator</h3>
+        <p class="tool-card-desc">Step-by-step wizard that creates a production-ready CLAUDE.md context file for your projects.</p>
+        <div class="tool-card-tags">
+          <span class="tool-card-tag">Wizard UI</span>
+          <span class="tool-card-tag">Copy &amp; Paste</span>
+        </div>
+        <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+      </div>
     </a>
 
-    <a href="prompts.html" class="tool-card reveal" style="transition-delay:.15s">
-      <div class="tool-card-glow"></div>
-      <span class="tool-card-icon" style="animation-delay:-1.6s">&#128172;</span>
-      <h3 class="tool-card-name">Prompt Library</h3>
-      <p class="tool-card-desc">40+ battle-tested prompts for Claude Code across 11 categories. From debugging to architecture.</p>
-      <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+    <a href="prompts.html" class="tool-card tool-prompts reveal" style="transition-delay:.15s">
+      <div class="tool-card-header">
+        <div class="tool-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+      </div>
+      <div class="tool-card-body">
+        <h3 class="tool-card-name">Prompt Library</h3>
+        <p class="tool-card-desc">Battle-tested prompts across 11 categories. From debugging to architecture and beyond.</p>
+        <div class="tool-card-tags">
+          <span class="tool-card-tag">40+ Prompts</span>
+          <span class="tool-card-tag">11 Categories</span>
+        </div>
+        <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+      </div>
     </a>
 
-    <a href="rules.html" class="tool-card reveal" style="transition-delay:.2s">
-      <div class="tool-card-glow"></div>
-      <span class="tool-card-icon" style="animation-delay:-2.4s">&#128203;</span>
-      <h3 class="tool-card-name">Rules Generator</h3>
-      <p class="tool-card-desc">Build modular rule files for Claude Code. Scoped by path, organized by topic. Export as ZIP.</p>
-      <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+  </div>
+
+  <div class="tools-grid-bottom">
+
+    <a href="rules.html" class="tool-card tool-rules reveal" style="transition-delay:.2s">
+      <div class="tool-card-header">
+        <div class="tool-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 8l2 2 4-4"/><line x1="8" y1="16" x2="16" y2="16"/></svg>
+        </div>
+      </div>
+      <div class="tool-card-body">
+        <h3 class="tool-card-name">Rules Generator</h3>
+        <p class="tool-card-desc">Build modular rule files for Claude Code. Scoped by path, organized by topic. Export as ZIP.</p>
+        <div class="tool-card-tags">
+          <span class="tool-card-tag">Modular</span>
+          <span class="tool-card-tag">ZIP Export</span>
+        </div>
+        <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+      </div>
     </a>
 
-    <a href="replayer.html" class="tool-card reveal" style="transition-delay:.25s">
-      <div class="tool-card-glow"></div>
-      <span class="tool-card-icon" style="animation-delay:-3.2s">&#128260;</span>
-      <h3 class="tool-card-name">Session Replayer</h3>
-      <p class="tool-card-desc">Turn your Claude Code sessions into shareable visual timelines. Upload JSONL, get a visual story.</p>
-      <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+    <a href="replayer.html" class="tool-card tool-replayer reveal" style="transition-delay:.25s">
+      <div class="tool-card-header">
+        <div class="tool-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="white" stroke="none"/></svg>
+        </div>
+      </div>
+      <div class="tool-card-body">
+        <h3 class="tool-card-name">Session Replayer</h3>
+        <p class="tool-card-desc">Turn your Claude Code sessions into shareable visual timelines. Upload JSONL, get a visual story.</p>
+        <div class="tool-card-tags">
+          <span class="tool-card-tag">JSONL Input</span>
+          <span class="tool-card-tag">Timeline View</span>
+        </div>
+        <span class="tool-card-link">Explore <span class="tool-card-link-arrow">&rarr;</span></span>
+      </div>
     </a>
 
+  </div>
   </div>
 </section>
 
