@@ -849,11 +849,11 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
     if(step.action==='hover') ctx.strokeStyle='rgba(0,229,255,'+pulse+')';
     if(step.action==='scroll') ctx.strokeStyle='rgba(105,240,174,'+pulse+')';
     if(step.action==='type') ctx.strokeStyle='rgba(255,145,0,'+pulse+')';
-    ctx.lineWidth=2.5;
-    ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=20;
+    ctx.lineWidth=3;
+    ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=30;
     rrect(hx,hy,w,h,8);
     ctx.stroke();
-    ctx.fillStyle=ctx.strokeStyle.replace(/[\d.]+\)$/,(pulse*0.08)+')');
+    ctx.fillStyle=ctx.strokeStyle.replace(/[\d.]+\)$/,(pulse*0.15)+')');
     ctx.fill();
     ctx.restore();
   }
@@ -904,15 +904,15 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
     // Shadow
     ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=24;ctx.shadowOffsetY=6;
 
-    // Box background
+    // Box background — solid dark with good contrast
     rrect(bx,by,boxW,boxH,12);
-    ctx.fillStyle='rgba(8,8,18,.94)';
+    ctx.fillStyle='rgba(15,15,30,.96)';
     ctx.fill();
     ctx.shadowBlur=0;ctx.shadowOffsetY=0;
 
-    // Border glow
-    ctx.strokeStyle=actionColor+'55';
-    ctx.lineWidth=1.5;
+    // Border glow — strong and visible
+    ctx.strokeStyle=actionColor+'88';
+    ctx.lineWidth=2;
     ctx.stroke();
 
     // Arrow
@@ -923,7 +923,7 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
     }else{
       ctx.moveTo(ax-7,by);ctx.lineTo(ax,by-arrowH);ctx.lineTo(ax+7,by);
     }
-    ctx.fillStyle='rgba(8,8,18,.94)';ctx.fill();
+    ctx.fillStyle='rgba(15,15,30,.96)';ctx.fill();
 
     // Action badge
     var badgeX=bx+pad, badgeY=by+pad;
@@ -945,7 +945,7 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
 
     // Description with typewriter
     ctx.font='400 12px Inter,system-ui,sans-serif';
-    ctx.fillStyle='rgba(255,255,255,.72)';ctx.textBaseline='top';
+    ctx.fillStyle='rgba(255,255,255,.9)';ctx.textBaseline='top';
     for(var i=0;i<descLines.length;i++){
       ctx.fillText(descLines[i],bx+pad,ty2+i*lineH);
     }

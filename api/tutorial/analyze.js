@@ -90,18 +90,18 @@ module.exports = async function handler(req, res) {
 
 Page: ${(pageInfo && pageInfo.title) || 'Unknown'}
 Description: ${(pageInfo && pageInfo.description) || ''}
-Screenshot dimensions: ${imgWidth}x${imgHeight} pixels (the visible viewport is 1280x800, content below y=800 requires scrolling)
+Screenshot: exactly 1280x800 pixels. This is the ENTIRE visible area.
 ${elementContext}
 
-Create 8-12 steps that guide a new user through this page. Make it feel like a professional product tour.
+Create 6-10 steps that guide a new user through the VISIBLE elements on this page.
 
 For each step provide:
-- x, y: pixel coordinates of the element center (in the full ${imgWidth}x${imgHeight} image)
-- action: "click", "hover", "scroll", or "type"
+- x, y: EXACT pixel coordinates of the element's CENTER in the 1280x800 image. Look carefully at where elements actually are. x must be 20-1260, y must be 20-780.
+- action: "click", "hover", or "type"
 - title: short element name (2-4 words, e.g. "Search Bar", "Sign Up Button")
-- callout: descriptive text explaining what this does and WHY the user should care (15-30 words). Write like a friendly guide, not a manual
-- zoom: 1.0 (full view), 1.3 (slight focus), 1.6 (close-up), 2.0 (detail)
-- duration: time in ms to display this step (1500-2500 for a brisk pace)
+- callout: descriptive text explaining what this does and WHY the user should care (12-25 words). Write like a friendly guide.
+- zoom: 1.0 (full view), 1.3 (slight focus), 1.5 (close-up), 1.8 (detail)
+- duration: time in ms (1800-2500 for a brisk pace)
 
 Respond ONLY with this JSON:
 {
@@ -118,16 +118,18 @@ Respond ONLY with this JSON:
   ]
 }
 
-Guidelines:
-- START with a wide overview of the page header (zoom 1.0) to orient the user
-- Then explore: navigation, hero/CTA, key features, forms, footer — in natural reading order
-- Include elements BELOW the fold (y > 800) — the animation will scroll to them
-- VARY zoom levels: alternate between overview (1.0-1.3) and close-ups (1.5-2.0) for visual interest
-- VARY actions: mix clicks, hovers, and scrolls so it doesn't feel repetitive
+CRITICAL RULES:
+- ALL coordinates must point to VISIBLE elements in the 1280x800 screenshot
+- Look VERY carefully at the actual pixel positions of buttons, links, text, and UI elements
+- x and y must be the CENTER of the element, not a corner
+- Do NOT reference elements you cannot see in the screenshot
+- START with a wide overview (zoom 1.0) of the header area to orient the user
+- Then move through: navigation, main CTA/buttons, key features, input fields
+- VARY zoom levels: alternate overview (1.0-1.3) with close-ups (1.5-1.8) for visual interest
+- VARY actions: mix clicks and hovers so it doesn't feel repetitive
 - Write callouts that explain benefits and purpose, not just labels
-- Keep duration between 1500-2500ms for an engaging, brisk pace
-- For "type" actions, include a "typeText" field
-- Coordinates must be within ${imgWidth}x${imgHeight} bounds`
+- For "type" actions, include a "typeText" field with example text
+- Keep all y values between 20 and 780 — nothing outside the visible screenshot`
             }
           ]
         }]
@@ -170,8 +172,8 @@ Guidelines:
     tutorial.steps = tutorial.steps.filter(s => (
       typeof s.x === 'number' && typeof s.y === 'number' && (s.callout || s.title)
     )).map(s => ({
-      x: Math.round(Math.min(Math.max(s.x, 0), imgWidth)),
-      y: Math.round(Math.min(Math.max(s.y, 0), imgHeight)),
+      x: Math.round(Math.min(Math.max(s.x, 20), 1260)),
+      y: Math.round(Math.min(Math.max(s.y, 20), 780)),
       action: s.action || 'click',
       title: String(s.title || s.elementText || '').substring(0, 40),
       callout: String(s.callout || '').substring(0, 120),

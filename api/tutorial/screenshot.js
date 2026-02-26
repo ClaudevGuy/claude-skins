@@ -29,8 +29,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Use tall viewport (1280x1600) to capture more of the page for scrolling
-    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=true&viewport.width=1280&viewport.height=1600&screenshot.type=png&waitForTimeout=5000`;
+    // Standard viewport (1280x800) matching the canvas size
+    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=true&viewport.width=1280&viewport.height=800&screenshot.type=png&waitForTimeout=5000`;
 
     const response = await fetch(apiUrl, {
       headers: { 'User-Agent': 'Claude-Skins-Tutorial/1.0' }
@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
       fullScreenshot: screenshot,
       elements: [],
       pageInfo,
-      viewport: { width: 1280, height: 1600 }
+      viewport: { width: 1280, height: 800 }
     });
   } catch (err) {
     res.status(500).json({ error: 'Internal error: ' + (err.message || 'Unknown') });
