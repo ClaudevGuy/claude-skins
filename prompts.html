@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Library — Claude Code Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);font-family:'Inter',system-ui,sans-serif}
+.nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-brand{font-size:.85rem;font-weight:800;color:#e0e0e0;text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand:hover{text-decoration:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:#8888aa;text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:#e0e0e0;background:rgba(255,255,255,.05);text-decoration:none}
+.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
+.nav-toggle span{display:block;width:20px;height:2px;background:#8888aa;border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+
+body{
+  background:#0a0a0f;
+  color:#e0e0e0;
+  font-family:'Inter',system-ui,sans-serif;
+  padding-top:50px;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.page-wrap{
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 20px;
+}
+
+/* Hero */
+.hero{
+  text-align:center;
+  padding:60px 0 40px;
+}
+.hero-title{
+  font-size:3rem;
+  font-weight:900;
+  letter-spacing:-.03em;
+  line-height:1.1;
+  background:linear-gradient(135deg,#7c4dff 0%,#00e5ff 50%,#69f0ae 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:16px;
+}
+.hero-sub{
+  font-size:1.05rem;
+  color:#8888aa;
+  font-weight:500;
+  max-width:540px;
+  margin:0 auto;
+  line-height:1.6;
+}
+
+/* Search */
+.search-wrap{
+  margin:0 auto 24px;
+  max-width:640px;
+  position:relative;
+}
+.search-icon{
+  position:absolute;
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#555;
+  pointer-events:none;
+}
+.search-input{
+  width:100%;
+  padding:14px 18px 14px 46px;
+  background:#0c0c16;
+  border:1px solid #1a1a2e;
+  border-radius:12px;
+  color:#e0e0e0;
+  font-size:.95rem;
+  font-family:'Inter',system-ui,sans-serif;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.search-input::placeholder{color:#555}
+.search-input:focus{
+  border-color:#7c4dff;
+  box-shadow:0 0 0 3px rgba(124,77,255,.15);
+}
+
+/* Category Filters */
+.filters-row{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:8px;
+  margin-bottom:20px;
+  scrollbar-width:thin;
+  scrollbar-color:#1a1a2e transparent;
+}
+.filters-row::-webkit-scrollbar{height:4px}
+.filters-row::-webkit-scrollbar-track{background:transparent}
+.filters-row::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:2px}
+.filter-btn{
+  padding:7px 16px;
+  border-radius:8px;
+  border:1px solid #1a1a2e;
+  background:#0c0c16;
+  color:#8888aa;
+  font-size:.78rem;
+  font-weight:600;
+  font-family:'Inter',system-ui,sans-serif;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.filter-btn:hover{
+  border-color:#333;
+  color:#ccc;
+}
+.filter-btn.active{
+  color:#fff;
+  border-color:var(--cat-color);
+  background:color-mix(in srgb,var(--cat-color) 15%,#0c0c16);
+}
+
+/* Counter */
+.counter{
+  font-size:.82rem;
+  color:#666;
+  font-weight:600;
+  margin-bottom:20px;
+  font-variant-numeric:tabular-nums;
+}
+
+/* Grid */
+.prompts-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  padding-bottom:80px;
+}
+
+/* Card */
+.prompt-card{
+  background:#0c0c16;
+  border:1px solid #1a1a2e;
+  border-radius:14px;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:opacity .3s ease,transform .3s ease,border-color .2s;
+  opacity:1;
+  transform:translateY(0);
+}
+.prompt-card:hover{
+  border-color:#2a2a4e;
+}
+.prompt-card.hidden{
+  display:none;
+}
+.prompt-card.fade-out{
+  opacity:0;
+  transform:translateY(8px);
+  pointer-events:none;
+}
+
+.card-header{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.card-title{
+  font-size:.95rem;
+  font-weight:700;
+  color:#e0e0e0;
+  letter-spacing:-.01em;
+  flex:1;
+  min-width:120px;
+}
+.card-badges{
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+  flex-wrap:wrap;
+}
+.badge-category{
+  padding:3px 9px;
+  border-radius:6px;
+  font-size:.65rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:#fff;
+  background:var(--cat-color);
+  opacity:.85;
+}
+.badge-difficulty{
+  padding:3px 9px;
+  border-radius:6px;
+  font-size:.65rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  border:1px solid var(--diff-color);
+  color:var(--diff-color);
+  background:transparent;
+}
+
+.card-desc{
+  font-size:.82rem;
+  color:#8888aa;
+  line-height:1.55;
+}
+
+.card-prompt{
+  background:#0e0e18;
+  border:1px solid #1a1a2e;
+  border-radius:10px;
+  padding:14px 16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.75rem;
+  line-height:1.6;
+  color:#b0b0cc;
+  white-space:pre-wrap;
+  word-break:break-word;
+  flex:1;
+}
+
+.copy-btn{
+  align-self:flex-end;
+  padding:8px 18px;
+  background:rgba(124,77,255,.12);
+  border:1px solid rgba(124,77,255,.25);
+  border-radius:8px;
+  color:#7c4dff;
+  font-size:.78rem;
+  font-weight:700;
+  font-family:'Inter',system-ui,sans-serif;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.copy-btn:hover{
+  background:rgba(124,77,255,.2);
+  border-color:rgba(124,77,255,.4);
+}
+.copy-btn.copied{
+  color:#69f0ae;
+  border-color:rgba(105,240,174,.3);
+  background:rgba(105,240,174,.1);
+}
+
+/* No results */
+.no-results{
+  text-align:center;
+  padding:60px 20px;
+  display:none;
+}
+.no-results-icon{
+  font-size:2.5rem;
+  margin-bottom:16px;
+  opacity:.4;
+}
+.no-results-text{
+  font-size:1rem;
+  color:#555;
+  font-weight:600;
+}
+.no-results-hint{
+  font-size:.85rem;
+  color:#444;
+  margin-top:8px;
+}
+
+/* Responsive */
+@media(max-width:960px){
+  .prompts-grid{grid-template-columns:repeat(2,1fr);}
+  .hero-title{font-size:2.4rem;}
+}
+@media(max-width:640px){
+  .prompts-grid{grid-template-columns:1fr;}
+  .hero{padding:40px 0 28px;}
+  .hero-title{font-size:1.9rem;}
+  .hero-sub{font-size:.92rem;}
+  .card-header{flex-direction:column;gap:6px;}
+  .card-badges{order:-1;}
+}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Skins</a><a href="arena.html" class="nav-link">Arena</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link active">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link">Replayer</a></div></div></nav>
+
+<div class="page-wrap">
+
+  <section class="hero">
+    <h1 class="hero-title">Prompt Library</h1>
+    <p class="hero-sub">Copy-paste prompts for Claude Code. Tested patterns for every workflow.</p>
+  </section>
+
+  <div class="search-wrap">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search prompts..." autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="filters-row" id="filtersRow"></div>
+
+  <div class="counter" id="counter"></div>
+
+  <div class="prompts-grid" id="promptsGrid"></div>
+
+  <div class="no-results" id="noResults">
+    <div class="no-results-icon">&#128269;</div>
+    <div class="no-results-text">No prompts found</div>
+    <div class="no-results-hint">Try a different search or category filter</div>
+  </div>
+
+</div>
+
+<script>
+document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open')});
+
+const CATEGORIES = [
+  { name: 'All', color: '#7c4dff' },
+  { name: 'Refactoring', color: '#7c4dff' },
+  { name: 'Testing', color: '#69f0ae' },
+  { name: 'Debugging', color: '#ff4081' },
+  { name: 'Architecture', color: '#00e5ff' },
+  { name: 'Git & PRs', color: '#ff9800' },
+  { name: 'Documentation', color: '#4fc3f7' },
+  { name: 'Performance', color: '#ffea00' },
+  { name: 'Security', color: '#ef5350' },
+  { name: 'Code Review', color: '#ab47bc' },
+  { name: 'Setup & Config', color: '#78909c' }
+];
+
+const DIFF_COLORS = {
+  'Beginner': '#69f0ae',
+  'Intermediate': '#4fc3f7',
+  'Advanced': '#ffd700'
+};
+
+const PROMPTS = [
+  { title: "Extract Component", category: "Refactoring", difficulty: "Beginner", description: "Pull reusable code into its own component", prompt: "Extract the selected code into a reusable component. Keep the same props interface. Update all imports." },
+  { title: "Convert to TypeScript", category: "Refactoring", difficulty: "Intermediate", description: "Add types to your JavaScript files", prompt: "Convert this JavaScript file to TypeScript. Add proper types for all functions, parameters, and return values. Use strict mode \u2014 no any types. Preserve all existing functionality." },
+  { title: "Remove Dead Code", category: "Refactoring", difficulty: "Beginner", description: "Clean up unused code", prompt: "Analyze this file and remove all unused imports, variables, functions, and dead code paths. Run the linter after to verify nothing breaks." },
+  { title: "Simplify Conditionals", category: "Refactoring", difficulty: "Intermediate", description: "Clean up complex if/else chains", prompt: "Refactor the complex conditional logic in this file. Use early returns, guard clauses, and extract helper functions where it improves readability." },
+  { title: "DRY This Up", category: "Refactoring", difficulty: "Advanced", description: "Extract repeated patterns", prompt: "Find repeated patterns in this directory and extract them into shared utility functions. Don't over-abstract \u2014 only extract if the pattern appears 3+ times." },
+  { title: "Write Unit Tests", category: "Testing", difficulty: "Intermediate", description: "Comprehensive tests for any file", prompt: "Write comprehensive unit tests for this file. Cover: happy path, edge cases, error handling, and boundary conditions. Mock external dependencies." },
+  { title: "Test Edge Cases", category: "Testing", difficulty: "Advanced", description: "Find the gaps in test coverage", prompt: "Look at the existing tests for this file and add tests for edge cases that aren't covered: null/undefined inputs, empty arrays, max/min values, concurrent access, timeout scenarios." },
+  { title: "Integration Test", category: "Testing", difficulty: "Advanced", description: "Test the full flow end-to-end", prompt: "Write an integration test that tests the full flow from API endpoint to expected outcome. Use realistic test data. Clean up after the test." },
+  { title: "Snapshot Tests", category: "Testing", difficulty: "Beginner", description: "Quick visual regression tests", prompt: "Add snapshot tests for all components in this directory. Group them logically. Include tests for different prop combinations and states." },
+  { title: "Test Coverage Report", category: "Testing", difficulty: "Intermediate", description: "Find and fill coverage gaps", prompt: "Run the test suite with coverage. Identify files below 80% coverage. Write tests to bring the lowest-covered files above 80%. Focus on meaningful tests, not just line coverage." },
+  { title: "Find the Bug", category: "Debugging", difficulty: "Intermediate", description: "Trace and fix a known issue", prompt: "This code has a bug: [describe symptom]. Trace through the logic step by step. Identify the root cause, explain why it happens, and fix it. Add a test that would have caught this." },
+  { title: "Memory Leak Hunt", category: "Debugging", difficulty: "Advanced", description: "Find sources of memory leaks", prompt: "Analyze this component/module for potential memory leaks. Check for: uncleared intervals/timeouts, event listener cleanup, unclosed connections, growing arrays/maps, circular references." },
+  { title: "Race Condition Check", category: "Debugging", difficulty: "Advanced", description: "Audit async code for races", prompt: "Review this async code for race conditions. Check: shared state mutations, missing awaits, parallel operations that should be sequential, stale closure values." },
+  { title: "Error Trail", category: "Debugging", difficulty: "Intermediate", description: "Trace a production error to root cause", prompt: "This error occurs in production: [error message]. Trace it back to the root cause. Check the full call stack, related modules, and recent changes that might have introduced it." },
+  { title: "Architecture Review", category: "Architecture", difficulty: "Advanced", description: "Full system health check", prompt: "Review the architecture of this project. Identify: circular dependencies, god modules, tight coupling, missing abstractions, scalability concerns. Suggest specific improvements with code examples." },
+  { title: "Design the Schema", category: "Architecture", difficulty: "Intermediate", description: "Plan your data model", prompt: "Design a database schema for [feature]. Consider: relationships, indexes, constraints, migrations, and future extensibility. Write the migration file." },
+  { title: "API Design", category: "Architecture", difficulty: "Intermediate", description: "Plan REST endpoints", prompt: "Design a REST API for [feature]. Define: endpoints, HTTP methods, request/response shapes, error codes, authentication, pagination, and rate limiting. Write the route handlers." },
+  { title: "Dependency Audit", category: "Architecture", difficulty: "Intermediate", description: "Clean up your package.json", prompt: "Audit all dependencies in package.json. Identify: outdated packages, packages with known vulnerabilities, packages that could be replaced with smaller alternatives, unused dependencies. Create a prioritized update plan." },
+  { title: "Write PR Description", category: "Git & PRs", difficulty: "Beginner", description: "Generate a clear PR summary", prompt: "Based on the changes in this branch, write a PR description. Include: summary of changes, motivation, testing done, screenshots if UI changes, breaking changes, and migration steps." },
+  { title: "Commit Splitter", category: "Git & PRs", difficulty: "Intermediate", description: "Split big commits logically", prompt: "The current staged changes should be split into multiple logical commits. Suggest how to split them and write a descriptive commit message for each." },
+  { title: "Changelog Entry", category: "Git & PRs", difficulty: "Beginner", description: "Generate release notes", prompt: "Based on the recent commits since last release, generate a changelog entry. Group by: Features, Bug Fixes, Breaking Changes, Internal. Use conventional commit format." },
+  { title: "Rebase Strategy", category: "Git & PRs", difficulty: "Advanced", description: "Navigate complex merge conflicts", prompt: "This branch has diverged from main with conflicts. Analyze the conflicts and create a step-by-step rebase strategy. Handle each conflict, preserving both sets of intended changes." },
+  { title: "Document This Module", category: "Documentation", difficulty: "Beginner", description: "Add JSDoc to all exports", prompt: "Write comprehensive JSDoc/docstring documentation for every exported function, class, and type in this file. Include: description, parameters, return values, examples, and throws." },
+  { title: "README Generator", category: "Documentation", difficulty: "Beginner", description: "Create a complete README", prompt: "Generate a README.md for this project. Include: overview, features, installation, quick start, API reference, configuration options, contributing guidelines, and license." },
+  { title: "Architecture Doc", category: "Documentation", difficulty: "Intermediate", description: "Document system design", prompt: "Create an ARCHITECTURE.md that explains: high-level system design, key directories, data flow, external dependencies, deployment architecture, and key design decisions with rationale." },
+  { title: "API Docs", category: "Documentation", difficulty: "Intermediate", description: "Document all endpoints", prompt: "Generate API documentation for all endpoints in this project. For each: method, path, description, request body schema, response schema, error codes, example curl command." },
+  { title: "Performance Audit", category: "Performance", difficulty: "Advanced", description: "Find performance bottlenecks", prompt: "Audit this code for performance issues. Check: N+1 queries, unnecessary re-renders, large bundle imports, unoptimized loops, missing caching opportunities, blocking operations." },
+  { title: "Optimize Bundle", category: "Performance", difficulty: "Advanced", description: "Shrink your JavaScript bundle", prompt: "Analyze the bundle size of this project. Identify the largest dependencies. Suggest: tree-shaking opportunities, dynamic imports, lighter alternatives, and code splitting strategies." },
+  { title: "Database Query Optimization", category: "Performance", difficulty: "Advanced", description: "Speed up slow queries", prompt: "Review the database queries in this module. Identify: missing indexes, N+1 patterns, unnecessary JOINs, queries that could be cached, and opportunities for query batching." },
+  { title: "Lazy Load", category: "Performance", difficulty: "Intermediate", description: "Add code splitting", prompt: "Identify components and modules that could be lazy loaded. Implement code splitting with dynamic imports. Add loading states for each split point." },
+  { title: "Security Review", category: "Security", difficulty: "Advanced", description: "Full security audit", prompt: "Review this code for security vulnerabilities. Check: SQL injection, XSS, CSRF, insecure direct object references, hardcoded secrets, missing input validation, improper error exposure." },
+  { title: "Input Validation", category: "Security", difficulty: "Intermediate", description: "Validate all API inputs", prompt: "Add comprehensive input validation to all API endpoints in this file. Validate: types, ranges, formats, required fields, string lengths, and malicious patterns." },
+  { title: "Auth Check", category: "Security", difficulty: "Advanced", description: "Audit authentication flow", prompt: "Review the authentication and authorization flow. Verify: token validation, permission checks on every protected route, session management, password handling, rate limiting." },
+  { title: "Review This PR", category: "Code Review", difficulty: "Intermediate", description: "Senior dev code review", prompt: "Review this code change as a senior developer. Check: correctness, edge cases, error handling, naming, patterns consistency, test coverage, performance implications. Be specific and constructive." },
+  { title: "Clean Code Pass", category: "Code Review", difficulty: "Beginner", description: "Polish code quality", prompt: "Do a clean code pass on this file. Fix: unclear variable names, long functions that should be split, magic numbers that need constants, comments that describe 'what' instead of 'why', inconsistent patterns." },
+  { title: "Bootstrap Project", category: "Setup & Config", difficulty: "Intermediate", description: "Production-ready project from scratch", prompt: "Set up a new [framework] project with: TypeScript strict mode, ESLint, Prettier, Vitest/Jest, Git hooks (husky + lint-staged), and a basic CI pipeline. Make it production-ready from day one." },
+  { title: "Docker Setup", category: "Setup & Config", difficulty: "Intermediate", description: "Containerize your app", prompt: "Create a Dockerfile and docker-compose.yml for this project. Include: multi-stage build, proper caching of dependencies, health checks, environment variable handling, and a .dockerignore." },
+  { title: "CI Pipeline", category: "Setup & Config", difficulty: "Intermediate", description: "Automated testing on every PR", prompt: "Create a GitHub Actions CI pipeline that runs on every PR: install dependencies, typecheck, lint, test, build. Add caching for node_modules. Fail fast on errors." },
+  { title: "Environment Config", category: "Setup & Config", difficulty: "Beginner", description: "Set up env variables properly", prompt: "Set up proper environment configuration: .env.example with all required variables, validation on startup that all required vars are present, typed env access, and separate configs for dev/staging/prod." },
+  { title: "Monorepo Setup", category: "Setup & Config", difficulty: "Advanced", description: "Convert to monorepo", prompt: "Convert this project into a monorepo using [pnpm workspaces/turborepo]. Separate into: apps/ and packages/. Set up shared configs, cross-package imports, and a unified build command." }
+];
+
+// Build category color map
+const catColorMap = {};
+CATEGORIES.forEach(c => { catColorMap[c.name] = c.color; });
+
+// Render filter buttons
+const filtersRow = document.getElementById('filtersRow');
+CATEGORIES.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.className = 'filter-btn' + (cat.name === 'All' ? ' active' : '');
+  btn.textContent = cat.name;
+  btn.style.setProperty('--cat-color', cat.color);
+  btn.dataset.category = cat.name;
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCategory = cat.name;
+    filterPrompts();
+  });
+  filtersRow.appendChild(btn);
+});
+
+let activeCategory = 'All';
+
+// Render prompt cards
+const grid = document.getElementById('promptsGrid');
+PROMPTS.forEach((p, i) => {
+  const card = document.createElement('div');
+  card.className = 'prompt-card';
+  card.dataset.index = i;
+
+  const catColor = catColorMap[p.category] || '#7c4dff';
+  const diffColor = DIFF_COLORS[p.difficulty] || '#4fc3f7';
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-title">${escHtml(p.title)}</div>
+      <div class="card-badges">
+        <span class="badge-category" style="--cat-color:${catColor};background:${catColor}">${escHtml(p.category)}</span>
+        <span class="badge-difficulty" style="--diff-color:${diffColor}">${escHtml(p.difficulty)}</span>
+      </div>
+    </div>
+    <div class="card-desc">${escHtml(p.description)}</div>
+    <div class="card-prompt">${escHtml(p.prompt)}</div>
+    <button class="copy-btn" data-index="${i}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy Prompt
+    </button>
+  `;
+  grid.appendChild(card);
+});
+
+// Copy handler
+grid.addEventListener('click', e => {
+  const btn = e.target.closest('.copy-btn');
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.index, 10);
+  const text = PROMPTS[idx].prompt;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Copied!
+    `;
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy Prompt
+      `;
+    }, 2000);
+  });
+});
+
+// Search + filter
+const searchInput = document.getElementById('searchInput');
+const counterEl = document.getElementById('counter');
+const noResults = document.getElementById('noResults');
+
+searchInput.addEventListener('input', filterPrompts);
+
+function filterPrompts() {
+  const query = searchInput.value.toLowerCase().trim();
+  const cards = document.querySelectorAll('.prompt-card');
+  let visible = 0;
+
+  cards.forEach((card, i) => {
+    const p = PROMPTS[i];
+    const matchesCat = activeCategory === 'All' || p.category === activeCategory;
+    const matchesSearch = !query ||
+      p.title.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query) ||
+      p.prompt.toLowerCase().includes(query) ||
+      p.category.toLowerCase().includes(query);
+
+    const show = matchesCat && matchesSearch;
+
+    if (show) {
+      card.classList.remove('fade-out');
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('fade-out');
+      setTimeout(() => {
+        if (card.classList.contains('fade-out')) {
+          card.classList.add('hidden');
+        }
+      }, 300);
+    }
+  });
+
+  counterEl.textContent = `${visible} of ${PROMPTS.length} prompts`;
+  noResults.style.display = visible === 0 ? 'block' : 'none';
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Initial render
+filterPrompts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Replayer — Claude Code Toolkit</title>
+<meta name="description" content="Turn your Claude Code sessions into shareable timelines. Upload a JSONL session file, get a visual story of your build.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#0a0a0f;color:#e0e0e0;overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased;padding-top:50px}
+code,pre,.mono{font-family:'JetBrains Mono',monospace}
+
+/* ============ NAV BAR ============ */
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);font-family:'Inter',system-ui,sans-serif}
+.nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-brand{font-size:.85rem;font-weight:800;color:#e0e0e0;text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand:hover{text-decoration:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:#8888aa;text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:#e0e0e0;background:rgba(255,255,255,.05);text-decoration:none}
+.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
+.nav-toggle span{display:block;width:20px;height:2px;background:#8888aa;border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+
+/* ============ HERO ============ */
+.hero{padding:60px 24px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,#0a0a0f);pointer-events:none}
+.hero-title{font-size:clamp(2.2rem,6vw,4rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px;
+  background:linear-gradient(135deg,#ff4081,#e040fb,#7c4dff,#00e5ff,#69f0ae,#ffea00,#ff4081);
+  background-size:300% 300%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:heroGrad 6s ease infinite}
+@keyframes heroGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:clamp(.95rem,2vw,1.15rem);color:#8888aa;max-width:620px;margin:0 auto;font-weight:400}
+
+/* ============ MAIN CONTAINER ============ */
+.main-wrap{max-width:860px;margin:0 auto;padding:0 20px 100px}
+
+/* ============ UPLOAD ZONE ============ */
+.upload-zone{border:2px dashed #1a1a2e;border-radius:16px;padding:60px 32px;text-align:center;transition:all .3s;cursor:pointer;position:relative;background:rgba(12,12,22,.5)}
+.upload-zone:hover{border-color:#333355;background:rgba(12,12,22,.8)}
+.upload-zone.drag-over{border-color:#7c4dff;background:rgba(124,77,255,.06);box-shadow:0 0 40px rgba(124,77,255,.1)}
+.upload-icon{width:64px;height:64px;margin:0 auto 20px;color:#555577;transition:color .3s}
+.upload-zone.drag-over .upload-icon{color:#7c4dff}
+.upload-title{font-size:1.15rem;font-weight:700;color:#e0e0e0;margin-bottom:8px}
+.upload-hint{font-size:.85rem;color:#8888aa;margin-bottom:24px}
+.upload-btn{display:inline-block;padding:10px 28px;border-radius:10px;background:linear-gradient(135deg,#7c4dff,#6200ea);color:#fff;font-weight:700;font-size:.88rem;border:none;cursor:pointer;transition:all .2s;font-family:inherit;box-shadow:0 4px 16px rgba(124,77,255,.3)}
+.upload-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,77,255,.4)}
+.upload-path{display:block;margin-top:20px;padding:10px 16px;border-radius:8px;background:#0e0e18;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#8888aa;border:1px solid #1a1a2e}
+.upload-privacy{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;font-size:.75rem;color:#555577}
+.upload-privacy svg{width:14px;height:14px;flex-shrink:0}
+#fileInput{display:none}
+
+/* ============ STATS BAR ============ */
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;opacity:0;transform:translateY(12px);transition:all .4s}
+.stats-bar.visible{opacity:1;transform:translateY(0)}
+.stat-card{background:#0c0c16;border:1px solid #1a1a2e;border-radius:12px;padding:16px;text-align:center;transition:border-color .3s}
+.stat-card:hover{border-color:#333355}
+.stat-value{font-size:1.5rem;font-weight:800;color:#e0e0e0;letter-spacing:-.02em;margin-bottom:2px}
+.stat-label{font-size:.72rem;font-weight:600;color:#8888aa;text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:680px){.stats-bar{grid-template-columns:repeat(3,1fr)}.stat-card:nth-child(4),.stat-card:nth-child(5){grid-column:span 1}}
+@media(max-width:420px){.stats-bar{grid-template-columns:repeat(2,1fr)}.stat-card:last-child{grid-column:span 2}}
+
+/* ============ TIMELINE CONTROLS ============ */
+.timeline-controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px;opacity:0;transform:translateY(12px);transition:all .4s}
+.timeline-controls.visible{opacity:1;transform:translateY(0)}
+.timeline-controls-left{display:flex;align-items:center;gap:8px}
+.timeline-controls-right{display:flex;align-items:center;gap:8px}
+.ctrl-btn{padding:7px 16px;border-radius:8px;border:1px solid #1a1a2e;background:#0c0c16;color:#8888aa;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;gap:5px}
+.ctrl-btn:hover{color:#e0e0e0;border-color:#333355;background:#111122}
+.ctrl-btn svg{width:14px;height:14px}
+.turn-count{font-size:.82rem;color:#555577;font-weight:600}
+
+/* ============ TIMELINE ============ */
+.timeline{position:relative;padding-left:40px;opacity:0;transform:translateY(12px);transition:all .4s}
+.timeline.visible{opacity:1;transform:translateY(0)}
+.timeline::before{content:'';position:absolute;left:16px;top:0;bottom:0;width:2px;background:#1a1a2e;border-radius:1px}
+
+/* Timeline entry */
+.tl-entry{position:relative;margin-bottom:24px}
+.tl-entry:last-child{margin-bottom:0}
+
+/* Avatar dot */
+.tl-dot{position:absolute;left:-40px;top:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0;z-index:2;border:2px solid}
+.tl-dot.user{background:rgba(79,195,247,.12);border-color:#4fc3f7;color:#4fc3f7}
+.tl-dot.claude{background:rgba(124,77,255,.12);border-color:#7c4dff;color:#7c4dff}
+
+/* Card */
+.tl-card{background:#0c0c16;border:1px solid #1a1a2e;border-radius:12px;overflow:hidden;transition:border-color .2s}
+.tl-card:hover{border-color:#222244}
+.tl-card.user-card{border-left:3px solid #4fc3f7}
+.tl-card.claude-card{border-left:3px solid #7c4dff}
+
+.tl-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0;gap:8px}
+.tl-role{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.tl-role.user-role{color:#4fc3f7}
+.tl-role.claude-role{color:#7c4dff}
+.tl-timestamp{font-size:.7rem;color:#555577;font-family:'JetBrains Mono',monospace}
+
+.tl-body{padding:10px 16px 14px}
+
+/* Text content */
+.tl-text{font-size:.88rem;color:#ccccdd;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.tl-text.collapsed{max-height:160px;overflow:hidden;position:relative}
+.tl-text.collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(transparent,#0c0c16);pointer-events:none}
+.tl-toggle{display:inline-flex;align-items:center;gap:4px;padding:4px 0;font-size:.78rem;font-weight:600;color:#7c4dff;cursor:pointer;border:none;background:none;font-family:inherit;transition:color .2s}
+.tl-toggle:hover{color:#a07aff}
+
+/* Tool use blocks */
+.tl-tools-header{font-size:.78rem;font-weight:700;color:#8888aa;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.tl-tools-header svg{width:14px;height:14px;color:#555577}
+.tl-tool{margin-bottom:8px;border-radius:8px;overflow:hidden;border:1px solid rgba(26,26,46,.8)}
+.tl-tool:last-child{margin-bottom:0}
+.tl-tool-label{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(14,14,24,.8);font-size:.76rem;font-weight:600;color:#8888aa}
+.tl-tool-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;flex-shrink:0}
+.tl-tool-icon.bash{background:rgba(79,195,247,.12);color:#4fc3f7}
+.tl-tool-icon.file{background:rgba(105,240,174,.12);color:#69f0ae}
+.tl-tool-icon.read{background:rgba(255,213,79,.12);color:#ffd54f}
+.tl-tool-icon.search{background:rgba(255,152,0,.12);color:#ff9800}
+.tl-tool-icon.other{background:rgba(124,77,255,.12);color:#7c4dff}
+.tl-tool-name{font-weight:700;color:#ccccdd}
+.tl-tool-path{color:#8888aa;font-family:'JetBrains Mono',monospace;font-size:.72rem;margin-left:auto;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left}
+
+/* Code block in tool */
+.tl-code{margin:0;padding:10px 12px;background:#0e0e18;font-family:'JetBrains Mono',monospace;font-size:.76rem;color:#ccccdd;line-height:1.55;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;border-top:1px solid rgba(26,26,46,.6)}
+.tl-code::-webkit-scrollbar{width:4px}
+.tl-code::-webkit-scrollbar-track{background:transparent}
+.tl-code::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:2px}
+
+/* Divider */
+.tl-divider{height:1px;background:#1a1a2e;margin:8px 0 8px -40px;opacity:.5}
+
+/* ============ EXPORT BAR ============ */
+.export-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:40px;flex-wrap:wrap;opacity:0;transform:translateY(12px);transition:all .4s}
+.export-bar.visible{opacity:1;transform:translateY(0)}
+.export-btn{padding:10px 22px;border-radius:10px;border:1px solid #1a1a2e;background:#0c0c16;color:#e0e0e0;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.export-btn:hover{border-color:#333355;background:#111122;transform:translateY(-1px)}
+.export-btn.primary{background:linear-gradient(135deg,#7c4dff,#6200ea);border-color:transparent;color:#fff;box-shadow:0 4px 16px rgba(124,77,255,.25)}
+.export-btn.primary:hover{box-shadow:0 6px 24px rgba(124,77,255,.4)}
+.export-btn svg{width:16px;height:16px}
+
+/* Copy feedback */
+.copy-feedback{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:#7c4dff;color:#fff;font-size:.82rem;font-weight:700;padding:10px 24px;border-radius:10px;opacity:0;transition:all .3s;pointer-events:none;z-index:9000;box-shadow:0 4px 20px rgba(124,77,255,.4)}
+.copy-feedback.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ============ JUMP TO TOP ============ */
+.jump-top{position:fixed;bottom:28px;right:28px;width:44px;height:44px;border-radius:50%;background:#0c0c16;border:1px solid #1a1a2e;color:#8888aa;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:8000;transition:all .3s;opacity:0;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.jump-top.visible{opacity:1;pointer-events:auto}
+.jump-top:hover{border-color:#7c4dff;color:#7c4dff;transform:translateY(-2px)}
+.jump-top svg{width:18px;height:18px}
+
+/* ============ ERROR STATE ============ */
+.parse-error{text-align:center;padding:48px 24px;background:#0c0c16;border:1px solid #1a1a2e;border-radius:16px}
+.parse-error-icon{font-size:2.5rem;margin-bottom:16px;opacity:.5}
+.parse-error h3{font-size:1.1rem;font-weight:700;margin-bottom:8px;color:#ff4081}
+.parse-error p{font-size:.88rem;color:#8888aa;max-width:480px;margin:0 auto;line-height:1.6}
+
+/* ============ EMPTY / LOADING ============ */
+.loading-spinner{width:32px;height:32px;border:3px solid #1a1a2e;border-top-color:#7c4dff;border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#333355}
+
+/* ============ SELECTION ============ */
+::selection{background:rgba(124,77,255,.3);color:#fff}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Skins</a><a href="arena.html" class="nav-link">Arena</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link active">Replayer</a></div></div></nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1 class="hero-title">Session Replayer</h1>
+  <p class="hero-sub">Turn your Claude Code sessions into shareable timelines. Upload a session file, get a visual story of your build.</p>
+</section>
+
+<div class="main-wrap">
+
+  <!-- UPLOAD ZONE -->
+  <div id="uploadZone" class="upload-zone">
+    <svg class="upload-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M32 42V18"/>
+      <path d="M22 28l10-10 10 10"/>
+      <rect x="8" y="38" width="48" height="18" rx="4" fill="none"/>
+      <circle cx="46" cy="47" r="2" fill="currentColor" stroke="none"/>
+    </svg>
+    <div class="upload-title">Drop your JSONL session file here</div>
+    <div class="upload-hint">or click to browse your files</div>
+    <button class="upload-btn" id="browseBtn">Browse files</button>
+    <code class="upload-path">~/.claude/projects/[project-name]/</code>
+    <div class="upload-privacy">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a4 4 0 0 0-4 4v2H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-1V5a4 4 0 0 0-4-4zm-2.5 4a2.5 2.5 0 0 1 5 0v2h-5V5zM8 10a1.5 1.5 0 0 1 .5 2.915V14h-1v-1.085A1.5 1.5 0 0 1 8 10z"/></svg>
+      Your session data is processed entirely in your browser. Nothing is uploaded to any server.
+    </div>
+    <input type="file" id="fileInput" accept=".jsonl">
+  </div>
+
+  <!-- STATS BAR (hidden initially) -->
+  <div id="statsBar" class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value" id="statMessages">0</div>
+      <div class="stat-label">Messages</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statTools">0</div>
+      <div class="stat-label">Tool Uses</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statFiles">0</div>
+      <div class="stat-label">Files Touched</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statDuration">N/A</div>
+      <div class="stat-label">Duration</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statTokens">~0k</div>
+      <div class="stat-label">Est. Tokens</div>
+    </div>
+  </div>
+
+  <!-- TIMELINE CONTROLS (hidden initially) -->
+  <div id="timelineControls" class="timeline-controls">
+    <div class="timeline-controls-left">
+      <span class="turn-count" id="turnCount">0 turns</span>
+    </div>
+    <div class="timeline-controls-right">
+      <button class="ctrl-btn" id="expandAllBtn">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 4.5l2-2h10l2 2M1 11.5l2 2h10l2 2M3.5 7H12.5M3.5 9H12.5"/></svg>
+        Expand all
+      </button>
+      <button class="ctrl-btn" id="collapseAllBtn">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 3h10M3 7h10M3 11h10"/></svg>
+        Collapse all
+      </button>
+    </div>
+  </div>
+
+  <!-- TIMELINE (hidden initially) -->
+  <div id="timeline" class="timeline"></div>
+
+  <!-- EXPORT BAR (hidden initially) -->
+  <div id="exportBar" class="export-bar">
+    <button class="export-btn" id="copyMdBtn">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2V4a2 2 0 0 0-2-2H4zm4 6h4v6H8V8zM6 6V4H4v6h2V8a2 2 0 0 1 2-2h2V6H6z"/></svg>
+      Copy as Markdown
+    </button>
+    <button class="export-btn" id="copyShareBtn">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M12 1a3 3 0 0 0-2.83 4.02L5.3 7.44A3 3 0 1 0 4 13a2.98 2.98 0 0 0 1.3-2.44l3.87-2.42A3 3 0 1 0 12 1z"/></svg>
+      Copy Share Text
+    </button>
+    <button class="export-btn primary" id="newSessionBtn">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8zm7-3.5a.5.5 0 0 1 .5.5v2.5H11a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V8.5H5a.5.5 0 0 1 0-1h2.5V5a.5.5 0 0 1 .5-.5z"/></svg>
+      New Session
+    </button>
+  </div>
+
+</div>
+
+<!-- COPY FEEDBACK TOAST -->
+<div class="copy-feedback" id="copyFeedback">Copied!</div>
+
+<!-- JUMP TO TOP -->
+<button class="jump-top" id="jumpTop" aria-label="Jump to top">
+  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5l-5 5h3V13h4V8.5h3z"/></svg>
+</button>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============ NAV TOGGLE ============ */
+  document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open')});
+
+  /* ============ DOM REFS ============ */
+  const uploadZone    = document.getElementById('uploadZone');
+  const fileInput     = document.getElementById('fileInput');
+  const browseBtn     = document.getElementById('browseBtn');
+  const statsBar      = document.getElementById('statsBar');
+  const timelineCtrl  = document.getElementById('timelineControls');
+  const timeline      = document.getElementById('timeline');
+  const exportBar     = document.getElementById('exportBar');
+  const copyFeedback  = document.getElementById('copyFeedback');
+  const jumpTop       = document.getElementById('jumpTop');
+
+  const statMessages  = document.getElementById('statMessages');
+  const statTools     = document.getElementById('statTools');
+  const statFiles     = document.getElementById('statFiles');
+  const statDuration  = document.getElementById('statDuration');
+  const statTokens    = document.getElementById('statTokens');
+  const turnCount     = document.getElementById('turnCount');
+
+  /* ============ STATE ============ */
+  let parsedEntries = [];
+  let sessionStats  = {};
+
+  /* ============ UPLOAD HANDLERS ============ */
+  browseBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  uploadZone.addEventListener('click', function() {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files.length > 0) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  /* Drag and drop */
+  uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadZone.classList.add('drag-over');
+  });
+
+  uploadZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadZone.classList.remove('drag-over');
+  });
+
+  uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  /* ============ FILE READING ============ */
+  function handleFile(file) {
+    if (!file.name.endsWith('.jsonl')) {
+      showError('Please upload a .jsonl file.', 'This tool expects Claude Code session files in JSONL format. Each line should be a JSON object.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      parseSession(text);
+    };
+    reader.onerror = function() {
+      showError('Failed to read file.', 'The file could not be read. Please try again.');
+    };
+    reader.readAsText(file);
+  }
+
+  /* ============ JSONL PARSING ============ */
+  function parseSession(text) {
+    const lines = text.split('\n').filter(function(l) { return l.trim().length > 0; });
+    const entries = [];
+    let totalChars = 0;
+    let toolUseCount = 0;
+    const filePaths = new Set();
+    let firstTimestamp = null;
+    let lastTimestamp = null;
+
+    for (let i = 0; i < lines.length; i++) {
+      let obj;
+      try {
+        obj = JSON.parse(lines[i]);
+      } catch (e) {
+        continue; // skip invalid lines
+      }
+
+      const entry = extractEntry(obj);
+      if (entry) {
+        entries.push(entry);
+
+        // Gather stats
+        if (entry.timestamp) {
+          if (!firstTimestamp) firstTimestamp = entry.timestamp;
+          lastTimestamp = entry.timestamp;
+        }
+
+        if (entry.role === 'user') {
+          totalChars += (entry.text || '').length;
+        } else if (entry.role === 'assistant') {
+          if (entry.text) totalChars += entry.text.length;
+          if (entry.tools && entry.tools.length > 0) {
+            for (let t = 0; t < entry.tools.length; t++) {
+              toolUseCount++;
+              totalChars += (entry.tools[t].display || '').length;
+              if (entry.tools[t].filePath) {
+                filePaths.add(entry.tools[t].filePath);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (entries.length === 0) {
+      showError("Couldn't parse this file", "No recognizable session entries found. Make sure this is a Claude Code JSONL session file. Expected format: one JSON object per line with a 'type' field ('human' or 'assistant') or a 'message' object with a 'role' field.");
+      return;
+    }
+
+    // Calculate duration
+    let durationStr = 'N/A';
+    if (firstTimestamp && lastTimestamp) {
+      const diffMs = new Date(lastTimestamp) - new Date(firstTimestamp);
+      if (diffMs > 0 && !isNaN(diffMs)) {
+        durationStr = formatDuration(diffMs);
+      }
+    }
+
+    // Count messages
+    let humanCount = 0;
+    let assistantCount = 0;
+    for (let i = 0; i < entries.length; i++) {
+      if (entries[i].role === 'user') humanCount++;
+      else assistantCount++;
+    }
+
+    const estTokens = Math.round(totalChars / 4);
+    const tokenStr = estTokens >= 1000 ? '~' + Math.round(estTokens / 1000) + 'k' : '~' + estTokens;
+
+    sessionStats = {
+      messages: humanCount + assistantCount,
+      humanCount: humanCount,
+      assistantCount: assistantCount,
+      toolUses: toolUseCount,
+      filesTouched: filePaths.size,
+      duration: durationStr,
+      estTokens: tokenStr,
+      fileEdits: filePaths.size
+    };
+
+    parsedEntries = entries;
+    renderSession();
+  }
+
+  /* Extract a normalized entry from a raw JSON object */
+  function extractEntry(obj) {
+    let role = null;
+    let text = '';
+    let tools = [];
+    let timestamp = null;
+
+    // Try to get timestamp
+    timestamp = obj.timestamp || obj.created_at || obj.ts || null;
+
+    // Format 1: top-level type field
+    if (obj.type === 'human' || obj.type === 'user') {
+      role = 'user';
+      if (typeof obj.message === 'string') {
+        text = obj.message;
+      } else if (obj.message && typeof obj.message.content === 'string') {
+        text = obj.message.content;
+      } else if (obj.message && Array.isArray(obj.message.content)) {
+        var extracted = extractContent(obj.message.content);
+        text = extracted.text;
+        tools = extracted.tools;
+      } else if (typeof obj.content === 'string') {
+        text = obj.content;
+      } else if (Array.isArray(obj.content)) {
+        var extracted2 = extractContent(obj.content);
+        text = extracted2.text;
+        tools = extracted2.tools;
+      }
+      if (!timestamp && obj.message) timestamp = obj.message.timestamp || obj.message.created_at || null;
+    }
+    else if (obj.type === 'assistant') {
+      role = 'assistant';
+      if (typeof obj.message === 'string') {
+        text = obj.message;
+      } else if (obj.message && typeof obj.message.content === 'string') {
+        text = obj.message.content;
+      } else if (obj.message && Array.isArray(obj.message.content)) {
+        var extracted3 = extractContent(obj.message.content);
+        text = extracted3.text;
+        tools = extracted3.tools;
+      } else if (typeof obj.content === 'string') {
+        text = obj.content;
+      } else if (Array.isArray(obj.content)) {
+        var extracted4 = extractContent(obj.content);
+        text = extracted4.text;
+        tools = extracted4.tools;
+      }
+      if (!timestamp && obj.message) timestamp = obj.message.timestamp || obj.message.created_at || null;
+    }
+    // Format 2: message.role
+    else if (obj.message && (obj.message.role === 'user' || obj.message.role === 'human')) {
+      role = 'user';
+      if (typeof obj.message.content === 'string') {
+        text = obj.message.content;
+      } else if (Array.isArray(obj.message.content)) {
+        var extracted5 = extractContent(obj.message.content);
+        text = extracted5.text;
+        tools = extracted5.tools;
+      }
+      timestamp = timestamp || obj.message.timestamp || obj.message.created_at || null;
+    }
+    else if (obj.message && obj.message.role === 'assistant') {
+      role = 'assistant';
+      if (typeof obj.message.content === 'string') {
+        text = obj.message.content;
+      } else if (Array.isArray(obj.message.content)) {
+        var extracted6 = extractContent(obj.message.content);
+        text = extracted6.text;
+        tools = extracted6.tools;
+      }
+      timestamp = timestamp || obj.message.timestamp || obj.message.created_at || null;
+    }
+    // Format 3: direct role field
+    else if (obj.role === 'user' || obj.role === 'human') {
+      role = 'user';
+      if (typeof obj.content === 'string') {
+        text = obj.content;
+      } else if (Array.isArray(obj.content)) {
+        var extracted7 = extractContent(obj.content);
+        text = extracted7.text;
+        tools = extracted7.tools;
+      }
+    }
+    else if (obj.role === 'assistant') {
+      role = 'assistant';
+      if (typeof obj.content === 'string') {
+        text = obj.content;
+      } else if (Array.isArray(obj.content)) {
+        var extracted8 = extractContent(obj.content);
+        text = extracted8.text;
+        tools = extracted8.tools;
+      }
+    }
+
+    if (!role) return null;
+
+    return { role: role, text: text, tools: tools, timestamp: timestamp };
+  }
+
+  /* Extract text and tools from content blocks array */
+  function extractContent(blocks) {
+    var text = '';
+    var tools = [];
+
+    for (var i = 0; i < blocks.length; i++) {
+      var block = blocks[i];
+      if (block.type === 'text') {
+        text += (text ? '\n' : '') + (block.text || '');
+      }
+      else if (block.type === 'tool_use') {
+        var toolInfo = parseToolUse(block);
+        tools.push(toolInfo);
+      }
+      else if (block.type === 'tool_result') {
+        // Skip tool results — they're output, not commands
+      }
+      else if (typeof block === 'string') {
+        text += (text ? '\n' : '') + block;
+      }
+    }
+
+    return { text: text, tools: tools };
+  }
+
+  /* Parse a tool_use block into display info */
+  function parseToolUse(block) {
+    var name = block.name || 'Unknown';
+    var input = block.input || {};
+    var nameLower = name.toLowerCase();
+    var display = '';
+    var filePath = '';
+    var category = 'other';
+
+    if (nameLower === 'bash') {
+      category = 'bash';
+      display = input.command || input.cmd || JSON.stringify(input).substring(0, 200);
+    }
+    else if (nameLower === 'write') {
+      category = 'file';
+      filePath = input.file_path || input.path || '';
+      display = 'Write file: ' + filePath;
+    }
+    else if (nameLower === 'edit') {
+      category = 'file';
+      filePath = input.file_path || input.path || '';
+      display = 'Edit file: ' + filePath;
+    }
+    else if (nameLower === 'read') {
+      category = 'read';
+      filePath = input.file_path || input.path || '';
+      display = 'Read file: ' + filePath;
+    }
+    else if (nameLower === 'grep' || nameLower === 'glob') {
+      category = 'search';
+      var pattern = input.pattern || input.query || '';
+      var path = input.path || input.directory || '';
+      display = 'Searched: ' + pattern + (path ? ' in ' + path : '');
+    }
+    else if (nameLower === 'notebookedit') {
+      category = 'file';
+      filePath = input.notebook_path || '';
+      display = 'Edit notebook: ' + filePath;
+    }
+    else if (nameLower === 'todowrite') {
+      category = 'other';
+      display = 'Updated task list';
+    }
+    else if (nameLower === 'websearch') {
+      category = 'search';
+      display = 'Web search: ' + (input.query || '');
+    }
+    else if (nameLower === 'webfetch') {
+      category = 'search';
+      display = 'Fetched URL: ' + (input.url || '');
+    }
+    else {
+      // Generic tool
+      var summary = '';
+      var keys = Object.keys(input);
+      for (var k = 0; k < Math.min(keys.length, 3); k++) {
+        var val = input[keys[k]];
+        if (typeof val === 'string') {
+          summary += keys[k] + ': ' + val.substring(0, 80) + (val.length > 80 ? '...' : '') + '; ';
+        }
+      }
+      display = name + (summary ? ': ' + summary : '');
+    }
+
+    return {
+      name: name,
+      category: category,
+      display: display,
+      filePath: filePath,
+      command: (category === 'bash') ? (input.command || input.cmd || '') : '',
+      input: input
+    };
+  }
+
+  /* ============ RENDER ============ */
+  function renderSession() {
+    // Hide upload, show results
+    uploadZone.style.display = 'none';
+
+    // Stats
+    statMessages.textContent = sessionStats.messages;
+    statTools.textContent    = sessionStats.toolUses;
+    statFiles.textContent    = sessionStats.filesTouched;
+    statDuration.textContent = sessionStats.duration;
+    statTokens.textContent   = sessionStats.estTokens;
+
+    // Turn count
+    var turns = 0;
+    for (var i = 0; i < parsedEntries.length; i++) {
+      if (parsedEntries[i].role === 'user') turns++;
+    }
+    turnCount.textContent = turns + (turns === 1 ? ' turn' : ' turns');
+
+    // Build timeline HTML
+    var html = '';
+    for (var i = 0; i < parsedEntries.length; i++) {
+      var entry = parsedEntries[i];
+      html += renderEntry(entry, i);
+      if (i < parsedEntries.length - 1) {
+        html += '<div class="tl-divider"></div>';
+      }
+    }
+    timeline.innerHTML = html;
+
+    // Animate in
+    requestAnimationFrame(function() {
+      statsBar.classList.add('visible');
+      setTimeout(function() { timelineCtrl.classList.add('visible'); }, 100);
+      setTimeout(function() { timeline.classList.add('visible'); }, 200);
+      setTimeout(function() { exportBar.classList.add('visible'); }, 300);
+    });
+
+    // Bind toggle buttons
+    bindToggles();
+  }
+
+  function renderEntry(entry, idx) {
+    var isUser = entry.role === 'user';
+    var dotClass = isUser ? 'user' : 'claude';
+    var dotLabel = isUser ? 'U' : 'C';
+    var cardClass = isUser ? 'user-card' : 'claude-card';
+    var roleClass = isUser ? 'user-role' : 'claude-role';
+    var roleLabel = isUser ? 'You' : 'Claude';
+
+    var timeStr = '';
+    if (entry.timestamp) {
+      try {
+        var d = new Date(entry.timestamp);
+        if (!isNaN(d.getTime())) {
+          timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+      } catch(e) {}
+    }
+
+    var h = '';
+    h += '<div class="tl-entry">';
+    h += '<div class="tl-dot ' + dotClass + '">' + dotLabel + '</div>';
+    h += '<div class="tl-card ' + cardClass + '">';
+    h += '<div class="tl-header">';
+    h += '<span class="tl-role ' + roleClass + '">' + roleLabel + '</span>';
+    if (timeStr) h += '<span class="tl-timestamp">' + escapeHtml(timeStr) + '</span>';
+    h += '</div>';
+    h += '<div class="tl-body">';
+
+    // Text content
+    if (entry.text && entry.text.trim()) {
+      var textLen = entry.text.length;
+      var needsCollapse = textLen > 400;
+      h += '<div class="tl-text' + (needsCollapse ? ' collapsed' : '') + '" data-toggle="' + idx + '">';
+      h += escapeHtml(entry.text);
+      h += '</div>';
+      if (needsCollapse) {
+        h += '<button class="tl-toggle" data-target="' + idx + '">Show more</button>';
+      }
+    }
+
+    // Tool uses
+    if (entry.tools && entry.tools.length > 0) {
+      if (entry.text && entry.text.trim()) {
+        h += '<div style="height:12px"></div>';
+      }
+      h += '<div class="tl-tools-header">';
+      h += '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 1A1.5 1.5 0 0 0 3 2.5V3H2.5A1.5 1.5 0 0 0 1 4.5v1A1.5 1.5 0 0 0 2.5 7H3v2h-.5A1.5 1.5 0 0 0 1 10.5v1A1.5 1.5 0 0 0 2.5 13H3v.5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5V13h.5a1.5 1.5 0 0 0 1.5-1.5v-1A1.5 1.5 0 0 0 13.5 9H13V7h.5A1.5 1.5 0 0 0 15 5.5v-1A1.5 1.5 0 0 0 13.5 3H13v-.5A1.5 1.5 0 0 0 11.5 1h-7z"/></svg>';
+      h += 'Claude executed:';
+      h += '</div>';
+
+      for (var t = 0; t < entry.tools.length; t++) {
+        h += renderTool(entry.tools[t]);
+      }
+    }
+
+    h += '</div></div></div>';
+    return h;
+  }
+
+  function renderTool(tool) {
+    var h = '<div class="tl-tool">';
+
+    if (tool.category === 'bash') {
+      h += '<div class="tl-tool-label">';
+      h += '<span class="tl-tool-icon bash">$</span>';
+      h += '<span class="tl-tool-name">Bash</span>';
+      if (tool.input && tool.input.description) {
+        h += '<span class="tl-tool-path" title="' + escapeAttr(tool.input.description) + '">' + escapeHtml(tool.input.description) + '</span>';
+      }
+      h += '</div>';
+      h += '<pre class="tl-code">' + escapeHtml(tool.command) + '</pre>';
+    }
+    else if (tool.category === 'file') {
+      var nameLC = tool.name.toLowerCase();
+      var verb = nameLC === 'write' ? 'Write' : nameLC === 'edit' ? 'Edit' : nameLC === 'notebookedit' ? 'Edit notebook' : tool.name;
+      h += '<div class="tl-tool-label">';
+      h += '<span class="tl-tool-icon file">' + (nameLC === 'write' ? 'W' : 'E') + '</span>';
+      h += '<span class="tl-tool-name">' + escapeHtml(verb) + '</span>';
+      if (tool.filePath) {
+        h += '<span class="tl-tool-path" title="' + escapeAttr(tool.filePath) + '">' + escapeHtml(shortenPath(tool.filePath)) + '</span>';
+      }
+      h += '</div>';
+    }
+    else if (tool.category === 'read') {
+      h += '<div class="tl-tool-label">';
+      h += '<span class="tl-tool-icon read">R</span>';
+      h += '<span class="tl-tool-name">Read</span>';
+      if (tool.filePath) {
+        h += '<span class="tl-tool-path" title="' + escapeAttr(tool.filePath) + '">' + escapeHtml(shortenPath(tool.filePath)) + '</span>';
+      }
+      h += '</div>';
+    }
+    else if (tool.category === 'search') {
+      h += '<div class="tl-tool-label">';
+      h += '<span class="tl-tool-icon search">S</span>';
+      h += '<span class="tl-tool-name">' + escapeHtml(tool.name) + '</span>';
+      h += '<span class="tl-tool-path" title="' + escapeAttr(tool.display) + '">' + escapeHtml(tool.display.substring(tool.display.indexOf(':') + 1).trim() || tool.display) + '</span>';
+      h += '</div>';
+    }
+    else {
+      h += '<div class="tl-tool-label">';
+      h += '<span class="tl-tool-icon other">T</span>';
+      h += '<span class="tl-tool-name">' + escapeHtml(tool.name) + '</span>';
+      h += '</div>';
+      if (tool.display) {
+        h += '<pre class="tl-code">' + escapeHtml(tool.display.substring(0, 500)) + '</pre>';
+      }
+    }
+
+    h += '</div>';
+    return h;
+  }
+
+  /* ============ TOGGLE BINDINGS ============ */
+  function bindToggles() {
+    var toggles = document.querySelectorAll('.tl-toggle');
+    for (var i = 0; i < toggles.length; i++) {
+      toggles[i].addEventListener('click', function() {
+        var target = this.getAttribute('data-target');
+        var textEl = document.querySelector('.tl-text[data-toggle="' + target + '"]');
+        if (textEl) {
+          var isCollapsed = textEl.classList.contains('collapsed');
+          textEl.classList.toggle('collapsed');
+          this.textContent = isCollapsed ? 'Show less' : 'Show more';
+        }
+      });
+    }
+  }
+
+  /* ============ EXPAND / COLLAPSE ALL ============ */
+  document.getElementById('expandAllBtn').addEventListener('click', function() {
+    var texts = document.querySelectorAll('.tl-text.collapsed');
+    var toggles = document.querySelectorAll('.tl-toggle');
+    for (var i = 0; i < texts.length; i++) {
+      texts[i].classList.remove('collapsed');
+    }
+    for (var i = 0; i < toggles.length; i++) {
+      toggles[i].textContent = 'Show less';
+    }
+  });
+
+  document.getElementById('collapseAllBtn').addEventListener('click', function() {
+    var toggles = document.querySelectorAll('.tl-toggle');
+    for (var i = 0; i < toggles.length; i++) {
+      var target = toggles[i].getAttribute('data-target');
+      var textEl = document.querySelector('.tl-text[data-toggle="' + target + '"]');
+      if (textEl) textEl.classList.add('collapsed');
+      toggles[i].textContent = 'Show more';
+    }
+  });
+
+  /* ============ EXPORT: MARKDOWN ============ */
+  document.getElementById('copyMdBtn').addEventListener('click', function() {
+    var md = '# Claude Code Session\n\n';
+    md += '## Stats\n';
+    md += '- Messages: ' + sessionStats.messages + '\n';
+    md += '- Tool uses: ' + sessionStats.toolUses + '\n';
+    md += '- Files touched: ' + sessionStats.filesTouched + '\n';
+    md += '- Duration: ' + sessionStats.duration + '\n';
+    md += '- Est. tokens: ' + sessionStats.estTokens + '\n\n';
+    md += '## Timeline\n\n';
+
+    for (var i = 0; i < parsedEntries.length; i++) {
+      var entry = parsedEntries[i];
+      if (entry.role === 'user') {
+        md += '### User\n';
+        md += (entry.text || '(empty)') + '\n\n';
+      } else {
+        md += '### Claude\n';
+        if (entry.text && entry.text.trim()) {
+          md += entry.text + '\n\n';
+        }
+        if (entry.tools && entry.tools.length > 0) {
+          for (var t = 0; t < entry.tools.length; t++) {
+            var tool = entry.tools[t];
+            if (tool.category === 'bash') {
+              md += '**Tool: bash**\n```\n' + tool.command + '\n```\n\n';
+            } else if (tool.category === 'file') {
+              md += '**Tool: ' + tool.name.toLowerCase() + '** `' + tool.filePath + '`\n\n';
+            } else if (tool.category === 'read') {
+              md += '**Tool: read** `' + tool.filePath + '`\n\n';
+            } else if (tool.category === 'search') {
+              md += '**Tool: ' + tool.name.toLowerCase() + '** ' + tool.display + '\n\n';
+            } else {
+              md += '**Tool: ' + tool.name + '**\n' + tool.display + '\n\n';
+            }
+          }
+        }
+      }
+      md += '---\n\n';
+    }
+
+    copyToClipboard(md, 'Markdown copied!');
+  });
+
+  /* ============ EXPORT: SHARE TEXT ============ */
+  document.getElementById('copyShareBtn').addEventListener('click', function() {
+    var fileEdits = sessionStats.fileEdits || 0;
+    var shareText = 'I built with Claude Code \u2014 ' + sessionStats.messages + ' messages, ' + fileEdits + ' file edits. Replay at claude-skins.vercel.app/replayer.html';
+    copyToClipboard(shareText, 'Share text copied!');
+  });
+
+  /* ============ NEW SESSION ============ */
+  document.getElementById('newSessionBtn').addEventListener('click', function() {
+    // Reset everything
+    parsedEntries = [];
+    sessionStats  = {};
+    timeline.innerHTML = '';
+    timeline.classList.remove('visible');
+    statsBar.classList.remove('visible');
+    timelineCtrl.classList.remove('visible');
+    exportBar.classList.remove('visible');
+    uploadZone.style.display = '';
+    fileInput.value = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* ============ JUMP TO TOP ============ */
+  jumpTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) {
+      jumpTop.classList.add('visible');
+    } else {
+      jumpTop.classList.remove('visible');
+    }
+  });
+
+  /* ============ ERROR DISPLAY ============ */
+  function showError(title, message) {
+    uploadZone.style.display = 'none';
+    timeline.innerHTML = '<div class="parse-error">' +
+      '<div class="parse-error-icon">&#x26A0;</div>' +
+      '<h3>' + escapeHtml(title) + '</h3>' +
+      '<p>' + escapeHtml(message) + '</p>' +
+      '<div style="margin-top:24px"><button class="export-btn primary" onclick="location.reload()">Try again</button></div>' +
+      '</div>';
+    timeline.classList.add('visible');
+  }
+
+  /* ============ UTILITIES ============ */
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function escapeAttr(str) {
+    if (!str) return '';
+    return str.replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function shortenPath(p) {
+    if (!p) return '';
+    // Show last 3 segments
+    var parts = p.replace(/\\/g, '/').split('/');
+    if (parts.length <= 3) return p;
+    return '.../' + parts.slice(-3).join('/');
+  }
+
+  function formatDuration(ms) {
+    var secs = Math.floor(ms / 1000);
+    var mins = Math.floor(secs / 60);
+    var hrs  = Math.floor(mins / 60);
+    secs = secs % 60;
+    mins = mins % 60;
+    if (hrs > 0) return hrs + 'h ' + mins + 'm';
+    if (mins > 0) return mins + 'm ' + secs + 's';
+    return secs + 's';
+  }
+
+  function copyToClipboard(text, feedbackMsg) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showCopyFeedback(feedbackMsg);
+      }).catch(function() {
+        fallbackCopy(text, feedbackMsg);
+      });
+    } else {
+      fallbackCopy(text, feedbackMsg);
+    }
+  }
+
+  function fallbackCopy(text, feedbackMsg) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showCopyFeedback(feedbackMsg);
+    } catch(e) {
+      showCopyFeedback('Copy failed — please copy manually');
+    }
+    document.body.removeChild(ta);
+  }
+
+  var feedbackTimer = null;
+  function showCopyFeedback(msg) {
+    copyFeedback.textContent = msg;
+    copyFeedback.classList.add('show');
+    if (feedbackTimer) clearTimeout(feedbackTimer);
+    feedbackTimer = setTimeout(function() {
+      copyFeedback.classList.remove('show');
+    }, 2200);
+  }
+
+})();
+</script>
+</body>
+</html>

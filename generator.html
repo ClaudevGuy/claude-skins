@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLAUDE.md Generator — Claude Code Toolkit</title>
+<meta name="description" content="Generate the perfect CLAUDE.md context file for Claude Code. Answer a few questions, get a production-ready CLAUDE.md.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#0a0a0f;color:#e0e0e0;overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased;padding-top:50px}
+code,pre,.mono{font-family:'JetBrains Mono',monospace}
+
+/* ============ NAV BAR ============ */
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);font-family:'Inter',system-ui,sans-serif}
+.nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-brand{font-size:.85rem;font-weight:800;color:#e0e0e0;text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand:hover{text-decoration:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:#8888aa;text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:#e0e0e0;background:rgba(255,255,255,.05);text-decoration:none}
+.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
+.nav-toggle span{display:block;width:20px;height:2px;background:#8888aa;border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+
+/* ============ HERO ============ */
+.hero{padding:60px 24px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,#0a0a0f);pointer-events:none}
+.hero-title{font-size:clamp(2.2rem,6vw,4rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px;
+  background:linear-gradient(135deg,#ff4081,#e040fb,#7c4dff,#00e5ff,#69f0ae,#ffea00,#ff4081);
+  background-size:300% 300%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:heroGrad 6s ease infinite}
+@keyframes heroGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:clamp(.95rem,2vw,1.15rem);color:#8888aa;max-width:580px;margin:0 auto;font-weight:400}
+
+/* ============ WIZARD CONTAINER ============ */
+.wizard-wrap{max-width:760px;margin:0 auto;padding:0 20px 80px}
+
+/* ============ PROGRESS BAR ============ */
+.progress-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:36px;padding:0 10px}
+.progress-step{display:flex;align-items:center;gap:0}
+.progress-dot{width:34px;height:34px;border-radius:50%;border:2px solid #1a1a2e;background:#0c0c16;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#555577;transition:all .35s;cursor:pointer;position:relative;flex-shrink:0}
+.progress-dot.active{border-color:#7c4dff;background:rgba(124,77,255,.15);color:#7c4dff;box-shadow:0 0 16px rgba(124,77,255,.25)}
+.progress-dot.completed{border-color:#7c4dff;background:#7c4dff;color:#fff}
+.progress-dot.completed::after{content:'\2713';font-size:.8rem}
+.progress-dot.completed .dot-num{display:none}
+.progress-line{width:40px;height:2px;background:#1a1a2e;transition:background .35s;flex-shrink:0}
+.progress-line.completed{background:#7c4dff}
+@media(max-width:560px){.progress-line{width:20px}.progress-dot{width:28px;height:28px;font-size:.65rem}}
+
+/* ============ STEP CARDS ============ */
+.step-card{background:#0c0c16;border:1px solid #1a1a2e;border-radius:16px;padding:36px 32px;opacity:0;transform:translateY(20px);transition:opacity .4s ease,transform .4s ease;display:none}
+.step-card.visible{display:block;opacity:1;transform:translateY(0)}
+.step-title{font-size:1.35rem;font-weight:800;color:#e0e0e0;margin-bottom:6px;letter-spacing:-.02em}
+.step-desc{font-size:.88rem;color:#8888aa;margin-bottom:28px}
+
+/* ============ FORM ELEMENTS ============ */
+.field-group{margin-bottom:22px}
+.field-label{display:block;font-size:.8rem;font-weight:600;color:#aaaacc;margin-bottom:8px;letter-spacing:.02em}
+.field-input{width:100%;padding:11px 16px;border-radius:10px;border:1px solid #1a1a2e;background:#0e0e18;color:#e0e0e0;font-size:.9rem;font-family:'Inter',system-ui,sans-serif;transition:border-color .2s,box-shadow .2s;outline:none}
+.field-input:focus{border-color:#7c4dff;box-shadow:0 0 0 3px rgba(124,77,255,.15)}
+.field-input::placeholder{color:#555577}
+textarea.field-input{resize:vertical;min-height:80px;line-height:1.5}
+select.field-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+
+/* ============ CHIPS ============ */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 16px;border-radius:10px;border:1px solid #1a1a2e;background:#0e0e18;color:#8888aa;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;user-select:none;font-family:'Inter',system-ui,sans-serif}
+.chip:hover{border-color:#333355;color:#c0c0dd}
+.chip.selected{border-color:#7c4dff;background:rgba(124,77,255,.18);color:#c4b5ff}
+
+/* ============ DYNAMIC LIST ============ */
+.dynamic-list{display:flex;flex-direction:column;gap:10px}
+.dynamic-item{display:flex;gap:8px;align-items:center}
+.dynamic-item .field-input{flex:1}
+.dynamic-item .dir-desc{flex:1.5}
+.btn-remove{width:32px;height:32px;border-radius:8px;border:1px solid #2a1a1a;background:rgba(255,60,60,.08);color:#ff5555;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.btn-remove:hover{background:rgba(255,60,60,.2);border-color:#ff5555}
+.btn-add{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;border:1px dashed #1a1a2e;background:transparent;color:#7c4dff;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',system-ui,sans-serif;margin-top:6px}
+.btn-add:hover{border-color:#7c4dff;background:rgba(124,77,255,.06)}
+
+/* ============ TOGGLE SWITCH ============ */
+.toggle-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.toggle-switch{width:44px;height:24px;border-radius:12px;background:#1a1a2e;cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#555577;transition:all .2s}
+.toggle-switch.on{background:#7c4dff}
+.toggle-switch.on::after{left:23px;background:#fff}
+
+/* ============ MONOREPO FIELDS ============ */
+.monorepo-fields{display:none;margin-top:16px;padding:16px;border-radius:10px;background:rgba(124,77,255,.04);border:1px solid rgba(124,77,255,.1)}
+.monorepo-fields.visible{display:block}
+
+/* ============ SUGGESTION CHIPS (Step 6) ============ */
+.suggestion-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.suggestion-chip{padding:6px 14px;border-radius:8px;border:1px solid #1a1a2e;background:#0e0e18;color:#8888aa;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;user-select:none}
+.suggestion-chip:hover{border-color:#333355;color:#c0c0dd}
+.suggestion-chip.active{border-color:#7c4dff;background:rgba(124,77,255,.18);color:#c4b5ff}
+
+/* ============ NAV BUTTONS ============ */
+.step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:32px;gap:12px}
+.btn{padding:12px 28px;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .25s;border:none;font-family:'Inter',system-ui,sans-serif;letter-spacing:.01em}
+.btn-back{background:transparent;border:1px solid #1a1a2e;color:#8888aa}
+.btn-back:hover{border-color:#333355;color:#e0e0e0;background:rgba(255,255,255,.03)}
+.btn-next{background:linear-gradient(135deg,#7c4dff,#6030dd);color:#fff;box-shadow:0 4px 16px rgba(124,77,255,.3)}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,77,255,.45)}
+.btn-generate{background:linear-gradient(135deg,#7c4dff,#00b4dc);color:#fff;box-shadow:0 4px 16px rgba(124,77,255,.3);padding:14px 36px;font-size:1rem}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,77,255,.45)}
+.step-counter{font-size:.78rem;font-weight:600;color:#555577}
+
+/* ============ OUTPUT (Step 7) ============ */
+.output-wrap{position:relative;margin-bottom:24px}
+.output-block{background:#0e0e18;border:1px solid #1a1a2e;border-radius:12px;padding:24px;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.7;color:#c0c0dd;white-space:pre-wrap;word-break:break-word;max-height:500px;overflow-y:auto}
+.output-block::-webkit-scrollbar{width:6px}
+.output-block::-webkit-scrollbar-track{background:transparent}
+.output-block::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:3px}
+.output-block::-webkit-scrollbar-thumb:hover{background:#2a2a3e}
+.output-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.btn-copy{padding:14px 32px;border-radius:12px;background:linear-gradient(135deg,#7c4dff,#6030dd);color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;border:none;transition:all .25s;font-family:'Inter',system-ui,sans-serif;box-shadow:0 4px 16px rgba(124,77,255,.3)}
+.btn-copy:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,77,255,.45)}
+.btn-copy.copied{background:linear-gradient(135deg,#22cc77,#18aa66)}
+.btn-download{padding:14px 32px;border-radius:12px;background:transparent;border:1px solid #1a1a2e;color:#e0e0e0;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;font-family:'Inter',system-ui,sans-serif}
+.btn-download:hover{border-color:#333355;background:rgba(255,255,255,.03)}
+.btn-startover{padding:14px 32px;border-radius:12px;background:transparent;border:1px solid rgba(255,60,60,.2);color:#ff6666;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;font-family:'Inter',system-ui,sans-serif}
+.btn-startover:hover{background:rgba(255,60,60,.06);border-color:rgba(255,60,60,.4)}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:600px){
+  .step-card{padding:24px 18px;border-radius:12px}
+  .hero{padding:40px 16px 28px}
+  .wizard-wrap{padding:0 12px 60px}
+  .step-nav{flex-wrap:wrap;justify-content:center}
+  .output-actions{flex-direction:column}
+  .btn-copy,.btn-download,.btn-startover{width:100%;text-align:center}
+  .dynamic-item{flex-wrap:wrap}
+  .dynamic-item .field-input,.dynamic-item .dir-desc{min-width:0}
+}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:#0a0a0f}
+::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#2a2a3e}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Skins</a><a href="arena.html" class="nav-link">Arena</a><a href="generator.html" class="nav-link active">Generator</a><a href="prompts.html" class="nav-link">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link">Replayer</a></div></div></nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1 class="hero-title">CLAUDE.md Generator</h1>
+  <p class="hero-sub">Generate the perfect context file for Claude Code. Answer a few questions, get a production-ready CLAUDE.md.</p>
+</section>
+
+<!-- WIZARD -->
+<div class="wizard-wrap">
+
+  <!-- Progress Bar -->
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- STEP 1: Project Basics -->
+  <div class="step-card visible" data-step="1">
+    <h2 class="step-title">Project Basics</h2>
+    <p class="step-desc">Tell us about your project so Claude knows what it's working on.</p>
+
+    <div class="field-group">
+      <label class="field-label">Project Name</label>
+      <input type="text" class="field-input" id="projectName" placeholder="my-awesome-project">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Project Description</label>
+      <textarea class="field-input" id="projectDesc" placeholder="A brief 1-2 sentence description of what this project does..."></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Project Type</label>
+      <select class="field-input" id="projectType">
+        <option value="">Select type...</option>
+        <option value="Web App">Web App</option>
+        <option value="Mobile App">Mobile App</option>
+        <option value="API/Backend">API/Backend</option>
+        <option value="CLI Tool">CLI Tool</option>
+        <option value="Library/Package">Library/Package</option>
+        <option value="Monorepo">Monorepo</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="step-nav">
+      <span></span>
+      <span class="step-counter">Step 1 of 7</span>
+      <button class="btn btn-next" onclick="goStep(2)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Tech Stack -->
+  <div class="step-card" data-step="2">
+    <h2 class="step-title">Tech Stack</h2>
+    <p class="step-desc">What languages, frameworks, and tools does your project use?</p>
+
+    <div class="field-group">
+      <label class="field-label">Language(s)</label>
+      <div class="chips-wrap" id="langChips"></div>
+    </div>
+    <div class="field-group" id="frameworkGroup" style="display:none">
+      <label class="field-label">Framework(s)</label>
+      <div class="chips-wrap" id="frameworkChips"></div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Package Manager</label>
+      <select class="field-input" id="pkgManager">
+        <option value="">Select...</option>
+        <option value="npm">npm</option>
+        <option value="pnpm">pnpm</option>
+        <option value="yarn">yarn</option>
+        <option value="bun">bun</option>
+        <option value="pip">pip</option>
+        <option value="cargo">cargo</option>
+        <option value="go mod">go mod</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Database(s)</label>
+      <div class="chips-wrap" id="dbChips"></div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-back" onclick="goStep(1)">Back</button>
+      <span class="step-counter">Step 2 of 7</span>
+      <button class="btn btn-next" onclick="goStep(3)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Project Structure -->
+  <div class="step-card" data-step="3">
+    <h2 class="step-title">Project Structure</h2>
+    <p class="step-desc">Describe how your project's files and directories are organized.</p>
+
+    <div class="field-group">
+      <label class="field-label">Source Directory</label>
+      <input type="text" class="field-input" id="srcDir" placeholder="src/" value="src/">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Key Directories</label>
+      <div class="dynamic-list" id="dirList">
+        <div class="dynamic-item">
+          <input type="text" class="field-input" placeholder="e.g. src/components/" value="">
+          <input type="text" class="field-input dir-desc" placeholder="Description" value="">
+          <button class="btn-remove" onclick="removeItem(this)">&times;</button>
+        </div>
+      </div>
+      <button class="btn-add" onclick="addDirItem()">+ Add Directory</button>
+    </div>
+    <div class="field-group">
+      <div class="toggle-row">
+        <button class="toggle-switch" id="monoToggle" onclick="toggleMonorepo()"></button>
+        <span class="field-label" style="margin-bottom:0">This is a monorepo</span>
+      </div>
+      <div class="monorepo-fields" id="monoFields">
+        <div class="field-group" style="margin-bottom:12px">
+          <label class="field-label">Apps / Packages (one per line)</label>
+          <textarea class="field-input" id="monoApps" placeholder="apps/web - Main web application&#10;apps/api - API server&#10;packages/ui - Shared UI components"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-back" onclick="goStep(2)">Back</button>
+      <span class="step-counter">Step 3 of 7</span>
+      <button class="btn btn-next" onclick="goStep(4)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Coding Standards -->
+  <div class="step-card" data-step="4">
+    <h2 class="step-title">Coding Standards</h2>
+    <p class="step-desc">Define style preferences so Claude matches your codebase conventions.</p>
+
+    <div class="field-group">
+      <label class="field-label">Style Preferences</label>
+      <div class="chips-wrap" id="styleChips"></div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Naming Convention</label>
+      <select class="field-input" id="namingConv">
+        <option value="">Select...</option>
+        <option value="camelCase">camelCase</option>
+        <option value="snake_case">snake_case</option>
+        <option value="PascalCase for components">PascalCase for components</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Max File Length</label>
+      <select class="field-input" id="maxFileLen">
+        <option value="No limit">No limit</option>
+        <option value="200 lines">200 lines</option>
+        <option value="300 lines" selected>300 lines</option>
+        <option value="500 lines">500 lines</option>
+      </select>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-back" onclick="goStep(3)">Back</button>
+      <span class="step-counter">Step 4 of 7</span>
+      <button class="btn btn-next" onclick="goStep(5)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Testing & CI -->
+  <div class="step-card" data-step="5">
+    <h2 class="step-title">Testing &amp; CI</h2>
+    <p class="step-desc">Configure test runners, build commands, and CI/CD pipeline info.</p>
+
+    <div class="field-group">
+      <label class="field-label">Test Framework</label>
+      <select class="field-input" id="testFramework">
+        <option value="">Select...</option>
+        <option value="Jest">Jest</option>
+        <option value="Vitest">Vitest</option>
+        <option value="Pytest">Pytest</option>
+        <option value="Mocha">Mocha</option>
+        <option value="Playwright">Playwright</option>
+        <option value="Cypress">Cypress</option>
+        <option value="None">None</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Test Command</label>
+      <input type="text" class="field-input mono" id="testCmd" placeholder="npm test" value="npm test">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Typecheck Command</label>
+      <input type="text" class="field-input mono" id="typecheckCmd" placeholder="npx tsc --noEmit" value="npx tsc --noEmit">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Lint Command</label>
+      <input type="text" class="field-input mono" id="lintCmd" placeholder="npm run lint" value="npm run lint">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Build Command</label>
+      <input type="text" class="field-input mono" id="buildCmd" placeholder="npm run build" value="npm run build">
+    </div>
+    <div class="field-group">
+      <label class="field-label">CI/CD</label>
+      <select class="field-input" id="cicd">
+        <option value="">Select...</option>
+        <option value="GitHub Actions">GitHub Actions</option>
+        <option value="Vercel">Vercel</option>
+        <option value="Netlify">Netlify</option>
+        <option value="Docker">Docker</option>
+        <option value="None">None</option>
+      </select>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-back" onclick="goStep(4)">Back</button>
+      <span class="step-counter">Step 5 of 7</span>
+      <button class="btn btn-next" onclick="goStep(6)">Next</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: Claude Behavior Rules -->
+  <div class="step-card" data-step="6">
+    <h2 class="step-title">Claude Behavior Rules</h2>
+    <p class="step-desc">Set guardrails for what Claude should always or never do in your project.</p>
+
+    <div class="field-group">
+      <label class="field-label">Things Claude should ALWAYS do</label>
+      <div class="suggestion-chips" id="alwaysChips"></div>
+      <div class="dynamic-list" id="alwaysList"></div>
+      <button class="btn-add" onclick="addAlwaysItem()">+ Add Rule</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Things Claude should NEVER do</label>
+      <div class="suggestion-chips" id="neverChips"></div>
+      <div class="dynamic-list" id="neverList"></div>
+      <button class="btn-add" onclick="addNeverItem()">+ Add Rule</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Custom Rules / Additional Notes</label>
+      <textarea class="field-input" id="customRules" placeholder="Any other instructions or context you want Claude to know about..."></textarea>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-back" onclick="goStep(5)">Back</button>
+      <span class="step-counter">Step 6 of 7</span>
+      <button class="btn btn-generate" onclick="goStep(7)">Generate CLAUDE.md</button>
+    </div>
+  </div>
+
+  <!-- STEP 7: Review & Generate -->
+  <div class="step-card" data-step="7">
+    <h2 class="step-title">Your CLAUDE.md</h2>
+    <p class="step-desc">Review the generated file below. Copy it or download it directly.</p>
+
+    <div class="output-wrap">
+      <div class="output-block" id="outputBlock"></div>
+    </div>
+    <div class="output-actions">
+      <button class="btn-copy" id="copyBtn" onclick="copyOutput()">Copy to Clipboard</button>
+      <button class="btn-download" onclick="downloadOutput()">Download as CLAUDE.md</button>
+      <button class="btn-startover" onclick="startOver()">Start Over</button>
+    </div>
+
+    <div class="step-nav" style="margin-top:24px">
+      <button class="btn btn-back" onclick="goStep(6)">Back to Edit</button>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============ NAV TOGGLE ============
+document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open')});
+
+// ============ DATA ============
+const LANGUAGES = ['TypeScript','JavaScript','Python','Rust','Go','Java','C#','Ruby','PHP','Swift','Kotlin','Other'];
+const FRAMEWORKS = {
+  'TypeScript':['React','Next.js','Vue','Nuxt','Svelte','SvelteKit','Express','Fastify','Hono','Astro','Remix','None'],
+  'JavaScript':['React','Next.js','Vue','Nuxt','Svelte','SvelteKit','Express','Fastify','Hono','Astro','Remix','None'],
+  'Python':['Django','Flask','FastAPI','None'],
+  'Rust':['Actix','Axum','Rocket','None'],
+  'Go':['Gin','Echo','Fiber','None'],
+  'Java':['Spring Boot','Quarkus','None'],
+  'C#':['ASP.NET','Blazor','None'],
+  'Ruby':['Rails','Sinatra','None'],
+  'PHP':['Laravel','Symfony','None'],
+  'Swift':['SwiftUI','Vapor','None'],
+  'Kotlin':['Ktor','Spring Boot','None']
+};
+const DATABASES = ['PostgreSQL','MySQL','MongoDB','SQLite','Redis','Supabase','Firebase','Prisma','Drizzle','None'];
+const STYLES = ['ES modules','CommonJS','Functional components','Class components OK','Strict TypeScript','Semicolons','No semicolons','Single quotes','Double quotes','Tabs','2-space indent','4-space indent'];
+const ALWAYS_SUGGESTIONS = ['Run tests after changes','Use TypeScript strict mode','Add JSDoc comments','Handle errors explicitly','Use existing patterns in codebase'];
+const NEVER_SUGGESTIONS = ['Use any type','Delete existing tests','Commit directly to main','Add new dependencies without asking','Change database schema without confirmation','Use console.log for error handling'];
+
+const TOTAL_STEPS = 7;
+let currentStep = 1;
+
+// State
+let selectedLangs = [];
+let selectedFrameworks = [];
+let selectedDBs = [];
+let selectedStyles = [];
+let alwaysSuggestions = [];
+let neverSuggestions = [];
+
+// ============ INIT ============
+function init() {
+  buildProgressBar();
+  buildChips('langChips', LANGUAGES, selectedLangs, onLangToggle);
+  buildChips('dbChips', DATABASES, selectedDBs, onDBToggle);
+  buildChips('styleChips', STYLES, selectedStyles, onStyleToggle);
+  buildSuggestionChips('alwaysChips', ALWAYS_SUGGESTIONS, alwaysSuggestions);
+  buildSuggestionChips('neverChips', NEVER_SUGGESTIONS, neverSuggestions);
+}
+
+// ============ PROGRESS BAR ============
+function buildProgressBar() {
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const step = document.createElement('div');
+    step.className = 'progress-step';
+
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot';
+    dot.dataset.step = i;
+    dot.innerHTML = '<span class="dot-num">' + i + '</span>';
+    dot.onclick = function() { if (i <= currentStep) goStep(i); };
+    step.appendChild(dot);
+
+    if (i < TOTAL_STEPS) {
+      const line = document.createElement('div');
+      line.className = 'progress-line';
+      line.dataset.after = i;
+      step.appendChild(line);
+    }
+    bar.appendChild(step);
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const dot = document.querySelector('.progress-dot[data-step="'+i+'"]');
+    dot.classList.remove('active','completed');
+    if (i === currentStep) dot.classList.add('active');
+    else if (i < currentStep) dot.classList.add('completed');
+  }
+  document.querySelectorAll('.progress-line').forEach(function(line) {
+    const after = parseInt(line.dataset.after);
+    line.classList.toggle('completed', after < currentStep);
+  });
+}
+
+// ============ STEP NAVIGATION ============
+function goStep(n) {
+  if (n < 1 || n > TOTAL_STEPS) return;
+  // hide current
+  var cur = document.querySelector('.step-card.visible');
+  if (cur) {
+    cur.classList.remove('visible');
+    cur.style.display = 'none';
+  }
+  currentStep = n;
+  updateProgress();
+  // if step 7, generate output first
+  if (n === 7) generateOutput();
+  // show new step
+  var next = document.querySelector('.step-card[data-step="'+n+'"]');
+  next.style.display = 'block';
+  // trigger reflow for transition
+  void next.offsetWidth;
+  next.classList.add('visible');
+  // scroll to top
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ============ CHIP BUILDERS ============
+function buildChips(containerId, items, selectedArr, toggleFn) {
+  var wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  items.forEach(function(item) {
+    var chip = document.createElement('div');
+    chip.className = 'chip' + (selectedArr.indexOf(item) !== -1 ? ' selected' : '');
+    chip.textContent = item;
+    chip.onclick = function() { toggleFn(item, chip); };
+    wrap.appendChild(chip);
+  });
+}
+
+function onLangToggle(lang, chip) {
+  var idx = selectedLangs.indexOf(lang);
+  if (idx !== -1) {
+    selectedLangs.splice(idx, 1);
+    chip.classList.remove('selected');
+  } else {
+    selectedLangs.push(lang);
+    chip.classList.add('selected');
+  }
+  updateFrameworkChips();
+}
+
+function updateFrameworkChips() {
+  var group = document.getElementById('frameworkGroup');
+  var wrap = document.getElementById('frameworkChips');
+  // collect all relevant frameworks
+  var allFw = [];
+  var seen = {};
+  selectedLangs.forEach(function(lang) {
+    var fws = FRAMEWORKS[lang];
+    if (fws) {
+      fws.forEach(function(fw) {
+        if (!seen[fw]) { seen[fw] = true; allFw.push(fw); }
+      });
+    }
+  });
+  if (allFw.length === 0) {
+    group.style.display = 'none';
+    selectedFrameworks = [];
+    return;
+  }
+  group.style.display = 'block';
+  // remove frameworks that are no longer available
+  selectedFrameworks = selectedFrameworks.filter(function(fw) { return seen[fw]; });
+  wrap.innerHTML = '';
+  allFw.forEach(function(fw) {
+    var chip = document.createElement('div');
+    chip.className = 'chip' + (selectedFrameworks.indexOf(fw) !== -1 ? ' selected' : '');
+    chip.textContent = fw;
+    chip.onclick = function() {
+      var i = selectedFrameworks.indexOf(fw);
+      if (i !== -1) { selectedFrameworks.splice(i, 1); chip.classList.remove('selected'); }
+      else { selectedFrameworks.push(fw); chip.classList.add('selected'); }
+    };
+    wrap.appendChild(chip);
+  });
+}
+
+function onDBToggle(db, chip) {
+  var idx = selectedDBs.indexOf(db);
+  if (idx !== -1) { selectedDBs.splice(idx, 1); chip.classList.remove('selected'); }
+  else { selectedDBs.push(db); chip.classList.add('selected'); }
+}
+
+function onStyleToggle(style, chip) {
+  var idx = selectedStyles.indexOf(style);
+  if (idx !== -1) { selectedStyles.splice(idx, 1); chip.classList.remove('selected'); }
+  else { selectedStyles.push(style); chip.classList.add('selected'); }
+}
+
+// ============ SUGGESTION CHIPS (Step 6) ============
+function buildSuggestionChips(containerId, suggestions, activeArr) {
+  var wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  suggestions.forEach(function(text) {
+    var chip = document.createElement('div');
+    chip.className = 'suggestion-chip';
+    chip.textContent = text;
+    chip.onclick = function() {
+      var idx = activeArr.indexOf(text);
+      if (idx !== -1) { activeArr.splice(idx, 1); chip.classList.remove('active'); }
+      else { activeArr.push(text); chip.classList.add('active'); }
+    };
+    wrap.appendChild(chip);
+  });
+}
+
+// ============ DYNAMIC LISTS ============
+function addDirItem() {
+  var list = document.getElementById('dirList');
+  var item = document.createElement('div');
+  item.className = 'dynamic-item';
+  item.innerHTML = '<input type="text" class="field-input" placeholder="e.g. src/utils/">' +
+    '<input type="text" class="field-input dir-desc" placeholder="Description">' +
+    '<button class="btn-remove" onclick="removeItem(this)">&times;</button>';
+  list.appendChild(item);
+}
+
+function addAlwaysItem() {
+  var list = document.getElementById('alwaysList');
+  var item = document.createElement('div');
+  item.className = 'dynamic-item';
+  item.innerHTML = '<input type="text" class="field-input" placeholder="Claude should always...">' +
+    '<button class="btn-remove" onclick="removeItem(this)">&times;</button>';
+  list.appendChild(item);
+}
+
+function addNeverItem() {
+  var list = document.getElementById('neverList');
+  var item = document.createElement('div');
+  item.className = 'dynamic-item';
+  item.innerHTML = '<input type="text" class="field-input" placeholder="Claude should never...">' +
+    '<button class="btn-remove" onclick="removeItem(this)">&times;</button>';
+  list.appendChild(item);
+}
+
+function removeItem(btn) {
+  btn.parentElement.remove();
+}
+
+// ============ MONOREPO TOGGLE ============
+function toggleMonorepo() {
+  var toggle = document.getElementById('monoToggle');
+  toggle.classList.toggle('on');
+  var fields = document.getElementById('monoFields');
+  fields.classList.toggle('visible');
+}
+
+// ============ GENERATE OUTPUT ============
+function generateOutput() {
+  var name = document.getElementById('projectName').value.trim() || 'My Project';
+  var desc = document.getElementById('projectDesc').value.trim() || 'A project.';
+  var type = document.getElementById('projectType').value;
+  var langs = selectedLangs.length ? selectedLangs.join(', ') : 'Not specified';
+  var fws = selectedFrameworks.filter(function(f){ return f !== 'None'; });
+  var fwStr = fws.length ? fws.join(', ') : 'None';
+  var pkg = document.getElementById('pkgManager').value || 'Not specified';
+  var dbs = selectedDBs.filter(function(d){ return d !== 'None'; });
+  var dbStr = dbs.length ? dbs.join(', ') : 'None';
+
+  var srcDir = document.getElementById('srcDir').value.trim() || 'src/';
+  var dirItems = document.getElementById('dirList').querySelectorAll('.dynamic-item');
+  var dirs = [];
+  dirItems.forEach(function(item) {
+    var inputs = item.querySelectorAll('.field-input');
+    var path = inputs[0].value.trim();
+    var desc = inputs[1].value.trim();
+    if (path) dirs.push({ path: path, desc: desc });
+  });
+
+  var isMonorepo = document.getElementById('monoToggle').classList.contains('on');
+  var monoApps = document.getElementById('monoApps').value.trim();
+
+  var naming = document.getElementById('namingConv').value;
+  var maxLen = document.getElementById('maxFileLen').value;
+
+  var testFw = document.getElementById('testFramework').value;
+  var testCmd = document.getElementById('testCmd').value.trim();
+  var typecheckCmd = document.getElementById('typecheckCmd').value.trim();
+  var lintCmd = document.getElementById('lintCmd').value.trim();
+  var buildCmd = document.getElementById('buildCmd').value.trim();
+  var cicd = document.getElementById('cicd').value;
+
+  // Always rules: suggestions + custom
+  var alwaysRules = alwaysSuggestions.slice();
+  document.getElementById('alwaysList').querySelectorAll('.dynamic-item').forEach(function(item) {
+    var val = item.querySelector('.field-input').value.trim();
+    if (val) alwaysRules.push(val);
+  });
+
+  var neverRules = neverSuggestions.slice();
+  document.getElementById('neverList').querySelectorAll('.dynamic-item').forEach(function(item) {
+    var val = item.querySelector('.field-input').value.trim();
+    if (val) neverRules.push(val);
+  });
+
+  var customRules = document.getElementById('customRules').value.trim();
+
+  // Build the markdown
+  var md = '';
+  md += '# ' + name + '\n\n';
+  md += desc + '\n\n';
+
+  md += '## Tech Stack\n';
+  md += '- **Language:** ' + langs + '\n';
+  md += '- **Framework:** ' + fwStr + '\n';
+  md += '- **Package manager:** ' + pkg + '\n';
+  md += '- **Database:** ' + dbStr + '\n';
+  if (type) md += '- **Project type:** ' + type + '\n';
+  if (testFw && testFw !== 'None') md += '- **Test framework:** ' + testFw + '\n';
+  if (cicd && cicd !== 'None') md += '- **CI/CD:** ' + cicd + '\n';
+  md += '\n';
+
+  md += '## Project Structure\n';
+  md += '- `' + srcDir + '` \u2014 Main source directory\n';
+  dirs.forEach(function(d) {
+    md += '- `' + d.path + '`' + (d.desc ? ' \u2014 ' + d.desc : '') + '\n';
+  });
+  if (isMonorepo && monoApps) {
+    md += '\n### Monorepo Layout\n';
+    monoApps.split('\n').forEach(function(line) {
+      line = line.trim();
+      if (line) {
+        if (line.indexOf(' - ') !== -1) {
+          var parts = line.split(' - ');
+          md += '- `' + parts[0].trim() + '` \u2014 ' + parts.slice(1).join(' - ').trim() + '\n';
+        } else {
+          md += '- `' + line + '`\n';
+        }
+      }
+    });
+  }
+  md += '\n';
+
+  md += '## Commands\n';
+  if (testCmd) md += '- **Test:** `' + testCmd + '`\n';
+  if (typecheckCmd) md += '- **Typecheck:** `' + typecheckCmd + '`\n';
+  if (lintCmd) md += '- **Lint:** `' + lintCmd + '`\n';
+  if (buildCmd) md += '- **Build:** `' + buildCmd + '`\n';
+  md += '\n';
+
+  if (selectedStyles.length || naming || maxLen) {
+    md += '## Code Style\n';
+    selectedStyles.forEach(function(s) {
+      md += '- ' + s + '\n';
+    });
+    if (naming) md += '- Naming convention: ' + naming + '\n';
+    if (maxLen && maxLen !== 'No limit') md += '- Max file length: ' + maxLen + '\n';
+    md += '\n';
+  }
+
+  if (alwaysRules.length || neverRules.length) {
+    md += '## Rules\n\n';
+    if (alwaysRules.length) {
+      md += '### ALWAYS\n';
+      alwaysRules.forEach(function(r) {
+        md += '- ' + r + '\n';
+      });
+      md += '\n';
+    }
+    if (neverRules.length) {
+      md += '### NEVER\n';
+      neverRules.forEach(function(r) {
+        md += '- ' + r + '\n';
+      });
+      md += '\n';
+    }
+  }
+
+  if (customRules) {
+    md += '## Additional Notes\n\n';
+    md += customRules + '\n';
+  }
+
+  document.getElementById('outputBlock').textContent = md;
+}
+
+// ============ COPY TO CLIPBOARD ============
+function copyOutput() {
+  var text = document.getElementById('outputBlock').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Copy to Clipboard';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ============ DOWNLOAD ============
+function downloadOutput() {
+  var text = document.getElementById('outputBlock').textContent;
+  var blob = new Blob([text], { type: 'text/markdown' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'CLAUDE.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============ START OVER ============
+function startOver() {
+  // Reset all fields
+  document.getElementById('projectName').value = '';
+  document.getElementById('projectDesc').value = '';
+  document.getElementById('projectType').value = '';
+  selectedLangs = [];
+  selectedFrameworks = [];
+  selectedDBs = [];
+  selectedStyles = [];
+  alwaysSuggestions = [];
+  neverSuggestions = [];
+  document.getElementById('pkgManager').value = '';
+  document.getElementById('srcDir').value = 'src/';
+  document.getElementById('dirList').innerHTML = '<div class="dynamic-item"><input type="text" class="field-input" placeholder="e.g. src/components/" value=""><input type="text" class="field-input dir-desc" placeholder="Description" value=""><button class="btn-remove" onclick="removeItem(this)">&times;</button></div>';
+  document.getElementById('monoToggle').classList.remove('on');
+  document.getElementById('monoFields').classList.remove('visible');
+  document.getElementById('monoApps').value = '';
+  document.getElementById('namingConv').value = '';
+  document.getElementById('maxFileLen').value = '300 lines';
+  document.getElementById('testFramework').value = '';
+  document.getElementById('testCmd').value = 'npm test';
+  document.getElementById('typecheckCmd').value = 'npx tsc --noEmit';
+  document.getElementById('lintCmd').value = 'npm run lint';
+  document.getElementById('buildCmd').value = 'npm run build';
+  document.getElementById('cicd').value = '';
+  document.getElementById('alwaysList').innerHTML = '';
+  document.getElementById('neverList').innerHTML = '';
+  document.getElementById('customRules').value = '';
+  document.getElementById('frameworkGroup').style.display = 'none';
+
+  // Rebuild chips
+  buildChips('langChips', LANGUAGES, selectedLangs, onLangToggle);
+  buildChips('dbChips', DATABASES, selectedDBs, onDBToggle);
+  buildChips('styleChips', STYLES, selectedStyles, onStyleToggle);
+  buildSuggestionChips('alwaysChips', ALWAYS_SUGGESTIONS, alwaysSuggestions);
+  buildSuggestionChips('neverChips', NEVER_SUGGESTIONS, neverSuggestions);
+
+  goStep(1);
+}
+
+// ============ BOOT ============
+init();
+</script>
+</body>
+</html>

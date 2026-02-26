@@ -32,19 +32,19 @@ a{color:var(--uncommon);text-decoration:none}
 a:hover{text-decoration:underline}
 
 /* ============ SOCIAL LINKS ============ */
-.social-links{position:fixed;top:16px;left:16px;z-index:200;display:flex;gap:8px}
+.social-links{position:fixed;top:58px;left:16px;z-index:200;display:flex;gap:8px}
 .social-link{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);
   display:flex;align-items:center;justify-content:center;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2);text-decoration:none}
 .social-link:hover{transform:scale(1.1);border-color:var(--text3);text-decoration:none}
 .social-link svg{width:20px;height:20px;fill:currentColor}
-@media(max-width:480px){.social-links{top:10px;left:10px;gap:6px}
+@media(max-width:480px){.social-links{top:54px;left:10px;gap:6px}
   .social-link{width:38px;height:38px}
   .social-link svg{width:17px;height:17px}}
 
 /* ============ THEME TOGGLE ============ */
-.theme-toggle{position:fixed;top:16px;right:16px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.theme-toggle{position:fixed;top:58px;right:16px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
 .theme-toggle:hover{transform:scale(1.1);border-color:var(--text3)}
-@media(max-width:480px){.theme-toggle{top:10px;right:10px;width:38px;height:38px;font-size:1rem}}
+@media(max-width:480px){.theme-toggle{top:54px;right:10px;width:38px;height:38px;font-size:1rem}}
 
 /* ============ CANVAS BG ============ */
 #bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.4}
@@ -52,7 +52,7 @@ a:hover{text-decoration:underline}
 .page-wrap{position:relative;z-index:1}
 
 /* ============ HERO ============ */
-.hero{padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.hero{padding:110px 24px 60px;text-align:center;position:relative;overflow:hidden}
 .hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(transparent,var(--bg));pointer-events:none}
 .hero-title{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:16px;
   background:linear-gradient(135deg,#ff4081,#e040fb,#7c4dff,#00e5ff,#69f0ae,#ffea00,#ff4081);
@@ -74,7 +74,7 @@ a:hover{text-decoration:underline}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
 /* ============ FILTER BAR ============ */
-.filter-bar{position:sticky;top:0;z-index:100;padding:12px 24px;background:var(--filter-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;transition:box-shadow .3s}
+.filter-bar{position:sticky;top:50px;z-index:100;padding:12px 24px;background:var(--filter-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;transition:box-shadow .3s}
 .filter-bar.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.5)}
 .filter-btn{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;gap:6px}
 .filter-btn:hover{background:var(--bg3);color:var(--text)}
@@ -395,10 +395,25 @@ a:hover{text-decoration:underline}
 .skin-card.sold-out .card-preview{position:relative}
 .sold-out-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:5;border-radius:var(--radius) var(--radius) 0 0}
 .sold-out-text{font-size:1.4rem;font-weight:900;color:#ff1744;letter-spacing:.12em;text-transform:uppercase;transform:rotate(-12deg);text-shadow:0 2px 8px rgba(0,0,0,.6);border:3px solid #ff1744;padding:6px 20px;border-radius:6px;background:rgba(0,0,0,.4)}
+
+/* ============ TOOLKIT NAV ============ */
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);font-family:'Inter',system-ui,sans-serif}
+.nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-brand{font-size:.85rem;font-weight:800;color:#e0e0e0;text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand:hover{text-decoration:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:#8888aa;text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:#e0e0e0;background:rgba(255,255,255,.05);text-decoration:none}
+.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
+.nav-toggle span{display:block;width:20px;height:2px;background:#8888aa;border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
 </style>
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link active">Skins</a><a href="arena.html" class="nav-link">Arena</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link">Replayer</a></div></div></nav>
+
 <div class="page-wrap">
 
 <!-- SOCIAL LINKS -->
@@ -673,6 +688,9 @@ a:hover{text-decoration:underline}
 </div>
 
 <script>
+/* Nav toggle */
+document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open')});
+
 /* ============================================================
    DATA — metadata only, SVGs loaded from skins/ directory
    ============================================================ */

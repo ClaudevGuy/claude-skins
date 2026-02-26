@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rules Generator — Claude Code Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:#0a0a0f;color:#e0e0e0;font-family:'Inter',system-ui,sans-serif;padding-top:50px;min-height:100vh;line-height:1.5}
+
+/* NAV */
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);font-family:'Inter',system-ui,sans-serif}
+.nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-brand{font-size:.85rem;font-weight:800;color:#e0e0e0;text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand:hover{text-decoration:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:#8888aa;text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:#e0e0e0;background:rgba(255,255,255,.05);text-decoration:none}
+.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
+.nav-toggle span{display:block;width:20px;height:2px;background:#8888aa;border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+
+/* HERO */
+.hero{text-align:center;padding:48px 20px 32px}
+.hero-title{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,#7c4dff,#b388ff,#e040fb);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.hero-sub{color:#8888aa;font-size:clamp(.9rem,2vw,1.05rem);max-width:560px;margin:0 auto 16px}
+.hero-explain{color:#666680;font-size:.82rem;max-width:540px;margin:0 auto;line-height:1.6}
+.hero-explain code{font-family:'JetBrains Mono',monospace;background:rgba(124,77,255,.1);color:#b388ff;padding:1px 6px;border-radius:4px;font-size:.78rem}
+
+/* LAYOUT */
+.builder-wrap{max-width:1200px;margin:0 auto;padding:0 20px 40px}
+.builder{display:flex;gap:16px;min-height:520px}
+
+/* LEFT PANEL */
+.panel-left{width:180px;flex-shrink:0;background:#0c0c16;border:1px solid #1a1a2e;border-radius:12px;padding:10px 6px;overflow-y:auto;align-self:flex-start}
+.panel-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#555570;padding:6px 10px 8px;border-bottom:1px solid #1a1a2e;margin-bottom:4px}
+.cat-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:500;color:#8888aa;transition:all .2s;position:relative}
+.cat-item:hover{color:#c0c0d0;background:rgba(255,255,255,.03)}
+.cat-item.active{color:#e0e0e0;background:rgba(124,77,255,.1)}
+.cat-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;background:#7c4dff;border-radius:0 3px 3px 0}
+.cat-icon{font-size:.95rem;width:20px;text-align:center;flex-shrink:0}
+.cat-badge{margin-left:auto;font-size:.6rem;font-weight:700;background:rgba(124,77,255,.2);color:#b388ff;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+
+/* MIDDLE PANEL */
+.panel-mid{flex:1;min-width:0;background:#0c0c16;border:1px solid #1a1a2e;border-radius:12px;padding:16px;overflow-y:auto;max-height:600px}
+.mid-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1a1a2e}
+.mid-cat-name{font-size:.95rem;font-weight:700;color:#e0e0e0}
+.mid-count{font-size:.72rem;font-weight:600;color:#8888aa}
+.mid-count span{color:#7c4dff}
+.mid-actions{display:flex;gap:8px;margin-bottom:14px}
+.mid-btn{padding:5px 12px;border-radius:6px;font-size:.72rem;font-weight:600;border:1px solid #1a1a2e;background:transparent;color:#8888aa;cursor:pointer;transition:all .2s}
+.mid-btn:hover{color:#e0e0e0;border-color:#333}
+
+.rule-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;transition:background .2s;margin-bottom:2px}
+.rule-item:hover{background:rgba(255,255,255,.02)}
+
+/* TOGGLE SWITCH */
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;margin-top:1px}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:#1a1a2e;border-radius:10px;cursor:pointer;transition:all .25s}
+.toggle-track::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#555;border-radius:50%;transition:all .25s}
+.toggle input:checked+.toggle-track{background:#7c4dff}
+.toggle input:checked+.toggle-track::after{transform:translateX(16px);background:#fff}
+.rule-text{font-size:.82rem;color:#b0b0c0;line-height:1.5;cursor:default}
+.rule-text.on{color:#e0e0e0}
+
+/* CUSTOM TEXTAREA */
+.custom-area{width:100%;min-height:160px;background:#08080e;border:1px solid #1a1a2e;border-radius:8px;padding:12px;color:#e0e0e0;font-family:'JetBrains Mono',monospace;font-size:.8rem;resize:vertical;line-height:1.6;outline:none;transition:border-color .2s}
+.custom-area:focus{border-color:#7c4dff}
+.custom-hint{font-size:.7rem;color:#555570;margin-top:6px}
+
+/* RIGHT PANEL */
+.panel-right{width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;align-self:flex-start}
+.config-card{background:#0c0c16;border:1px solid #1a1a2e;border-radius:12px;padding:16px}
+.config-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555570;margin-bottom:12px}
+.field-group{margin-bottom:12px}
+.field-label{font-size:.72rem;font-weight:600;color:#8888aa;margin-bottom:4px;display:block}
+.field-input{width:100%;padding:8px 12px;background:#08080e;border:1px solid #1a1a2e;border-radius:8px;color:#e0e0e0;font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;transition:border-color .2s}
+.field-input:focus{border-color:#7c4dff}
+.field-input::placeholder{color:#444}
+.btn-add{width:100%;padding:10px;border-radius:8px;background:#7c4dff;border:none;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Inter',system-ui,sans-serif}
+.btn-add:hover{background:#9c6fff;transform:translateY(-1px)}
+.btn-add:active{transform:translateY(0)}
+
+/* FILE TABS */
+.file-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.file-tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;font-size:.72rem;font-weight:600;color:#8888aa;background:#08080e;border:1px solid #1a1a2e;cursor:pointer;transition:all .2s}
+.file-tab:hover{color:#c0c0d0;border-color:#333}
+.file-tab.active{color:#7c4dff;border-color:rgba(124,77,255,.4);background:rgba(124,77,255,.08)}
+.file-tab-del{font-size:.7rem;color:#555;cursor:pointer;padding:0 2px;border-radius:3px;transition:color .2s}
+.file-tab-del:hover{color:#ff4081}
+
+/* PREVIEW */
+.preview-card{background:#0c0c16;border:1px solid #1a1a2e;border-radius:12px;padding:16px;flex:1;min-height:200px}
+.preview-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555570;margin-bottom:10px}
+.preview-code{background:#08080e;border:1px solid #1a1a2e;border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.7;color:#b0b0c0;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;min-height:60px}
+.preview-code .fm{color:#7c4dff}
+.preview-code .rule-line{color:#c0c0d0}
+.preview-empty{color:#444;font-style:italic;font-family:'Inter',system-ui,sans-serif;font-size:.78rem}
+
+/* OUTPUT SECTION */
+.output-section{max-width:1200px;margin:0 auto;padding:0 20px 60px}
+.output-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.output-title{font-size:1.1rem;font-weight:800;color:#e0e0e0}
+.output-actions{display:flex;gap:8px}
+.btn-zip{padding:9px 20px;border-radius:8px;background:#7c4dff;border:none;color:#fff;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Inter',system-ui,sans-serif;display:flex;align-items:center;gap:6px}
+.btn-zip:hover{background:#9c6fff;transform:translateY(-1px)}
+.btn-zip:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.output-files{display:flex;flex-direction:column;gap:16px}
+.output-file{background:#0c0c16;border:1px solid #1a1a2e;border-radius:12px;overflow:hidden}
+.output-file-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #1a1a2e;background:rgba(124,77,255,.03)}
+.output-file-name{font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;color:#b388ff}
+.output-file-path{font-size:.68rem;color:#555570;margin-left:8px}
+.btn-copy{padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid #1a1a2e;color:#8888aa;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',system-ui,sans-serif}
+.btn-copy:hover{color:#e0e0e0;border-color:#444}
+.btn-copy.copied{color:#69f0ae;border-color:rgba(105,240,174,.3)}
+.output-file-code{padding:16px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.7;color:#b0b0c0;white-space:pre-wrap;word-break:break-word}
+
+.output-instructions{margin-top:20px;text-align:center;padding:16px;background:rgba(124,77,255,.04);border:1px solid rgba(124,77,255,.1);border-radius:10px}
+.output-instructions p{font-size:.82rem;color:#8888aa}
+.output-instructions code{font-family:'JetBrains Mono',monospace;background:rgba(124,77,255,.1);color:#b388ff;padding:2px 8px;border-radius:4px;font-size:.78rem}
+.output-empty{text-align:center;padding:40px 20px;color:#444;font-size:.85rem}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#2a2a3e}
+
+/* MOBILE */
+@media(max-width:900px){
+  .builder{flex-direction:column}
+  .panel-left{width:100%;flex-shrink:unset;display:flex;flex-wrap:wrap;gap:4px;padding:10px}
+  .panel-left .panel-title{width:100%;border-bottom:none;padding:4px 6px 6px}
+  .cat-item{padding:7px 12px;font-size:.75rem}
+  .cat-item.active::before{display:none}
+  .panel-mid{max-height:none}
+  .panel-right{width:100%}
+}
+@media(max-width:600px){
+  .hero{padding:32px 16px 24px}
+  .builder-wrap{padding:0 12px 32px}
+  .output-section{padding:0 12px 48px}
+}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Skins</a><a href="arena.html" class="nav-link">Arena</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link">Prompts</a><a href="rules.html" class="nav-link active">Rules</a><a href="replayer.html" class="nav-link">Replayer</a></div></div></nav>
+
+<section class="hero">
+  <h1 class="hero-title">Rules Generator</h1>
+  <p class="hero-sub">Build modular rule files for Claude Code. Scoped by path, organized by topic.</p>
+  <p class="hero-explain">Claude Code rules live in <code>.claude/rules/</code> as markdown files. Each can have YAML frontmatter with a <code>path</code> field to scope rules to specific directories.</p>
+</section>
+
+<div class="builder-wrap">
+  <div class="builder">
+
+    <!-- LEFT PANEL: Categories -->
+    <div class="panel-left" id="panelLeft">
+      <div class="panel-title">Categories</div>
+    </div>
+
+    <!-- MIDDLE PANEL: Rule Toggles -->
+    <div class="panel-mid" id="panelMid">
+      <div class="mid-header">
+        <div class="mid-cat-name" id="midCatName">Code Style</div>
+        <div class="mid-count" id="midCount"><span>0</span> rules selected</div>
+      </div>
+      <div class="mid-actions">
+        <button class="mid-btn" id="btnSelectAll">Select All</button>
+        <button class="mid-btn" id="btnDeselectAll">Deselect All</button>
+      </div>
+      <div id="rulesList"></div>
+    </div>
+
+    <!-- RIGHT PANEL: Config & Preview -->
+    <div class="panel-right">
+      <div class="config-card">
+        <div class="config-title">File Configuration</div>
+        <div class="field-group">
+          <label class="field-label">File name</label>
+          <input type="text" class="field-input" id="fileName" placeholder="code-style.md" value="code-style.md">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Path scope (optional)</label>
+          <input type="text" class="field-input" id="pathScope" placeholder='e.g. src/components/**'>
+        </div>
+        <button class="btn-add" id="btnAddFile">Add Rule File</button>
+      </div>
+
+      <div class="preview-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="preview-title" style="margin-bottom:0">Live Preview</div>
+        </div>
+        <div class="file-tabs" id="fileTabs"></div>
+        <div class="preview-code" id="previewCode"><span class="preview-empty">Select rules and add a file to preview...</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- OUTPUT SECTION -->
+<div class="output-section" id="outputSection">
+  <div class="output-header">
+    <div class="output-title">Generated Rule Files</div>
+    <div class="output-actions">
+      <button class="btn-zip" id="btnDownloadZip" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download ZIP
+      </button>
+    </div>
+  </div>
+  <div class="output-files" id="outputFiles">
+    <div class="output-empty">No rule files created yet. Select rules above and click "Add Rule File" to get started.</div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const CATEGORIES = [
+  { id: 'code-style',    name: 'Code Style',        icon: '{ }', file: 'code-style.md' },
+  { id: 'testing',       name: 'Testing',            icon: '✓',   file: 'testing.md' },
+  { id: 'security',      name: 'Security',           icon: '🛡',  file: 'security.md' },
+  { id: 'git',           name: 'Git Workflow',        icon: '⑂',  file: 'git-workflow.md' },
+  { id: 'files',         name: 'File Organization',   icon: '📁',  file: 'file-organization.md' },
+  { id: 'errors',        name: 'Error Handling',      icon: '⚠',  file: 'error-handling.md' },
+  { id: 'deps',          name: 'Dependencies',        icon: '📦',  file: 'dependencies.md' },
+  { id: 'docs',          name: 'Documentation',       icon: '📝',  file: 'documentation.md' },
+  { id: 'perf',          name: 'Performance',         icon: '⚡',  file: 'performance.md' },
+  { id: 'custom',        name: 'Custom',              icon: '✎',  file: 'custom.md' }
+];
+
+const RULES = {
+  'code-style': [
+    'Use ES modules (import/export), not CommonJS',
+    'Prefer functional components over class components',
+    'Use TypeScript strict mode — never use any',
+    'Destructure imports when possible',
+    'Use early returns over nested if/else',
+    'Keep functions under 50 lines',
+    'One component per file',
+    'Use named exports, not default exports',
+    'Prefer const over let, never use var',
+    'Use template literals over string concatenation',
+    'Prefer async/await over .then() chains',
+    'Use optional chaining (?.) and nullish coalescing (??)',
+    'Semicolons required',
+    'Single quotes for strings',
+    'Trailing commas in multi-line'
+  ],
+  'testing': [
+    'Write tests for every new function',
+    'Tests must cover happy path and at least 2 edge cases',
+    'Mock external dependencies, never call real APIs in tests',
+    'Use descriptive test names: "should [expected behavior] when [condition]"',
+    'Run tests after every change before committing',
+    'Maintain minimum 80% test coverage',
+    'Integration tests for API endpoints',
+    'Never skip tests without a TODO comment explaining why',
+    'Test error states, not just success paths',
+    'Use factories for test data, not inline objects'
+  ],
+  'security': [
+    'Never hardcode secrets, tokens, or API keys',
+    'Validate all user input on both client and server',
+    'Use parameterized queries, never string concatenation for SQL',
+    'Sanitize HTML output to prevent XSS',
+    'Always use HTTPS for external requests',
+    'Never expose stack traces in production error responses',
+    'Check authorization on every protected endpoint',
+    'Never log sensitive data (passwords, tokens, PII)'
+  ],
+  'git': [
+    'Write descriptive commit messages in imperative mood',
+    'Never commit directly to main',
+    'Keep commits atomic — one logical change per commit',
+    'PR descriptions must include: what changed, why, how to test',
+    'Squash merge feature branches',
+    'Delete branches after merge',
+    'Tag releases with semver',
+    'Never force push to shared branches'
+  ],
+  'files': [
+    'Group files by feature, not by type',
+    'Colocate tests next to source files',
+    'Keep shared utilities in a dedicated utils/ directory',
+    'Index files for clean public exports',
+    'Config files in project root only',
+    'Assets in a dedicated assets/ or public/ directory'
+  ],
+  'errors': [
+    'Never swallow errors silently',
+    'Use typed error classes for different error categories',
+    'Always provide user-friendly error messages',
+    'Log errors with full context (function, params, timestamp)',
+    'Handle all promise rejections',
+    'Return proper HTTP status codes for API errors'
+  ],
+  'deps': [
+    'Never add dependencies without asking first',
+    'Prefer well-maintained packages with >1000 weekly downloads',
+    'Check bundle size impact before adding frontend deps',
+    'Pin dependency versions in production',
+    'Audit dependencies for vulnerabilities quarterly'
+  ],
+  'docs': [
+    'JSDoc for all exported functions',
+    'README must be kept up to date with code changes',
+    'Document non-obvious design decisions with comments explaining WHY',
+    'API endpoints must have request/response type documentation',
+    'Keep a CHANGELOG'
+  ],
+  'perf': [
+    'Use lazy loading for routes and heavy components',
+    'Memoize expensive computations',
+    'Avoid N+1 database queries',
+    'Use pagination for list endpoints',
+    'Profile before optimizing — no premature optimization'
+  ]
+};
+
+// ── STATE ──
+let activeCategory = 'code-style';
+let selectedRules = {};    // { categoryId: Set of indices }
+let customText = '';
+let ruleFiles = [];        // [{ id, name, path, rules: [{text}] }]
+let activeFileTab = null;  // id of active file tab
+let fileIdCounter = 0;
+
+// Init selectedRules
+for (const cat of CATEGORIES) {
+  if (cat.id !== 'custom') selectedRules[cat.id] = new Set();
+}
+
+// ── NAV ──
+document.getElementById('navToggle').addEventListener('click', function () {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+// ── RENDER CATEGORIES ──
+function renderCategories() {
+  const panel = document.getElementById('panelLeft');
+  const titleEl = panel.querySelector('.panel-title');
+  // Clear all cat-items
+  panel.querySelectorAll('.cat-item').forEach(el => el.remove());
+
+  CATEGORIES.forEach(cat => {
+    const el = document.createElement('div');
+    el.className = 'cat-item' + (cat.id === activeCategory ? ' active' : '');
+    const count = cat.id === 'custom'
+      ? (customText.trim() ? customText.trim().split('\n').filter(l => l.trim()).length : 0)
+      : (selectedRules[cat.id] ? selectedRules[cat.id].size : 0);
+    el.innerHTML = `<span class="cat-icon">${cat.icon}</span><span>${cat.name}</span>${count > 0 ? `<span class="cat-badge">${count}</span>` : ''}`;
+    el.addEventListener('click', () => {
+      activeCategory = cat.id;
+      renderCategories();
+      renderRules();
+    });
+    panel.appendChild(el);
+  });
+}
+
+// ── RENDER RULES ──
+function renderRules() {
+  const container = document.getElementById('rulesList');
+  const catName = document.getElementById('midCatName');
+  const midCount = document.getElementById('midCount');
+  const cat = CATEGORIES.find(c => c.id === activeCategory);
+  catName.textContent = cat.name;
+
+  container.innerHTML = '';
+
+  if (activeCategory === 'custom') {
+    // Custom textarea
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `<textarea class="custom-area" id="customArea" placeholder="Enter custom rules, one per line...">${escHtml(customText)}</textarea><div class="custom-hint">One rule per line. These will be added as bullet points in the generated file.</div>`;
+    container.appendChild(wrapper);
+
+    const ta = wrapper.querySelector('#customArea');
+    ta.addEventListener('input', () => {
+      customText = ta.value;
+      updateCount();
+      renderCategories();
+      renderPreview();
+    });
+
+    updateCount();
+    document.getElementById('btnSelectAll').style.display = 'none';
+    document.getElementById('btnDeselectAll').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('btnSelectAll').style.display = '';
+  document.getElementById('btnDeselectAll').style.display = '';
+
+  const rules = RULES[activeCategory] || [];
+  rules.forEach((rule, idx) => {
+    const isOn = selectedRules[activeCategory].has(idx);
+    const item = document.createElement('div');
+    item.className = 'rule-item';
+    item.innerHTML = `
+      <label class="toggle">
+        <input type="checkbox" data-idx="${idx}" ${isOn ? 'checked' : ''}>
+        <span class="toggle-track"></span>
+      </label>
+      <span class="rule-text ${isOn ? 'on' : ''}">${escHtml(rule)}</span>
+    `;
+    const cb = item.querySelector('input');
+    cb.addEventListener('change', () => {
+      if (cb.checked) {
+        selectedRules[activeCategory].add(idx);
+      } else {
+        selectedRules[activeCategory].delete(idx);
+      }
+      item.querySelector('.rule-text').classList.toggle('on', cb.checked);
+      updateCount();
+      renderCategories();
+      renderPreview();
+    });
+    container.appendChild(item);
+  });
+
+  updateCount();
+}
+
+function updateCount() {
+  const midCount = document.getElementById('midCount');
+  let total = 0;
+  for (const catId in selectedRules) {
+    total += selectedRules[catId].size;
+  }
+  if (customText.trim()) {
+    total += customText.trim().split('\n').filter(l => l.trim()).length;
+  }
+  midCount.innerHTML = `<span>${total}</span> rules selected`;
+}
+
+// ── SELECT / DESELECT ALL ──
+document.getElementById('btnSelectAll').addEventListener('click', () => {
+  if (activeCategory === 'custom') return;
+  const rules = RULES[activeCategory] || [];
+  rules.forEach((_, idx) => selectedRules[activeCategory].add(idx));
+  renderRules();
+  renderCategories();
+  renderPreview();
+});
+
+document.getElementById('btnDeselectAll').addEventListener('click', () => {
+  if (activeCategory === 'custom') return;
+  selectedRules[activeCategory].clear();
+  renderRules();
+  renderCategories();
+  renderPreview();
+});
+
+// ── GATHER ALL SELECTED RULES ──
+function gatherCurrentRules() {
+  const rules = [];
+  for (const catId in selectedRules) {
+    const catRules = RULES[catId] || [];
+    for (const idx of selectedRules[catId]) {
+      rules.push(catRules[idx]);
+    }
+  }
+  if (customText.trim()) {
+    customText.trim().split('\n').forEach(line => {
+      if (line.trim()) rules.push(line.trim());
+    });
+  }
+  return rules;
+}
+
+// ── GENERATE FILE CONTENT ──
+function generateFileContent(file) {
+  let content = '';
+  if (file.path && file.path.trim()) {
+    content += '---\n';
+    content += `path: "${file.path.trim()}"\n`;
+    content += '---\n\n';
+  }
+  file.rules.forEach(r => {
+    content += `- ${r.text}\n`;
+  });
+  return content;
+}
+
+// ── ADD RULE FILE ──
+document.getElementById('btnAddFile').addEventListener('click', () => {
+  const nameInput = document.getElementById('fileName');
+  const pathInput = document.getElementById('pathScope');
+
+  let name = nameInput.value.trim();
+  if (!name) name = 'rules.md';
+  if (!name.endsWith('.md')) name += '.md';
+
+  const pathScope = pathInput.value.trim();
+  const rules = gatherCurrentRules();
+
+  if (rules.length === 0) {
+    flashButton(document.getElementById('btnAddFile'), 'No rules selected', '#ff4081');
+    return;
+  }
+
+  const file = {
+    id: ++fileIdCounter,
+    name: name,
+    path: pathScope,
+    rules: rules.map(r => ({ text: r }))
+  };
+
+  ruleFiles.push(file);
+  activeFileTab = file.id;
+  renderFileTabs();
+  renderPreview();
+  renderOutput();
+
+  // Suggest next file name
+  nameInput.value = '';
+  pathInput.value = '';
+});
+
+function flashButton(btn, text, color) {
+  const orig = btn.textContent;
+  const origBg = btn.style.background;
+  btn.textContent = text;
+  btn.style.background = color;
+  setTimeout(() => {
+    btn.textContent = orig;
+    btn.style.background = origBg;
+  }, 1500);
+}
+
+// ── FILE TABS ──
+function renderFileTabs() {
+  const container = document.getElementById('fileTabs');
+  container.innerHTML = '';
+
+  if (ruleFiles.length === 0) {
+    activeFileTab = null;
+    return;
+  }
+
+  ruleFiles.forEach(file => {
+    const tab = document.createElement('div');
+    tab.className = 'file-tab' + (file.id === activeFileTab ? ' active' : '');
+    tab.innerHTML = `<span>${escHtml(file.name)}</span><span class="file-tab-del" data-id="${file.id}">&times;</span>`;
+    tab.addEventListener('click', (e) => {
+      if (e.target.classList.contains('file-tab-del')) {
+        ruleFiles = ruleFiles.filter(f => f.id !== file.id);
+        if (activeFileTab === file.id) {
+          activeFileTab = ruleFiles.length > 0 ? ruleFiles[0].id : null;
+        }
+        renderFileTabs();
+        renderPreview();
+        renderOutput();
+        return;
+      }
+      activeFileTab = file.id;
+      renderFileTabs();
+      renderPreview();
+    });
+    container.appendChild(tab);
+  });
+}
+
+// ── PREVIEW ──
+function renderPreview() {
+  const preview = document.getElementById('previewCode');
+
+  if (!activeFileTab) {
+    // Show live preview of what would be generated
+    const rules = gatherCurrentRules();
+    const pathScope = document.getElementById('pathScope').value.trim();
+
+    if (rules.length === 0) {
+      preview.innerHTML = '<span class="preview-empty">Select rules and add a file to preview...</span>';
+      return;
+    }
+
+    let html = '';
+    if (pathScope) {
+      html += '<span class="fm">---</span>\n';
+      html += '<span class="fm">path: "' + escHtml(pathScope) + '"</span>\n';
+      html += '<span class="fm">---</span>\n\n';
+    }
+    rules.forEach(r => {
+      html += '<span class="rule-line">- ' + escHtml(r) + '</span>\n';
+    });
+    preview.innerHTML = html;
+    return;
+  }
+
+  const file = ruleFiles.find(f => f.id === activeFileTab);
+  if (!file) {
+    preview.innerHTML = '<span class="preview-empty">No file selected.</span>';
+    return;
+  }
+
+  let html = '';
+  if (file.path && file.path.trim()) {
+    html += '<span class="fm">---</span>\n';
+    html += '<span class="fm">path: "' + escHtml(file.path) + '"</span>\n';
+    html += '<span class="fm">---</span>\n\n';
+  }
+  file.rules.forEach(r => {
+    html += '<span class="rule-line">- ' + escHtml(r.text) + '</span>\n';
+  });
+  preview.innerHTML = html;
+}
+
+// Listen for live preview updates
+document.getElementById('pathScope').addEventListener('input', renderPreview);
+document.getElementById('fileName').addEventListener('input', renderPreview);
+
+// ── OUTPUT ──
+function renderOutput() {
+  const container = document.getElementById('outputFiles');
+  const btnZip = document.getElementById('btnDownloadZip');
+
+  if (ruleFiles.length === 0) {
+    container.innerHTML = '<div class="output-empty">No rule files created yet. Select rules above and click "Add Rule File" to get started.</div>';
+    btnZip.disabled = true;
+    // Remove instructions if present
+    const instrEl = document.querySelector('.output-instructions');
+    if (instrEl) instrEl.remove();
+    return;
+  }
+
+  btnZip.disabled = false;
+  container.innerHTML = '';
+
+  ruleFiles.forEach(file => {
+    const content = generateFileContent(file);
+    const fileEl = document.createElement('div');
+    fileEl.className = 'output-file';
+
+    const pathLabel = file.path ? ` <span class="output-file-path">path: ${escHtml(file.path)}</span>` : '';
+
+    fileEl.innerHTML = `
+      <div class="output-file-header">
+        <div><span class="output-file-name">.claude/rules/${escHtml(file.name)}</span>${pathLabel}</div>
+        <button class="btn-copy" data-file-id="${file.id}">Copy</button>
+      </div>
+      <div class="output-file-code">${escHtml(content)}</div>
+    `;
+
+    fileEl.querySelector('.btn-copy').addEventListener('click', function () {
+      const btn = this;
+      navigator.clipboard.writeText(content).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+
+    container.appendChild(fileEl);
+  });
+
+  // Instructions
+  let instrEl = document.querySelector('.output-instructions');
+  if (!instrEl) {
+    instrEl = document.createElement('div');
+    instrEl.className = 'output-instructions';
+    instrEl.innerHTML = '<p>Place these files in your project\'s <code>.claude/rules/</code> directory</p>';
+    document.getElementById('outputSection').appendChild(instrEl);
+  }
+}
+
+// ── DOWNLOAD ZIP ──
+document.getElementById('btnDownloadZip').addEventListener('click', () => {
+  if (ruleFiles.length === 0) return;
+
+  const zip = new JSZip();
+  const folder = zip.folder('.claude').folder('rules');
+
+  ruleFiles.forEach(file => {
+    const content = generateFileContent(file);
+    folder.file(file.name, content);
+  });
+
+  zip.generateAsync({ type: 'blob' }).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rules.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+});
+
+// ── HELPERS ──
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ── INIT ──
+renderCategories();
+renderRules();
+renderPreview();
+renderOutput();
+</script>
+</body>
+</html>
