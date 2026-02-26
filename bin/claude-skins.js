@@ -189,10 +189,11 @@ function cmdList() {
       let availBadge = '';
       if (manifest.edition === 'seasonal') {
         if (isSeasonalAvailable(manifest)) {
-          availBadge = ` ${c.green}● AVAILABLE NOW${c.reset}`;
+          const dates = formatSeasonDates(manifest);
+          availBadge = ` ${c.green}● AVAILABLE FOR LAUNCH${c.reset} ${c.dim}(${dates} — 2 weeks only)${c.reset}`;
         } else {
           const dates = formatSeasonDates(manifest);
-          availBadge = ` ${c.red}🔒 LOCKED${c.reset} ${c.dim}(${dates})${c.reset}`;
+          availBadge = ` ${c.red}🔒 LOCKED${c.reset} ${c.dim}(was ${dates})${c.reset}`;
         }
       }
       // Supply info for numbered editions
@@ -256,17 +257,7 @@ function isSeasonalAvailable(manifest) {
   const now = new Date();
   const from = new Date(manifest.available_from + 'T00:00:00');
   const until = new Date(manifest.available_until + 'T23:59:59');
-  // Compare month/day only for recurring yearly seasons
-  const fm = from.getMonth(), fd = from.getDate();
-  const um = until.getMonth(), ud = until.getDate();
-  const nm = now.getMonth(), nd = now.getDate();
-  // Does this season wrap around year boundary? (e.g., Dec 1 → Jan 15)
-  const wraps = fm > um || (fm === um && fd > ud);
-  if (wraps) {
-    return (nm > fm || (nm === fm && nd >= fd)) || (nm < um || (nm === um && nd <= ud));
-  }
-  // Same-year range
-  return (nm > fm || (nm === fm && nd >= fd)) && (nm < um || (nm === um && nd <= ud));
+  return now >= from && now <= until;
 }
 
 function formatSeasonDates(manifest) {
@@ -293,9 +284,9 @@ function doApply(skinName) {
   if (manifest.edition === 'seasonal' && !isSeasonalAvailable(manifest)) {
     const dates = formatSeasonDates(manifest);
     console.log(`${c.red}✗${c.reset} ${c.bold}${manifest.name}${c.reset} is a ${c.orange}Seasonal${c.reset} skin.`);
-    console.log(`  This skin is only available during: ${c.yellow}${dates}${c.reset}`);
+    console.log(`  This skin was available during: ${c.yellow}${dates}${c.reset}`);
     console.log(`  ${c.dim}Current date: ${new Date().toLocaleDateString()}${c.reset}`);
-    console.log(`\n  ${c.gray}Come back during the season window to use this skin!${c.reset}\n`);
+    console.log(`\n  ${c.gray}This limited launch drop has ended.${c.reset}\n`);
     return;
   }
 

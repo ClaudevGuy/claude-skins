@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "rarity": "Seasonal",
   "edition": "seasonal",
-  "description": "Trick or debug.",
+  "description": "Limited launch drop. 2 weeks only.",
   "targets": {
     "vscode_mascot": "mascot.svg",
     "vscode_icon": "icon.svg",
@@ -18,7 +18,7 @@
     "eyes": "#76ff03",
     "outline": "#e65100"
   },
-  "season": "Halloween 2026",
-  "available_from": "2026-10-15",
-  "available_until": "2026-11-05"
+  "season": "Launch",
+  "available_from": "2026-02-26",
+  "available_until": "2026-03-12"
 }

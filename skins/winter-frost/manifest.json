@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "rarity": "Seasonal",
   "edition": "seasonal",
-  "description": "Dec-Jan only.",
+  "description": "Limited launch drop. 2 weeks only.",
   "targets": {
     "vscode_mascot": "mascot.svg",
     "vscode_icon": "icon.svg",
@@ -17,7 +17,7 @@
     "accent": "#90caf9",
     "outline": "#e3f2fd"
   },
-  "season": "Winter 2026",
-  "available_from": "2026-12-01",
-  "available_until": "2027-01-15"
+  "season": "Launch",
+  "available_from": "2026-02-26",
+  "available_until": "2026-03-12"
 }

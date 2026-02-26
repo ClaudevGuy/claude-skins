@@ -701,9 +701,9 @@ const SKINS=[
   {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.',theme:{editor:'#140a1f',sidebar:'#0e0715',bar:'#08040a',accent:'#e040fb',status:'#e040fb'}},
   {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.',theme:{editor:'#140a20',sidebar:'#0e0718',bar:'#08040f',accent:'#ffd700',status:'#7b1fa2'}},
   {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.',theme:{editor:'#050008',sidebar:'#030005',bar:'#020003',accent:'#7c4dff',status:'#0a0014'}},
-  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Dec\u2013Jan only.',season:'Dec 1 \u2013 Jan 15',available_from:'2026-12-01',available_until:'2027-01-15',theme:{editor:'#0a1420',sidebar:'#070e18',bar:'#04080f',accent:'#bbdefb',status:'#e3f2fd'}},
-  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Cherry blossom. Mar\u2013Apr only.',season:'Mar 1 \u2013 Apr 15',available_from:'2026-03-01',available_until:'2026-04-15',theme:{editor:'#1f0a14',sidebar:'#15070e',bar:'#0d0408',accent:'#f48fb1',status:'#f8bbd0'}},
-  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Trick or debug.',season:'Oct 15 \u2013 Nov 5',available_from:'2026-10-15',available_until:'2026-11-05',theme:{editor:'#1f0f00',sidebar:'#150a00',bar:'#0d0600',accent:'#76ff03',status:'#ff6f00'}},
+  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Limited launch drop. 2 weeks only.',season:'Feb 26 \u2013 Mar 12',available_from:'2026-02-26',available_until:'2026-03-12',theme:{editor:'#0a1420',sidebar:'#070e18',bar:'#04080f',accent:'#bbdefb',status:'#e3f2fd'}},
+  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Limited launch drop. 2 weeks only.',season:'Feb 26 \u2013 Mar 12',available_from:'2026-02-26',available_until:'2026-03-12',theme:{editor:'#1f0a14',sidebar:'#15070e',bar:'#0d0408',accent:'#f48fb1',status:'#f8bbd0'}},
+  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Limited launch drop. 2 weeks only.',season:'Feb 26 \u2013 Mar 12',available_from:'2026-02-26',available_until:'2026-03-12',theme:{editor:'#1f0f00',sidebar:'#150a00',bar:'#0d0600',accent:'#76ff03',status:'#ff6f00'}},
   {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',supply:500,theme:{editor:'#1f1a00',sidebar:'#151100',bar:'#0d0a00',accent:'#ffd700',status:'#ffd700'}},
   {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',supply:200,theme:{editor:'#08040f',sidebar:'#050308',bar:'#030204',accent:'#e040fb',status:'#1a1a1a'}}
 ];
@@ -713,9 +713,11 @@ SKINS.sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
 /* ============================================================
    DATE & SUPPLY ENFORCEMENT
    ============================================================ */
-// All seasonal skins available for launch
+// Seasonal availability — check date window
 function isSeasonalAvailable(s){
-  return true;
+  if(!s.available_from||!s.available_until) return true;
+  var now=new Date(),from=new Date(s.available_from+'T00:00:00'),until=new Date(s.available_until+'T23:59:59');
+  return now>=from&&now<=until;
 }
 
 // Supply state — populated from API
@@ -923,7 +925,7 @@ SKINS.forEach(s=>{
     if(isLocked){
       metaTags+='<span class="card-meta-tag" style="color:#ff9800;border-color:rgba(255,152,0,.3)">Available: '+s.season+'</span>';
     }else if(isSeasonal){
-      metaTags+='<span class="card-meta-tag" style="color:#69f0ae;border-color:rgba(105,240,174,.3)">Available for launch</span>';
+      metaTags+='<span class="card-meta-tag" style="color:#69f0ae;border-color:rgba(105,240,174,.3)">Available for launch \u2014 2 weeks only</span>';
     }
   }
   if(s.supply) metaTags+='<span class="card-meta-tag limited-badge">Limited: '+s.supply+'</span>';
