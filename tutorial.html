@@ -309,10 +309,11 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
 })();
 
 /* ============================================================
-   MAIN APP
+   MAIN APP — OVERHAULED ANIMATION ENGINE
    ============================================================ */
 (function(){
 
+  // === DOM REFS ===
   var urlInput = document.getElementById('urlInput');
   var generateBtn = document.getElementById('generateBtn');
   var inputError = document.getElementById('inputError');
@@ -321,143 +322,152 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
   var playerSection = document.getElementById('playerSection');
   var canvas = document.getElementById('tutorialCanvas');
   var ctx = canvas.getContext('2d');
+  var CW = 1280, CH = 800; // canvas dimensions
 
-  // State
+  // === STATE ===
   var screenshotImg = null;
+  var imgHeight = 800; // full image height (may be > 800 for scrollable content)
   var tutorialData = null;
-  var animState = {
+  var particles = [];
+  var cursorTrail = [];
+
+  var S = {
     playing: false,
-    currentStep: 0,
-    phase: 'idle',       // idle | zooming_out | moving | zooming_in | holding | clicking
+    step: 0,
+    phase: 'idle', // idle | scrolling | moving | zooming_in | holding | zooming_out
     phaseStart: 0,
-    cursorX: 640, cursorY: 400,
-    prevX: 640, prevY: 400,
-    targetX: 640, targetY: 400,
-    currentZoom: 1.0,
-    targetZoom: 1.0,
-    prevZoom: 1.0,
+    // Cursor (viewport coords)
+    cx: 640, cy: 400,
+    prevCx: 640, prevCy: 400,
+    targetCx: 640, targetCy: 400,
+    // Scroll
+    scrollY: 0, prevScrollY: 0, targetScrollY: 0,
+    // Zoom
+    zoom: 1.0, prevZoom: 1.0, targetZoom: 1.0,
+    // Misc
     speed: 1,
     holdElapsed: 0,
-    clickPhase: 0,
-    totalElapsed: 0,
+    clickPhase: 0, clickStart: 0,
+    typewriterPos: 0,
+    calloutAlpha: 0,
     finished: false
   };
-  var lastTimestamp = 0;
-  var animFrameId = null;
+  var lastTs = 0;
+  var animId = null;
 
-  // Phase durations (ms)
-  var ZOOM_OUT_DUR = 500;
-  var MOVE_DUR = 800;
-  var ZOOM_IN_DUR = 500;
-  var CLICK_DUR = 400;
+  // === FAST PHASE DURATIONS (ms) ===
+  var DUR_SCROLL = 500;
+  var DUR_MOVE   = 450;
+  var DUR_ZOOMIN = 250;
+  var DUR_ZOOMOUT= 250;
+  var DUR_CLICK  = 250;
 
-  // ---- Easing ----
-  function easeInOutCubic(t){ return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
-  function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+  // === EASING ===
+  function easeInOut(t){ return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
+  function easeOut(t){ return 1-Math.pow(1-t,3); }
+  function easeOutBack(t){ var c=1.7;return 1+c*Math.pow(t-1,3)+c*Math.pow(t-1,2); }
 
-  // ---- Generate flow ----
-  generateBtn.addEventListener('click', startGeneration);
-  urlInput.addEventListener('keydown', function(e){ if(e.key==='Enter') startGeneration(); });
+  // === ACTION COLORS ===
+  var ACTION_COLORS = {click:'#7c4dff',hover:'#00e5ff',scroll:'#69f0ae',type:'#ff9100'};
 
-  function showError(msg){
-    inputError.textContent=msg;
-    inputError.style.display='block';
-  }
-  function hideError(){
-    inputError.style.display='none';
-  }
-
-  function setLoadingStep(step,state){
-    var el=document.getElementById('loadStep'+step);
+  // === HELPERS ===
+  function showError(msg){inputError.textContent=msg;inputError.style.display='block';}
+  function hideError(){inputError.style.display='none';}
+  function setLoadStep(n,state){
+    var el=document.getElementById('loadStep'+n);
     el.className='loading-step'+(state==='active'?' active':state==='done'?' done':'');
     if(state==='done') el.querySelector('.loading-step-icon').textContent='\u2713';
   }
 
+  // Compute scrollY so element at fullY is visible in 800px viewport
+  function calcScrollY(fullY){
+    if(imgHeight<=CH) return 0;
+    var sy=Math.max(0,fullY-CH/2);
+    return Math.min(sy,imgHeight-CH);
+  }
+
+  // Rounded rect helper
+  function rrect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+  }
+
+  // Word-wrap text
+  function wrapText(text,maxW){
+    var words=text.split(' '),lines=[],line='';
+    ctx.font='400 12px Inter,system-ui,sans-serif';
+    for(var i=0;i<words.length;i++){
+      var test=line+(line?' ':'')+words[i];
+      if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=words[i];}
+      else line=test;
+    }
+    if(line) lines.push(line);
+    return lines;
+  }
+
+  // ========== GENERATE FLOW ==========
+  generateBtn.addEventListener('click',startGeneration);
+  urlInput.addEventListener('keydown',function(e){if(e.key==='Enter')startGeneration();});
+
   async function startGeneration(){
     var url=urlInput.value.trim();
     hideError();
-
     if(!url){showError('Please enter a URL');return;}
-    if(!/^https?:\/\//i.test(url)){showError('Please enter a valid URL starting with http:// or https://');return;}
+    if(!/^https?:\/\//i.test(url)){showError('URL must start with http:// or https://');return;}
 
     generateBtn.disabled=true;
     playerSection.style.display='none';
     setupNotice.style.display='none';
     loadingSection.style.display='block';
-
-    // Reset loading steps
-    for(var i=1;i<=3;i++){
-      setLoadingStep(i,'');
-      document.getElementById('loadStep'+i).querySelector('.loading-step-icon').textContent='\u25CF';
-    }
+    for(var i=1;i<=3;i++){setLoadStep(i,'');document.getElementById('loadStep'+i).querySelector('.loading-step-icon').textContent='\u25CF';}
 
     try{
       // Step 1: Screenshot
-      setLoadingStep(1,'active');
+      setLoadStep(1,'active');
       var ssResp=await fetch('/api/tutorial/screenshot',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
+        method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({url:url})
       });
       var ssData=await ssResp.json();
-
-      if(!ssResp.ok){
-        showError(ssData.error||'Failed to load page');
-        loadingSection.style.display='none';
-        generateBtn.disabled=false;
-        return;
-      }
-      setLoadingStep(1,'done');
+      if(!ssResp.ok){showError(ssData.error||'Failed to load page');loadingSection.style.display='none';generateBtn.disabled=false;return;}
+      setLoadStep(1,'done');
 
       // Step 2: Analyze
-      setLoadingStep(2,'active');
+      setLoadStep(2,'active');
       var anResp=await fetch('/api/tutorial/analyze',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          screenshot:ssData.screenshot,
-          elements:ssData.elements,
-          pageInfo:ssData.pageInfo
-        })
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({screenshot:ssData.screenshot,elements:ssData.elements,pageInfo:ssData.pageInfo,viewport:ssData.viewport})
       });
       var anData=await anResp.json();
-
-      if(anData.setup){
-        setupNotice.style.display='block';
-        loadingSection.style.display='none';
-        generateBtn.disabled=false;
-        return;
-      }
-      if(!anResp.ok||!anData.steps){
-        showError(anData.error||'Failed to analyze page');
-        loadingSection.style.display='none';
-        generateBtn.disabled=false;
-        return;
-      }
-      setLoadingStep(2,'done');
+      if(anData.setup){setupNotice.style.display='block';loadingSection.style.display='none';generateBtn.disabled=false;return;}
+      if(!anResp.ok||!anData.steps){showError(anData.error||'Failed to analyze');loadingSection.style.display='none';generateBtn.disabled=false;return;}
+      setLoadStep(2,'done');
 
       // Step 3: Build animation
-      setLoadingStep(3,'active');
+      setLoadStep(3,'active');
       tutorialData=anData;
 
-      // Load screenshot image
       screenshotImg=new Image();
       await new Promise(function(resolve,reject){
-        screenshotImg.onload=resolve;
-        screenshotImg.onerror=reject;
+        screenshotImg.onload=resolve;screenshotImg.onerror=reject;
         screenshotImg.src='data:image/png;base64,'+ssData.screenshot;
       });
+      imgHeight=screenshotImg.naturalHeight||CH;
 
       buildStepList();
       initAnimation();
-
-      setLoadingStep(3,'done');
+      setLoadStep(3,'done');
 
       setTimeout(function(){
         loadingSection.style.display='none';
         playerSection.style.display='block';
         showOverlay();
-      },400);
+        drawStaticFrame();
+      },300);
 
     }catch(err){
       showError('Network error: '+err.message);
@@ -466,99 +476,99 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
     generateBtn.disabled=false;
   }
 
-  // ---- Step list ----
+  // ========== STEP LIST ==========
   function buildStepList(){
     var list=document.getElementById('stepList');
     list.innerHTML='';
     tutorialData.steps.forEach(function(step,i){
       var chip=document.createElement('button');
       chip.className='step-chip'+(i===0?' active':'');
-      chip.textContent=(i+1)+'. '+(step.elementText||step.callout||'Step');
-      chip.addEventListener('click',function(){ jumpToStep(i); });
+      chip.textContent=(i+1)+'. '+(step.title||step.callout||'Step');
+      chip.addEventListener('click',function(){jumpToStep(i);});
       list.appendChild(chip);
     });
-    updateStepIndicator();
+    updateStepUI();
   }
 
-  function updateStepIndicator(){
-    document.getElementById('stepIndicator').textContent='Step '+(animState.currentStep+1)+' / '+tutorialData.steps.length;
+  function updateStepUI(){
+    document.getElementById('stepIndicator').textContent='Step '+(S.step+1)+' / '+tutorialData.steps.length;
     var chips=document.querySelectorAll('.step-chip');
-    chips.forEach(function(c,i){c.classList.toggle('active',i===animState.currentStep);});
+    chips.forEach(function(c,i){c.classList.toggle('active',i===S.step);});
+    // Scroll active chip into view
+    if(chips[S.step]) chips[S.step].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   }
 
-  // ---- Animation ----
+  // ========== ANIMATION CONTROL ==========
   function initAnimation(){
-    animState.currentStep=0;
-    animState.phase='idle';
-    animState.cursorX=640;
-    animState.cursorY=400;
-    animState.currentZoom=1.0;
-    animState.playing=false;
-    animState.finished=false;
-    animState.totalElapsed=0;
-    lastTimestamp=0;
+    S.step=0; S.phase='idle'; S.cx=640; S.cy=400;
+    S.scrollY=0; S.zoom=1.0; S.playing=false; S.finished=false;
+    S.calloutAlpha=0; S.typewriterPos=0;
+    particles=[]; cursorTrail=[];
+    lastTs=0;
     drawStaticFrame();
   }
 
   function resetAnimation(){
-    if(animFrameId) cancelAnimationFrame(animFrameId);
-    animState.currentStep=0;
-    animState.phase='idle';
-    animState.cursorX=640;
-    animState.cursorY=400;
-    animState.currentZoom=1.0;
-    animState.playing=false;
-    animState.finished=false;
-    animState.totalElapsed=0;
-    lastTimestamp=0;
-    updateStepIndicator();
+    if(animId) cancelAnimationFrame(animId);
+    S.step=0; S.phase='idle'; S.cx=640; S.cy=400;
+    S.scrollY=0; S.zoom=1.0; S.playing=false; S.finished=false;
+    S.calloutAlpha=0; S.typewriterPos=0;
+    particles=[]; cursorTrail=[];
+    lastTs=0;
+    updateStepUI();
+  }
+
+  function beginStep(idx){
+    var step=tutorialData.steps[idx];
+    var targetScrollY=calcScrollY(step.y);
+    var viewCy=step.y-targetScrollY;
+
+    // Do we need to scroll first?
+    if(Math.abs(targetScrollY-S.scrollY)>20){
+      S.phase='scrolling';
+      S.prevScrollY=S.scrollY;
+      S.targetScrollY=targetScrollY;
+      // Also set cursor target
+      S.prevCx=S.cx; S.prevCy=S.cy;
+      S.targetCx=step.x; S.targetCy=viewCy;
+    }else{
+      S.phase='moving';
+      S.prevCx=S.cx; S.prevCy=S.cy;
+      S.targetCx=step.x; S.targetCy=viewCy;
+      S.targetScrollY=targetScrollY;
+    }
+    S.targetZoom=step.zoom||1.5;
+    S.prevZoom=S.zoom;
+    S.phaseStart=performance.now();
+    S.holdElapsed=0;
+    S.clickPhase=0;
+    S.calloutAlpha=0;
+    S.typewriterPos=0;
   }
 
   function startPlaying(){
-    if(animState.finished){
-      resetAnimation();
-    }
-    animState.playing=true;
-    animState.phase='moving';
-    animState.phaseStart=performance.now();
-    var step=tutorialData.steps[0];
-    animState.prevX=animState.cursorX;
-    animState.prevY=animState.cursorY;
-    animState.targetX=step.x;
-    animState.targetY=step.y;
-    animState.targetZoom=step.zoom||1.5;
-    animState.prevZoom=1.0;
+    if(S.finished) resetAnimation();
+    S.playing=true;
+    beginStep(0);
     updatePlayPauseUI();
     hideOverlay();
-    lastTimestamp=performance.now();
-    if(animFrameId) cancelAnimationFrame(animFrameId);
-    animFrameId=requestAnimationFrame(animate);
+    lastTs=performance.now();
+    if(animId) cancelAnimationFrame(animId);
+    animId=requestAnimationFrame(animate);
   }
 
   function togglePlayPause(){
     if(!tutorialData) return;
-    if(animState.finished){
-      startPlaying();
-      return;
-    }
-    if(animState.phase==='idle'){
-      startPlaying();
-      return;
-    }
-    animState.playing=!animState.playing;
-    if(animState.playing){
-      lastTimestamp=performance.now();
-      hideOverlay();
-      animFrameId=requestAnimationFrame(animate);
-    }else{
-      showOverlay();
-    }
+    if(S.finished||S.phase==='idle'){startPlaying();return;}
+    S.playing=!S.playing;
+    if(S.playing){lastTs=performance.now();hideOverlay();animId=requestAnimationFrame(animate);}
+    else showOverlay();
     updatePlayPauseUI();
   }
 
   function updatePlayPauseUI(){
-    document.getElementById('playIcon').style.display=animState.playing?'none':'block';
-    document.getElementById('pauseIcon').style.display=animState.playing?'block':'none';
+    document.getElementById('playIcon').style.display=S.playing?'none':'block';
+    document.getElementById('pauseIcon').style.display=S.playing?'block':'none';
   }
 
   function showOverlay(){document.getElementById('canvasOverlay').classList.add('visible');}
@@ -567,266 +577,284 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
   function jumpToStep(idx){
     if(!tutorialData||idx<0||idx>=tutorialData.steps.length) return;
     resetAnimation();
-    animState.currentStep=idx;
+    S.step=idx;
     var step=tutorialData.steps[idx];
-    animState.cursorX=step.x;
-    animState.cursorY=step.y;
-    animState.currentZoom=step.zoom||1.5;
-    animState.phase='holding';
-    animState.phaseStart=performance.now();
-    animState.holdElapsed=0;
-    animState.playing=true;
-    updatePlayPauseUI();
-    updateStepIndicator();
-    hideOverlay();
-    lastTimestamp=performance.now();
-    animFrameId=requestAnimationFrame(animate);
+    var targetScrollY=calcScrollY(step.y);
+    S.scrollY=targetScrollY;
+    S.cx=step.x; S.cy=step.y-targetScrollY;
+    S.zoom=step.zoom||1.5;
+    S.phase='holding'; S.phaseStart=performance.now();
+    S.holdElapsed=0; S.calloutAlpha=1; S.typewriterPos=999;
+    S.playing=true;
+    updatePlayPauseUI(); updateStepUI(); hideOverlay();
+    lastTs=performance.now();
+    animId=requestAnimationFrame(animate);
   }
 
+  // ========== ANIMATION LOOP ==========
   function animate(timestamp){
-    if(!animState.playing){
-      drawFrame();
-      return;
-    }
-    var dt=(timestamp-lastTimestamp)*animState.speed;
-    lastTimestamp=timestamp;
-    animState.totalElapsed+=dt;
+    if(!S.playing){drawFrame();return;}
+    var dt=(timestamp-lastTs)*S.speed;
+    lastTs=timestamp;
 
-    var step=tutorialData.steps[animState.currentStep];
-    var elapsed=timestamp-animState.phaseStart;
-    elapsed*=animState.speed;
+    var step=tutorialData.steps[S.step];
+    var elapsed=(timestamp-S.phaseStart)*S.speed;
 
-    switch(animState.phase){
-      case 'moving':
-        var t=Math.min(elapsed/MOVE_DUR,1);
-        var e=easeInOutCubic(t);
-        animState.cursorX=animState.prevX+(animState.targetX-animState.prevX)*e;
-        animState.cursorY=animState.prevY+(animState.targetY-animState.prevY)*e;
+    switch(S.phase){
+
+      case 'scrolling':
+        var t=Math.min(elapsed/DUR_SCROLL,1), e=easeInOut(t);
+        S.scrollY=S.prevScrollY+(S.targetScrollY-S.prevScrollY)*e;
+        // Also move cursor during scroll
+        S.cx=S.prevCx+(S.targetCx-S.prevCx)*e;
+        S.cy=S.prevCy+(S.targetCy-S.prevCy)*e;
         if(t>=1){
-          animState.cursorX=animState.targetX;
-          animState.cursorY=animState.targetY;
-          animState.phase='zooming_in';
-          animState.phaseStart=performance.now();
-          animState.prevZoom=animState.currentZoom;
+          S.scrollY=S.targetScrollY;
+          S.phase='moving'; S.phaseStart=performance.now();
+          S.prevCx=S.cx; S.prevCy=S.cy;
+        }
+        break;
+
+      case 'moving':
+        var t=Math.min(elapsed/DUR_MOVE,1), e=easeInOut(t);
+        S.cx=S.prevCx+(S.targetCx-S.prevCx)*e;
+        S.cy=S.prevCy+(S.targetCy-S.prevCy)*e;
+        // Record cursor trail
+        if(t<1&&cursorTrail.length<20){
+          cursorTrail.push({x:S.cx,y:S.cy,a:0.3*(1-t)});
+        }
+        if(t>=1){
+          S.cx=S.targetCx; S.cy=S.targetCy;
+          cursorTrail=[];
+          S.phase='zooming_in'; S.phaseStart=performance.now();
+          S.prevZoom=S.zoom;
         }
         break;
 
       case 'zooming_in':
-        var t=Math.min(elapsed/ZOOM_IN_DUR,1);
-        var e=easeOutCubic(t);
-        animState.currentZoom=animState.prevZoom+(animState.targetZoom-animState.prevZoom)*e;
+        var t=Math.min(elapsed/DUR_ZOOMIN,1), e=easeOut(t);
+        S.zoom=S.prevZoom+(S.targetZoom-S.prevZoom)*e;
         if(t>=1){
-          animState.currentZoom=animState.targetZoom;
-          animState.phase='holding';
-          animState.phaseStart=performance.now();
-          animState.holdElapsed=0;
-          animState.clickPhase=0;
+          S.zoom=S.targetZoom;
+          S.phase='holding'; S.phaseStart=performance.now();
+          S.holdElapsed=0; S.clickPhase=0;
         }
         break;
 
       case 'holding':
-        animState.holdElapsed=elapsed;
-        var stepDur=step.duration||3000;
-        // Click animation midway through hold
-        if(step.action==='click'&&animState.clickPhase===0&&elapsed>stepDur*0.4){
-          animState.clickPhase=1;
-          animState.clickStart=performance.now();
+        S.holdElapsed=elapsed;
+        // Callout fade-in
+        S.calloutAlpha=Math.min(elapsed/200,1);
+        // Typewriter effect (60 chars/sec)
+        S.typewriterPos=elapsed*0.06;
+        var stepDur=step.duration||2000;
+        // Click animation at 40% through
+        if(step.action==='click'&&S.clickPhase===0&&elapsed>stepDur*0.35){
+          S.clickPhase=1; S.clickStart=performance.now();
+          spawnParticles(S.cx,S.cy);
         }
-        if(animState.clickPhase===1){
-          var clickElapsed=(performance.now()-animState.clickStart)*animState.speed;
-          if(clickElapsed>CLICK_DUR) animState.clickPhase=2;
+        if(S.clickPhase===1){
+          var ce=(performance.now()-S.clickStart)*S.speed;
+          if(ce>DUR_CLICK) S.clickPhase=2;
         }
         if(elapsed>=stepDur){
-          // Move to next step or finish
-          if(animState.currentStep<tutorialData.steps.length-1){
-            animState.phase='zooming_out';
-            animState.phaseStart=performance.now();
-            animState.prevZoom=animState.currentZoom;
+          if(S.step<tutorialData.steps.length-1){
+            S.phase='zooming_out'; S.phaseStart=performance.now(); S.prevZoom=S.zoom;
           }else{
-            // Finished
-            animState.playing=false;
-            animState.finished=true;
-            updatePlayPauseUI();
-            showOverlay();
+            S.playing=false; S.finished=true;
+            updatePlayPauseUI(); showOverlay();
           }
         }
         break;
 
       case 'zooming_out':
-        var t=Math.min(elapsed/ZOOM_OUT_DUR,1);
-        var e=easeOutCubic(t);
-        animState.currentZoom=animState.prevZoom+(1.0-animState.prevZoom)*e;
+        var t=Math.min(elapsed/DUR_ZOOMOUT,1), e=easeOut(t);
+        S.zoom=S.prevZoom+(1.0-S.prevZoom)*e;
+        S.calloutAlpha=Math.max(0,1-t*3); // fast callout fade-out
         if(t>=1){
-          animState.currentZoom=1.0;
-          animState.currentStep++;
-          updateStepIndicator();
-          var nextStep=tutorialData.steps[animState.currentStep];
-          animState.phase='moving';
-          animState.phaseStart=performance.now();
-          animState.prevX=animState.cursorX;
-          animState.prevY=animState.cursorY;
-          animState.targetX=nextStep.x;
-          animState.targetY=nextStep.y;
-          animState.targetZoom=nextStep.zoom||1.5;
+          S.zoom=1.0; S.step++;
+          updateStepUI();
+          beginStep(S.step);
         }
         break;
     }
 
+    // Update particles
+    updateParticles(dt);
+
     drawFrame();
     updateProgress();
-    animFrameId=requestAnimationFrame(animate);
+    animId=requestAnimationFrame(animate);
   }
 
-  // ---- Drawing ----
+  // ========== PARTICLES ==========
+  function spawnParticles(vx,vy){
+    for(var i=0;i<12;i++){
+      var angle=(Math.PI*2/12)*i+Math.random()*0.4;
+      var speed=1.5+Math.random()*3;
+      particles.push({
+        x:vx,y:vy,
+        vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+        life:1.0, size:1.5+Math.random()*2.5,
+        color:Math.random()>0.5?'#7c4dff':'#00e5ff'
+      });
+    }
+  }
+
+  function updateParticles(dt){
+    var scale=dt/16;
+    for(var i=particles.length-1;i>=0;i--){
+      var p=particles[i];
+      p.x+=p.vx*scale; p.y+=p.vy*scale;
+      p.life-=0.03*scale;
+      p.vx*=0.97; p.vy*=0.97;
+      if(p.life<=0) particles.splice(i,1);
+    }
+  }
+
+  // ========== DRAWING ==========
   function drawStaticFrame(){
     if(!screenshotImg) return;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(screenshotImg,0,0,canvas.width,canvas.height);
-    drawCursor(animState.cursorX,animState.cursorY);
-    drawStepBadge();
+    ctx.clearRect(0,0,CW,CH);
+    ctx.drawImage(screenshotImg,0,0,CW,Math.min(imgHeight,CH),0,0,CW,CH);
+    drawCursor(S.cx,S.cy,false);
+    drawCanvasProgress();
   }
 
   function drawFrame(){
     if(!screenshotImg) return;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0,0,CW,CH);
 
-    var zoom=animState.currentZoom;
-    var focusX=animState.cursorX;
-    var focusY=animState.cursorY;
+    var zoom=S.zoom, focusX=S.cx, focusY=S.cy;
 
     ctx.save();
 
+    // Compute zoom transform
+    var tx=0,ty=0;
     if(zoom>1.001){
-      var translateX=-(focusX*zoom-canvas.width/2);
-      var translateY=-(focusY*zoom-canvas.height/2);
-      var maxTX=0;
-      var maxTY=0;
-      var minTX=canvas.width-canvas.width*zoom;
-      var minTY=canvas.height-canvas.height*zoom;
-      translateX=Math.min(maxTX,Math.max(translateX,minTX));
-      translateY=Math.min(maxTY,Math.max(translateY,minTY));
-      ctx.translate(translateX,translateY);
+      tx=-(focusX*zoom-CW/2);
+      ty=-(focusY*zoom-CH/2);
+      tx=Math.min(0,Math.max(tx,CW-CW*zoom));
+      ty=Math.min(0,Math.max(ty,CH-CH*zoom));
+      ctx.translate(tx,ty);
       ctx.scale(zoom,zoom);
     }
 
-    ctx.drawImage(screenshotImg,0,0,canvas.width,canvas.height);
+    // Draw screenshot with scroll offset
+    var srcY=Math.round(S.scrollY);
+    var srcH=Math.min(CH,imgHeight-srcY);
+    ctx.drawImage(screenshotImg, 0,srcY,CW,srcH, 0,0,CW,srcH);
 
-    // Draw highlight box during hold phase
-    if(animState.phase==='holding'||animState.phase==='zooming_in'){
-      var step=tutorialData.steps[animState.currentStep];
-      drawHighlight(step,animState.holdElapsed||0);
+    // Highlight box during hold/zoom-in
+    if(S.phase==='holding'||S.phase==='zooming_in'){
+      drawHighlight(tutorialData.steps[S.step],S.holdElapsed||0);
     }
 
     ctx.restore();
 
-    // Draw cursor (screen space)
-    var cursorScreenX=animState.cursorX;
-    var cursorScreenY=animState.cursorY;
+    // Screen-space cursor position (after zoom transform)
+    var scx=S.cx, scy=S.cy;
     if(zoom>1.001){
-      var translateX=-(focusX*zoom-canvas.width/2);
-      var translateY=-(focusY*zoom-canvas.height/2);
-      var maxTX=0;var maxTY=0;
-      var minTX=canvas.width-canvas.width*zoom;
-      var minTY=canvas.height-canvas.height*zoom;
-      translateX=Math.min(maxTX,Math.max(translateX,minTX));
-      translateY=Math.min(maxTY,Math.max(translateY,minTY));
-      cursorScreenX=animState.cursorX*zoom+translateX;
-      cursorScreenY=animState.cursorY*zoom+translateY;
+      scx=S.cx*zoom+tx;
+      scy=S.cy*zoom+ty;
     }
 
     // Click ripple
-    if(animState.clickPhase===1){
-      var clickElapsed=(performance.now()-animState.clickStart)*animState.speed;
-      var t=Math.min(clickElapsed/CLICK_DUR,1);
+    if(S.clickPhase===1){
+      var ce=(performance.now()-S.clickStart)*S.speed;
+      var ct=Math.min(ce/DUR_CLICK,1);
+      // Multiple rings
+      for(var r=0;r<3;r++){
+        var rt=Math.max(0,ct-r*0.15);
+        if(rt<=0) continue;
+        ctx.beginPath();
+        ctx.arc(scx,scy,(25+r*12)*rt,0,Math.PI*2);
+        ctx.strokeStyle='rgba(124,77,255,'+(0.5*(1-rt))+')';
+        ctx.lineWidth=2-r*0.5;
+        ctx.stroke();
+      }
+      // Center flash
       ctx.beginPath();
-      ctx.arc(cursorScreenX,cursorScreenY,30*t,0,Math.PI*2);
-      ctx.strokeStyle='rgba(124,77,255,'+(0.6*(1-t))+')';
-      ctx.lineWidth=2;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cursorScreenX,cursorScreenY,15*t,0,Math.PI*2);
-      ctx.fillStyle='rgba(124,77,255,'+(0.3*(1-t))+')';
+      ctx.arc(scx,scy,8*(1-ct),0,Math.PI*2);
+      ctx.fillStyle='rgba(124,77,255,'+(0.6*(1-ct))+')';
       ctx.fill();
     }
 
-    drawCursor(cursorScreenX,cursorScreenY,animState.clickPhase===1);
-
-    // Draw callout during hold
-    if(animState.phase==='holding'){
-      var step=tutorialData.steps[animState.currentStep];
-      var fadeIn=Math.min(animState.holdElapsed/300,1);
-      drawCallout(step,cursorScreenX,cursorScreenY,fadeIn);
+    // Particles
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      var px=p.x,py=p.y;
+      if(zoom>1.001){px=p.x*zoom+tx;py=p.y*zoom+ty;}
+      ctx.beginPath();
+      ctx.arc(px,py,p.size*p.life,0,Math.PI*2);
+      ctx.fillStyle=p.color.replace(')',','+p.life+')').replace('rgb','rgba').replace('#','');
+      // Simpler: set globalAlpha
+      ctx.globalAlpha=p.life;
+      ctx.fillStyle=p.color;
+      ctx.fill();
+      ctx.globalAlpha=1;
     }
 
-    drawStepBadge();
+    // Cursor trail
+    for(var i=0;i<cursorTrail.length;i++){
+      var ct2=cursorTrail[i];
+      var cx2=ct2.x,cy2=ct2.y;
+      if(zoom>1.001){cx2=ct2.x*zoom+tx;cy2=ct2.y*zoom+ty;}
+      ctx.globalAlpha=ct2.a*0.5;
+      drawCursorShape(cx2,cy2,false);
+      ctx.globalAlpha=1;
+    }
+
+    // Main cursor
+    drawCursor(scx,scy,S.clickPhase===1);
+
+    // Callout during hold
+    if((S.phase==='holding'||S.phase==='zooming_out')&&S.calloutAlpha>0){
+      drawCallout(tutorialData.steps[S.step],scx,scy,S.calloutAlpha);
+    }
+
+    // On-canvas progress
+    drawCanvasProgress();
+  }
+
+  function drawCursorShape(x,y,pressed){
+    ctx.save();
+    ctx.translate(x,y);
+    if(pressed) ctx.scale(0.8,0.8);
+    ctx.beginPath();
+    ctx.moveTo(0,0);ctx.lineTo(0,19);ctx.lineTo(5,15);ctx.lineTo(9,23);ctx.lineTo(12,21);ctx.lineTo(8,14);ctx.lineTo(14,14);ctx.closePath();
+    ctx.fillStyle='#fff';ctx.fill();
+    ctx.strokeStyle='#000';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.restore();
   }
 
   function drawCursor(x,y,pressed){
     ctx.save();
-    ctx.translate(x,y);
-    if(pressed) ctx.scale(0.85,0.85);
-
     // Drop shadow
-    ctx.shadowColor='rgba(0,0,0,.4)';
-    ctx.shadowBlur=6;
-    ctx.shadowOffsetX=1;
-    ctx.shadowOffsetY=2;
-
-    // Cursor shape (macOS style pointer)
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(0,19);
-    ctx.lineTo(5,15);
-    ctx.lineTo(9,23);
-    ctx.lineTo(12,21);
-    ctx.lineTo(8,14);
-    ctx.lineTo(14,14);
-    ctx.closePath();
-    ctx.fillStyle='#fff';
-    ctx.fill();
-    ctx.shadowBlur=0;
-    ctx.shadowOffsetX=0;
-    ctx.shadowOffsetY=0;
-    ctx.strokeStyle='#000';
-    ctx.lineWidth=1.2;
-    ctx.stroke();
-
+    ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=8;ctx.shadowOffsetX=1;ctx.shadowOffsetY=3;
+    drawCursorShape(x,y,pressed);
     ctx.restore();
   }
 
   function drawHighlight(step,elapsed){
-    // Find element bounding box near the step coordinates
-    var w=80,h=36;
-    // Try to find the element to get real dimensions
-    var elData=findElementNear(step.x,step.y);
-    if(elData){
-      w=elData.rect.width+12;
-      h=elData.rect.height+12;
-    }
-    var x=step.x-w/2;
-    var y=step.y-h/2;
-
-    var pulseAlpha=0.4+0.2*Math.sin(elapsed*0.005);
+    var w=90,h=40;
+    var hx=S.cx-w/2, hy=S.cy-h/2;
+    var pulse=0.35+0.25*Math.sin(elapsed*0.006);
+    var color=ACTION_COLORS[step.action]||'#7c4dff';
 
     ctx.save();
-    ctx.strokeStyle='rgba(124,77,255,'+pulseAlpha+')';
-    ctx.lineWidth=2;
-    ctx.shadowColor='rgba(124,77,255,.3)';
-    ctx.shadowBlur=16;
-
-    // Rounded rect
-    var r=8;
-    ctx.beginPath();
-    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
-    ctx.closePath();
+    ctx.strokeStyle=color.replace(')',','+pulse+')');
+    // For hex colors, convert
+    ctx.strokeStyle='rgba(124,77,255,'+pulse+')';
+    if(step.action==='hover') ctx.strokeStyle='rgba(0,229,255,'+pulse+')';
+    if(step.action==='scroll') ctx.strokeStyle='rgba(105,240,174,'+pulse+')';
+    if(step.action==='type') ctx.strokeStyle='rgba(255,145,0,'+pulse+')';
+    ctx.lineWidth=2.5;
+    ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=20;
+    rrect(hx,hy,w,h,8);
     ctx.stroke();
-
-    ctx.fillStyle='rgba(124,77,255,'+(pulseAlpha*0.1)+')';
+    ctx.fillStyle=ctx.strokeStyle.replace(/[\d.]+\)$/,(pulse*0.08)+')');
     ctx.fill();
-
     ctx.restore();
   }
 
@@ -835,129 +863,160 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
     ctx.save();
     ctx.globalAlpha=alpha;
 
-    var text=step.callout||'';
-    ctx.font='600 15px Inter, system-ui, sans-serif';
-    var metrics=ctx.measureText(text);
-    var tw=metrics.width;
-    var padding=14;
-    var boxW=tw+padding*2;
-    var boxH=36;
+    var title=step.title||step.elementText||'';
+    var desc=step.callout||'';
+    var action=(step.action||'click').toUpperCase();
+    var actionColor=ACTION_COLORS[(step.action||'click')]||'#7c4dff';
+
+    // Measure
+    ctx.font='700 10px Inter,system-ui,sans-serif';
+    var actionW=ctx.measureText(action).width+18;
+    ctx.font='700 14px Inter,system-ui,sans-serif';
+    var titleW=ctx.measureText(title).width;
+    var contentW=Math.max(titleW,180);
+    contentW=Math.min(contentW,320);
+
+    // Word-wrap description with typewriter
+    var fullDesc=desc;
+    var visibleChars=Math.floor(S.typewriterPos);
+    var shownDesc=fullDesc.substring(0,Math.min(visibleChars,fullDesc.length));
+    var descLines=wrapText(shownDesc,contentW);
+    // Also compute full lines for box sizing
+    var fullLines=wrapText(fullDesc,contentW);
+
+    var pad=14;
+    var lineH=16;
+    var boxW=contentW+pad*2;
+    var boxH=pad+20+(title?22:0)+fullLines.length*lineH+pad;
     var arrowH=8;
 
-    // Position: above the cursor if there's room, else below
-    var boxX=screenX-boxW/2;
-    var boxY=screenY-50-boxH-arrowH;
+    // Position above cursor, or below if no room
+    var bx=screenX-boxW/2, by=screenY-55-boxH;
     var arrowDir='down';
+    if(by<10){by=screenY+30;arrowDir='up';}
+    if(bx<8) bx=8;
+    if(bx+boxW>CW-8) bx=CW-8-boxW;
 
-    if(boxY<10){
-      boxY=screenY+30;
-      arrowDir='up';
-    }
-    if(boxX<10) boxX=10;
-    if(boxX+boxW>canvas.width-10) boxX=canvas.width-10-boxW;
+    // Slide-in effect
+    var slide=(1-Math.min(alpha*2,1))*12;
+    by+=arrowDir==='down'?slide:-slide;
 
-    // Box shadow
-    ctx.shadowColor='rgba(0,0,0,.3)';
-    ctx.shadowBlur=12;
-    ctx.shadowOffsetY=4;
+    // Shadow
+    ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=24;ctx.shadowOffsetY=6;
 
-    // Box
-    var r=8;
-    ctx.fillStyle='rgba(20,20,34,.92)';
-    ctx.beginPath();
-    ctx.moveTo(boxX+r,boxY);ctx.lineTo(boxX+boxW-r,boxY);ctx.quadraticCurveTo(boxX+boxW,boxY,boxX+boxW,boxY+r);
-    ctx.lineTo(boxX+boxW,boxY+boxH-r);ctx.quadraticCurveTo(boxX+boxW,boxY+boxH,boxX+boxW-r,boxY+boxH);
-    ctx.lineTo(boxX+r,boxY+boxH);ctx.quadraticCurveTo(boxX,boxY+boxH,boxX,boxY+boxH-r);
-    ctx.lineTo(boxX,boxY+r);ctx.quadraticCurveTo(boxX,boxY,boxX+r,boxY);
-    ctx.closePath();
+    // Box background
+    rrect(bx,by,boxW,boxH,12);
+    ctx.fillStyle='rgba(8,8,18,.94)';
     ctx.fill();
+    ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+
+    // Border glow
+    ctx.strokeStyle=actionColor+'55';
+    ctx.lineWidth=1.5;
+    ctx.stroke();
 
     // Arrow
-    ctx.shadowBlur=0;
-    ctx.shadowOffsetY=0;
-    var arrowX=Math.min(Math.max(screenX,boxX+16),boxX+boxW-16);
+    var ax=Math.min(Math.max(screenX,bx+20),bx+boxW-20);
     ctx.beginPath();
     if(arrowDir==='down'){
-      ctx.moveTo(arrowX-6,boxY+boxH);
-      ctx.lineTo(arrowX,boxY+boxH+arrowH);
-      ctx.lineTo(arrowX+6,boxY+boxH);
+      ctx.moveTo(ax-7,by+boxH);ctx.lineTo(ax,by+boxH+arrowH);ctx.lineTo(ax+7,by+boxH);
     }else{
-      ctx.moveTo(arrowX-6,boxY);
-      ctx.lineTo(arrowX,boxY-arrowH);
-      ctx.lineTo(arrowX+6,boxY);
+      ctx.moveTo(ax-7,by);ctx.lineTo(ax,by-arrowH);ctx.lineTo(ax+7,by);
     }
-    ctx.fillStyle='rgba(20,20,34,.92)';
-    ctx.fill();
+    ctx.fillStyle='rgba(8,8,18,.94)';ctx.fill();
 
-    // Border
-    ctx.strokeStyle='rgba(124,77,255,.4)';
-    ctx.lineWidth=1;
-    ctx.beginPath();
-    ctx.moveTo(boxX+r,boxY);ctx.lineTo(boxX+boxW-r,boxY);ctx.quadraticCurveTo(boxX+boxW,boxY,boxX+boxW,boxY+r);
-    ctx.lineTo(boxX+boxW,boxY+boxH-r);ctx.quadraticCurveTo(boxX+boxW,boxY+boxH,boxX+boxW-r,boxY+boxH);
-    ctx.lineTo(boxX+r,boxY+boxH);ctx.quadraticCurveTo(boxX,boxY+boxH,boxX,boxY+boxH-r);
-    ctx.lineTo(boxX,boxY+r);ctx.quadraticCurveTo(boxX,boxY,boxX+r,boxY);
-    ctx.closePath();
-    ctx.stroke();
+    // Action badge
+    var badgeX=bx+pad, badgeY=by+pad;
+    rrect(badgeX,badgeY,actionW,18,4);
+    ctx.fillStyle=actionColor+'22';ctx.fill();
+    ctx.strokeStyle=actionColor+'55';ctx.lineWidth=1;ctx.stroke();
+    ctx.font='700 10px Inter,system-ui,sans-serif';
+    ctx.fillStyle=actionColor;ctx.textBaseline='middle';
+    ctx.fillText(action,badgeX+9,badgeY+9);
 
-    // Text
-    ctx.fillStyle='#fff';
-    ctx.font='600 15px Inter, system-ui, sans-serif';
-    ctx.textBaseline='middle';
-    ctx.fillText(text,boxX+padding,boxY+boxH/2);
+    // Title
+    var ty2=badgeY+26;
+    if(title){
+      ctx.font='700 14px Inter,system-ui,sans-serif';
+      ctx.fillStyle='#fff';ctx.textBaseline='top';
+      ctx.fillText(title,bx+pad,ty2);
+      ty2+=20;
+    }
+
+    // Description with typewriter
+    ctx.font='400 12px Inter,system-ui,sans-serif';
+    ctx.fillStyle='rgba(255,255,255,.72)';ctx.textBaseline='top';
+    for(var i=0;i<descLines.length;i++){
+      ctx.fillText(descLines[i],bx+pad,ty2+i*lineH);
+    }
+
+    // Typing cursor blink
+    if(visibleChars<fullDesc.length){
+      var lastLine=descLines[descLines.length-1]||'';
+      var cursorX2=bx+pad+ctx.measureText(lastLine).width+2;
+      var cursorY2=ty2+(descLines.length-1)*lineH;
+      if(Math.floor(performance.now()/400)%2===0){
+        ctx.fillStyle=actionColor;
+        ctx.fillRect(cursorX2,cursorY2,2,14);
+      }
+    }
 
     ctx.restore();
   }
 
-  function drawStepBadge(){
+  function drawCanvasProgress(){
     if(!tutorialData) return;
+    var total=tutorialData.steps.length;
+    if(total<=1) return;
     ctx.save();
-    var text=(animState.currentStep+1)+'/'+tutorialData.steps.length;
-    ctx.font='700 13px Inter, system-ui, sans-serif';
-    var tw=ctx.measureText(text).width;
-    var bw=tw+20;
-    var bh=28;
-    var bx=16;
-    var by=16;
 
-    ctx.fillStyle='rgba(10,10,15,.75)';
-    ctx.beginPath();
-    ctx.moveTo(bx+6,by);ctx.lineTo(bx+bw-6,by);ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+6);
-    ctx.lineTo(bx+bw,by+bh-6);ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-6,by+bh);
-    ctx.lineTo(bx+6,by+bh);ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-6);
-    ctx.lineTo(bx,by+6);ctx.quadraticCurveTo(bx,by,bx+6,by);
-    ctx.closePath();
-    ctx.fill();
+    var barY=CH-20, barH=3, padX=50;
+    var barW=CW-padX*2;
 
-    ctx.strokeStyle='rgba(124,77,255,.4)';
-    ctx.lineWidth=1;
-    ctx.stroke();
+    // Background track
+    ctx.globalAlpha=0.3;
+    rrect(padX,barY,barW,barH,2);
+    ctx.fillStyle='#fff';ctx.fill();
 
-    ctx.fillStyle='#fff';
-    ctx.textBaseline='middle';
-    ctx.fillText(text,bx+10,by+bh/2);
+    // Progress fill
+    var progress=S.step/(total-1);
+    if(S.phase==='holding'||S.phase==='zooming_out'){
+      var stepDur=tutorialData.steps[S.step].duration||2000;
+      var subProgress=Math.min(S.holdElapsed/stepDur,1);
+      progress=(S.step+subProgress)/(total);
+    }
+    ctx.globalAlpha=0.8;
+    if(barW*progress>0){
+      rrect(padX,barY,barW*progress,barH,2);
+      ctx.fillStyle='#7c4dff';ctx.fill();
+    }
+
+    // Step dots
+    for(var i=0;i<total;i++){
+      var dotX=padX+(barW/(total-1))*i;
+      var dotR=i<=S.step?4:2.5;
+      ctx.beginPath();ctx.arc(dotX,barY+barH/2,dotR,0,Math.PI*2);
+      ctx.globalAlpha=i<=S.step?0.9:0.3;
+      ctx.fillStyle=i<=S.step?'#7c4dff':'#fff';
+      ctx.fill();
+      if(i===S.step){
+        ctx.globalAlpha=0.4;
+        ctx.beginPath();ctx.arc(dotX,barY+barH/2,7,0,Math.PI*2);
+        ctx.strokeStyle='#7c4dff';ctx.lineWidth=1.5;ctx.stroke();
+      }
+    }
+
+    ctx.globalAlpha=1;
     ctx.restore();
   }
 
-  function findElementNear(x,y){
-    if(!tutorialData||!tutorialData._elements) return null;
-    var best=null, bestDist=Infinity;
-    tutorialData._elements.forEach(function(el){
-      var cx=el.rect.x+el.rect.width/2;
-      var cy=el.rect.y+el.rect.height/2;
-      var dist=Math.abs(cx-x)+Math.abs(cy-y);
-      if(dist<bestDist){bestDist=dist;best=el;}
-    });
-    return(bestDist<100)?best:null;
-  }
-
-  // ---- Progress bar ----
+  // ========== PROGRESS BAR (external) ==========
   function calculateTotalDuration(){
     if(!tutorialData) return 0;
     var total=0;
     tutorialData.steps.forEach(function(s,i){
-      if(i>0) total+=ZOOM_OUT_DUR+MOVE_DUR;
-      total+=ZOOM_IN_DUR+(s.duration||3000);
+      if(i>0) total+=DUR_ZOOMOUT+DUR_SCROLL+DUR_MOVE;
+      total+=DUR_ZOOMIN+(s.duration||2000);
     });
     return total;
   }
@@ -965,29 +1024,26 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
   function updateProgress(){
     var total=calculateTotalDuration();
     if(total===0) return;
-    // Approximate current time
     var elapsed=0;
-    for(var i=0;i<animState.currentStep;i++){
-      if(i>0) elapsed+=ZOOM_OUT_DUR+MOVE_DUR;
-      elapsed+=ZOOM_IN_DUR+(tutorialData.steps[i].duration||3000);
+    for(var i=0;i<S.step;i++){
+      if(i>0) elapsed+=DUR_ZOOMOUT+DUR_SCROLL+DUR_MOVE;
+      elapsed+=DUR_ZOOMIN+(tutorialData.steps[i].duration||2000);
     }
-    if(animState.currentStep>0) elapsed+=ZOOM_OUT_DUR+MOVE_DUR;
-    // Add current phase progress
-    switch(animState.phase){
-      case 'moving': break; // already counted
+    if(S.step>0) elapsed+=DUR_ZOOMOUT+DUR_SCROLL+DUR_MOVE;
+    switch(S.phase){
+      case 'scrolling': break;
+      case 'moving': break;
       case 'zooming_in': elapsed+=0; break;
-      case 'holding': elapsed+=ZOOM_IN_DUR+(animState.holdElapsed||0); break;
-      case 'zooming_out': elapsed+=ZOOM_IN_DUR+(tutorialData.steps[animState.currentStep].duration||3000); break;
+      case 'holding': elapsed+=DUR_ZOOMIN+(S.holdElapsed||0); break;
+      case 'zooming_out': elapsed+=DUR_ZOOMIN+(tutorialData.steps[S.step].duration||2000); break;
     }
-    var pct=Math.min(100,elapsed/total*100);
-    document.getElementById('progressFill').style.width=pct+'%';
+    document.getElementById('progressFill').style.width=Math.min(100,elapsed/total*100)+'%';
   }
 
-  // ---- Controls ----
+  // ========== CONTROLS ==========
   document.getElementById('playPauseBtn').addEventListener('click',togglePlayPause);
   document.getElementById('overlayPlayBtn').addEventListener('click',function(){
-    if(animState.phase==='idle'||animState.finished) startPlaying();
-    else togglePlayPause();
+    if(S.phase==='idle'||S.finished) startPlaying(); else togglePlayPause();
   });
 
   document.getElementById('fullscreenBtn').addEventListener('click',function(){
@@ -996,58 +1052,45 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
     else if(wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
   });
 
-  // Progress bar click
   document.getElementById('progressWrap').addEventListener('click',function(e){
     if(!tutorialData) return;
     var rect=this.getBoundingClientRect();
     var pct=(e.clientX-rect.left)/rect.width;
     var total=calculateTotalDuration();
     var target=pct*total;
-    // Find which step this corresponds to
     var elapsed=0;
     for(var i=0;i<tutorialData.steps.length;i++){
-      var stepDur=(i>0?ZOOM_OUT_DUR+MOVE_DUR:0)+ZOOM_IN_DUR+(tutorialData.steps[i].duration||3000);
-      if(elapsed+stepDur>target){
-        jumpToStep(i);
-        return;
-      }
+      var stepDur=(i>0?DUR_ZOOMOUT+DUR_SCROLL+DUR_MOVE:0)+DUR_ZOOMIN+(tutorialData.steps[i].duration||2000);
+      if(elapsed+stepDur>target){jumpToStep(i);return;}
       elapsed+=stepDur;
     }
     jumpToStep(tutorialData.steps.length-1);
   });
 
-  // Speed buttons
   document.querySelectorAll('.speed-btn').forEach(function(btn){
     btn.addEventListener('click',function(){
       document.querySelectorAll('.speed-btn').forEach(function(b){b.classList.remove('active');});
       btn.classList.add('active');
-      animState.speed=parseFloat(btn.getAttribute('data-speed'));
+      S.speed=parseFloat(btn.getAttribute('data-speed'));
     });
   });
 
-  // ---- Export WebM ----
+  // ========== EXPORT WEBM ==========
   document.getElementById('exportWebmBtn').addEventListener('click',async function(){
     if(!tutorialData||!screenshotImg) return;
-    var btn=this;
-    btn.disabled=true;
-    btn.textContent='Recording...';
+    var btn=this; btn.disabled=true; btn.textContent='Recording...';
     document.getElementById('recordBadge').classList.add('visible');
 
     var stream=canvas.captureStream(30);
     var mimeType='video/webm;codecs=vp9';
-    if(!MediaRecorder.isTypeSupported(mimeType)){
-      mimeType='video/webm';
-    }
+    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType='video/webm';
     var recorder=new MediaRecorder(stream,{mimeType:mimeType,videoBitsPerSecond:5000000});
     var chunks=[];
     recorder.ondataavailable=function(e){chunks.push(e.data);};
     recorder.onstop=function(){
       var blob=new Blob(chunks,{type:'video/webm'});
       var url=URL.createObjectURL(blob);
-      var a=document.createElement('a');
-      a.href=url;
-      a.download='tutorial-'+Date.now()+'.webm';
-      a.click();
+      var a=document.createElement('a');a.href=url;a.download='tutorial-'+Date.now()+'.webm';a.click();
       URL.revokeObjectURL(url);
       btn.disabled=false;
       btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/></svg> Download WebM';
@@ -1055,72 +1098,53 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
     };
 
     resetAnimation();
-    animState.playing=true;
-    animState.phase='moving';
-    animState.phaseStart=performance.now();
-    var step=tutorialData.steps[0];
-    animState.prevX=animState.cursorX;animState.prevY=animState.cursorY;
-    animState.targetX=step.x;animState.targetY=step.y;
-    animState.targetZoom=step.zoom||1.5;animState.prevZoom=1.0;
-    updatePlayPauseUI();
-    hideOverlay();
-    lastTimestamp=performance.now();
+    S.playing=true;
+    beginStep(0);
+    updatePlayPauseUI(); hideOverlay();
+    lastTs=performance.now();
 
     recorder.start();
-    animFrameId=requestAnimationFrame(animate);
+    animId=requestAnimationFrame(animate);
 
-    var total=calculateTotalDuration()/animState.speed;
+    var total=calculateTotalDuration()/S.speed;
     setTimeout(function(){
       recorder.stop();
-      animState.playing=false;
-      animState.finished=true;
-      updatePlayPauseUI();
-      showOverlay();
-    },total+1500);
+      S.playing=false; S.finished=true;
+      updatePlayPauseUI(); showOverlay();
+    },total+1000);
   });
 
-  // ---- Export GIF ----
+  // ========== EXPORT GIF ==========
   document.getElementById('exportGifBtn').addEventListener('click',async function(){
     if(!tutorialData||!screenshotImg) return;
     if(typeof GIF==='undefined'){
-      // Load gif.js on demand
       var script=document.createElement('script');
       script.src='https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js';
       script.onload=function(){doGifExport();};
       document.head.appendChild(script);
-    }else{
-      doGifExport();
-    }
+    }else doGifExport();
   });
 
   function doGifExport(){
     var btn=document.getElementById('exportGifBtn');
-    btn.disabled=true;
-    btn.textContent='Generating GIF...';
-
+    btn.disabled=true; btn.textContent='Generating GIF...';
     var gif=new GIF({
-      workers:2,quality:10,
-      width:640,height:400,
+      workers:2,quality:10,width:640,height:400,
       workerScript:'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
     });
-
-    // Capture frames by stepping through animation
     resetAnimation();
     var total=calculateTotalDuration();
-    var interval=150; // capture every 150ms
+    var interval=150;
     var tmpCanvas=document.createElement('canvas');
     tmpCanvas.width=640;tmpCanvas.height=400;
     var tmpCtx=tmpCanvas.getContext('2d');
-
-    var frames=Math.ceil(total/interval);
-    var captured=0;
+    var frames=Math.ceil(total/interval),captured=0;
 
     function captureNext(){
       if(captured>=frames){
         gif.on('finished',function(blob){
           var url=URL.createObjectURL(blob);
-          var a=document.createElement('a');
-          a.href=url;a.download='tutorial-'+Date.now()+'.gif';a.click();
+          var a=document.createElement('a');a.href=url;a.download='tutorial-'+Date.now()+'.gif';a.click();
           URL.revokeObjectURL(url);
           btn.disabled=false;
           btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/></svg> Download GIF';
@@ -1128,37 +1152,24 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
         gif.render();
         return;
       }
-      // Simulate one frame step
-      animState.playing=true;
-      var now=performance.now();
-      animState.phaseStart=now-interval*captured;
-      // Simple: just draw the current state
+      S.playing=true;
       drawFrame();
       tmpCtx.drawImage(canvas,0,0,640,400);
       gif.addFrame(tmpCtx,{delay:interval,copy:true});
       captured++;
-
-      // Advance the animation state manually
       var fakeTs=performance.now();
-      lastTimestamp=fakeTs-interval;
+      lastTs=fakeTs-interval;
       animate(fakeTs);
-      animState.playing=false;
-
+      S.playing=false;
       setTimeout(captureNext,5);
     }
-    // Start from beginning
-    animState.playing=true;
-    animState.phase='moving';
-    animState.phaseStart=performance.now();
-    var step=tutorialData.steps[0];
-    animState.prevX=640;animState.prevY=400;
-    animState.targetX=step.x;animState.targetY=step.y;
-    animState.targetZoom=step.zoom||1.5;animState.prevZoom=1.0;
-    lastTimestamp=performance.now();
+    S.playing=true;
+    beginStep(0);
+    lastTs=performance.now();
     captureNext();
   }
 
-  // ---- Share link ----
+  // ========== SHARE LINK ==========
   document.getElementById('shareLinkBtn').addEventListener('click',function(){
     var url=window.location.origin+'/tutorial.html';
     navigator.clipboard.writeText(url).then(function(){
@@ -1168,83 +1179,6 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
       setTimeout(function(){btn.innerHTML=orig;},2000);
     });
   });
-
-  // ---- Store elements reference for highlight sizing ----
-  var origFetch=window.fetch;
-  var origStartGen=startGeneration;
-  // Patch: after analyze response, store elements on tutorialData
-  var _origGeneration=startGeneration;
-  // We'll patch this inline: save elements on tutorialData._elements
-  // Done below in the startGeneration function already.
-  // Actually, let's just save it when we get the screenshot data
-  var _savedElements=null;
-  var _origStartGeneration=startGeneration;
-
-  // Override startGeneration to capture elements
-  startGeneration=async function(){
-    var url=urlInput.value.trim();
-    hideError();
-    if(!url){showError('Please enter a URL');return;}
-    if(!/^https?:\/\//i.test(url)){showError('Please enter a valid URL starting with http:// or https://');return;}
-
-    generateBtn.disabled=true;
-    playerSection.style.display='none';
-    setupNotice.style.display='none';
-    loadingSection.style.display='block';
-    for(var i=1;i<=3;i++){
-      setLoadingStep(i,'');
-      document.getElementById('loadStep'+i).querySelector('.loading-step-icon').textContent='\u25CF';
-    }
-
-    try{
-      setLoadingStep(1,'active');
-      var ssResp=await fetch('/api/tutorial/screenshot',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({url:url})
-      });
-      var ssData=await ssResp.json();
-      if(!ssResp.ok){showError(ssData.error||'Failed to load page');loadingSection.style.display='none';generateBtn.disabled=false;return;}
-      setLoadingStep(1,'done');
-
-      _savedElements=ssData.elements;
-
-      setLoadingStep(2,'active');
-      var anResp=await fetch('/api/tutorial/analyze',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({screenshot:ssData.screenshot,elements:ssData.elements,pageInfo:ssData.pageInfo})
-      });
-      var anData=await anResp.json();
-      if(anData.setup){setupNotice.style.display='block';loadingSection.style.display='none';generateBtn.disabled=false;return;}
-      if(!anResp.ok||!anData.steps){showError(anData.error||'Failed to analyze page');loadingSection.style.display='none';generateBtn.disabled=false;return;}
-      setLoadingStep(2,'done');
-
-      setLoadingStep(3,'active');
-      tutorialData=anData;
-      tutorialData._elements=_savedElements;
-
-      screenshotImg=new Image();
-      await new Promise(function(resolve,reject){
-        screenshotImg.onload=resolve;screenshotImg.onerror=reject;
-        screenshotImg.src='data:image/png;base64,'+ssData.screenshot;
-      });
-
-      buildStepList();
-      initAnimation();
-      setLoadingStep(3,'done');
-
-      setTimeout(function(){
-        loadingSection.style.display='none';
-        playerSection.style.display='block';
-        showOverlay();
-        drawStaticFrame();
-      },400);
-
-    }catch(err){
-      showError('Network error: '+err.message);
-      loadingSection.style.display='none';
-    }
-    generateBtn.disabled=false;
-  };
 
 })();
 </script>
