@@ -32,19 +32,19 @@ a{color:var(--uncommon);text-decoration:none}
 a:hover{text-decoration:underline}
 
 /* ============ SOCIAL LINKS ============ */
-.social-links{position:fixed;top:16px;left:16px;z-index:200;display:flex;gap:8px}
+.social-links{position:fixed;top:52px;left:16px;z-index:200;display:flex;gap:8px}
 .social-link{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);
   display:flex;align-items:center;justify-content:center;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2);text-decoration:none}
 .social-link:hover{transform:scale(1.1);border-color:var(--text3);text-decoration:none}
 .social-link svg{width:20px;height:20px;fill:currentColor}
-@media(max-width:480px){.social-links{top:10px;left:10px;gap:6px}
+@media(max-width:480px){.social-links{top:46px;left:10px;gap:6px}
   .social-link{width:38px;height:38px}
   .social-link svg{width:17px;height:17px}}
 
 /* ============ THEME TOGGLE ============ */
-.theme-toggle{position:fixed;top:16px;right:16px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.theme-toggle{position:fixed;top:52px;right:16px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
 .theme-toggle:hover{transform:scale(1.1);border-color:var(--text3)}
-@media(max-width:480px){.theme-toggle{top:10px;right:10px;width:38px;height:38px;font-size:1rem}}
+@media(max-width:480px){.theme-toggle{top:46px;right:10px;width:38px;height:38px;font-size:1rem}}
 
 /* ============ CANVAS BG ============ */
 #bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.4}
@@ -52,7 +52,7 @@ a:hover{text-decoration:underline}
 .page-wrap{position:relative;z-index:1}
 
 /* ============ HERO ============ */
-.hero{padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.hero{padding:100px 24px 60px;text-align:center;position:relative;overflow:hidden}
 .hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(transparent,var(--bg));pointer-events:none}
 .hero-title{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:16px;
   background:linear-gradient(135deg,#ff4081,#e040fb,#7c4dff,#00e5ff,#69f0ae,#ffea00,#ff4081);
@@ -74,7 +74,7 @@ a:hover{text-decoration:underline}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
 /* ============ FILTER BAR ============ */
-.filter-bar{position:sticky;top:0;z-index:100;padding:12px 24px;background:var(--filter-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;transition:box-shadow .3s}
+.filter-bar{position:sticky;top:42px;z-index:100;padding:12px 24px;background:var(--filter-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;transition:box-shadow .3s}
 .filter-bar.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.5)}
 .filter-btn{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;gap:6px}
 .filter-btn:hover{background:var(--bg3);color:var(--text)}
@@ -395,11 +395,26 @@ a:hover{text-decoration:underline}
 .skin-card.sold-out .card-preview{position:relative}
 .sold-out-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:5;border-radius:var(--radius) var(--radius) 0 0}
 .sold-out-text{font-size:1.4rem;font-weight:900;color:#ff1744;letter-spacing:.12em;text-transform:uppercase;transform:rotate(-12deg);text-shadow:0 2px 8px rgba(0,0,0,.6);border:3px solid #ff1744;padding:6px 20px;border-radius:6px;background:rgba(0,0,0,.4)}
+
+/* ============ SITE NAV ============ */
+.site-nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;background:rgba(10,10,15,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.site-nav a{padding:6px 18px;border-radius:16px;font-size:.8rem;font-weight:700;letter-spacing:.03em;text-decoration:none;color:var(--text2);border:1px solid transparent;transition:all .25s}
+.site-nav a:hover{color:var(--text);background:rgba(255,255,255,.05);text-decoration:none}
+.site-nav a.nav-active{color:#7c4dff;border-color:rgba(124,77,255,.3);background:rgba(124,77,255,.08)}
+.site-nav a.nav-arena{color:#ff4081;border-color:rgba(255,64,129,.25);background:rgba(255,64,129,.06)}
+.site-nav a.nav-arena:hover{border-color:rgba(255,64,129,.5);background:rgba(255,64,129,.12);color:#ff4081}
+[data-theme="light"] .site-nav{background:rgba(240,240,245,.9)}
 </style>
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
 <div class="page-wrap">
+
+<!-- SITE NAV -->
+<nav class="site-nav">
+  <a href="index.html" class="nav-active">Skins</a>
+  <a href="arena.html" class="nav-arena">&#127918; Play Arena</a>
+</nav>
 
 <!-- SOCIAL LINKS -->
 <div class="social-links">
