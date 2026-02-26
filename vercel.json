@@ -2,7 +2,15 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".",
   "functions": {
-    "api/**/*.js": {
+    "api/check-claim.js": {
+      "memory": 128,
+      "maxDuration": 10
+    },
+    "api/claim.js": {
+      "memory": 128,
+      "maxDuration": 10
+    },
+    "api/supply.js": {
       "memory": 128,
       "maxDuration": 10
     },
