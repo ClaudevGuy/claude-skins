@@ -325,18 +325,21 @@ document.getElementById('navToggle').addEventListener('click',function(){documen
   var CW = 1280, CH = 800;
 
   // === LAYOUT: floating screenshot in gradient bg ===
-  var PAD = 32;          // padding around screenshot
-  var CHROME_H = 30;     // browser chrome bar height
-  var BOTTOM_BAR = 90;   // bottom info bar height
-  var FRAME_X = PAD;
-  var FRAME_Y = PAD;
-  var FRAME_W = CW - PAD * 2;
-  var FRAME_H = CH - PAD - BOTTOM_BAR;
-  var CONTENT_X = FRAME_X;
-  var CONTENT_Y = FRAME_Y + CHROME_H;
-  var CONTENT_W = FRAME_W;
-  var CONTENT_H = FRAME_H - CHROME_H;
-  var FRAME_R = 12;      // border radius
+  // Content area MUST maintain 16:10 aspect ratio (matching 1280x800 screenshot)
+  var CHROME_H = 28;
+  var BOTTOM_BAR = 80;
+  var PAD_V = 20;          // vertical padding (top)
+  var FRAME_R = 12;
+  // Compute content dimensions to maintain 1.6:1 aspect
+  var CONTENT_H = CH - PAD_V - CHROME_H - BOTTOM_BAR; // 672
+  var CONTENT_W = Math.round(CONTENT_H * 1.6);         // 1075
+  var PAD_H = Math.round((CW - CONTENT_W) / 2);        // 102
+  var FRAME_X = PAD_H;
+  var FRAME_Y = PAD_V;
+  var FRAME_W = CONTENT_W;
+  var FRAME_H = CONTENT_H + CHROME_H;
+  var CONTENT_X = PAD_H;
+  var CONTENT_Y = PAD_V + CHROME_H;
 
   // === STATE ===
   var screenshotImg = null;

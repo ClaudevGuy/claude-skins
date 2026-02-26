@@ -18,13 +18,13 @@ function generateFallbackTutorial(pageInfo) {
     steps: [
       { x: 640, y: 80, action: 'hover', zoom: 1.0, duration: 2000,
         title: 'Page Header', callout: 'Welcome! Let\'s take a quick tour of this page and discover its key features' },
-      { x: 200, y: 60, action: 'hover', zoom: 1.4, duration: 2000,
+      { x: 200, y: 60, action: 'hover', zoom: 1.2, duration: 2000,
         title: 'Navigation', callout: 'Use the navigation menu to explore different sections and find what you need' },
-      { x: 640, y: 350, action: 'click', zoom: 1.6, duration: 2500,
+      { x: 640, y: 350, action: 'click', zoom: 1.15, duration: 2500,
         title: 'Main Content', callout: 'The main content area contains the core information and primary actions' },
-      { x: 640, y: 600, action: 'hover', zoom: 1.3, duration: 2000,
+      { x: 640, y: 600, action: 'hover', zoom: 1.1, duration: 2000,
         title: 'More Features', callout: 'Scroll down to discover additional features and detailed information below' },
-      { x: 900, y: 350, action: 'click', zoom: 1.5, duration: 2500,
+      { x: 900, y: 350, action: 'click', zoom: 1.25, duration: 2500,
         title: 'Call to Action', callout: 'Click the primary button to get started with the main workflow' },
     ]
   };
@@ -100,7 +100,7 @@ For each step provide:
 - action: "click", "hover", or "type"
 - title: short element name (2-4 words, e.g. "Search Bar", "Sign Up Button")
 - callout: descriptive text explaining what this does and WHY the user should care (12-25 words). Write like a friendly guide.
-- zoom: 1.0 (full view), 1.3 (slight focus), 1.5 (close-up), 1.8 (detail)
+- zoom: 1.0 (full view — use for overview steps), 1.15 (slight focus), 1.3 (close-up — maximum zoom)
 - duration: time in ms (1800-2500 for a brisk pace)
 
 Respond ONLY with this JSON:
@@ -125,7 +125,7 @@ CRITICAL RULES:
 - Do NOT reference elements you cannot see in the screenshot
 - START with a wide overview (zoom 1.0) of the header area to orient the user
 - Then move through: navigation, main CTA/buttons, key features, input fields
-- VARY zoom levels: alternate overview (1.0-1.3) with close-ups (1.5-1.8) for visual interest
+- VARY zoom levels: alternate overview (1.0) with slight focus (1.1-1.3) — NEVER exceed 1.3
 - VARY actions: mix clicks and hovers so it doesn't feel repetitive
 - Write callouts that explain benefits and purpose, not just labels
 - For "type" actions, include a "typeText" field with example text
@@ -177,7 +177,7 @@ CRITICAL RULES:
       action: s.action || 'click',
       title: String(s.title || s.elementText || '').substring(0, 40),
       callout: String(s.callout || '').substring(0, 120),
-      zoom: Math.max(1.0, Math.min(2.5, s.zoom || 1.5)),
+      zoom: Math.max(1.0, Math.min(1.3, s.zoom || 1.0)),
       duration: Math.max(1500, Math.min(3000, s.duration || 2000)),
       typeText: s.typeText || undefined
     }));
