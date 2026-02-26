@@ -6,27 +6,116 @@
 <title>Prompt Library — Claude Code Toolkit</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+:root{
+  --bg:#0a0a0f;
+  --bg2:#0e0e18;
+  --card:#0c0c16;
+  --border:#1a1a2e;
+  --border-hover:#2a2a4e;
+  --text:#e0e0e0;
+  --text2:#8888aa;
+  --text3:#555577;
+  --accent:#7c4dff;
+  --nav-bg:#0d0d14;
+  --search-bg:#0c0c16;
+  --placeholder:#555;
+  --code-text:#b0b0cc;
+  --counter-color:#666;
+  --no-results-text:#555;
+  --no-results-hint:#444;
+  --filter-hover-border:#333;
+  --filter-hover-text:#ccc;
+  --filter-active-mix:#0c0c16;
+  --nav-border:rgba(255,255,255,.08);
+  --nav-link-hover-bg:rgba(255,255,255,.05);
+  --scrollbar-thumb:#1a1a2e;
+  --badge-text:#fff;
+}
+[data-theme="light"]{
+  --bg:#f0f0f5;
+  --bg2:#e8e8f0;
+  --card:#ffffff;
+  --border:#c8c8d8;
+  --border-hover:#a0a0b8;
+  --text:#1a1a2e;
+  --text2:#555577;
+  --text3:#8888aa;
+  --accent:#7c4dff;
+  --nav-bg:#f8f8fc;
+  --search-bg:#ffffff;
+  --placeholder:#999;
+  --code-text:#444466;
+  --counter-color:#777799;
+  --no-results-text:#666688;
+  --no-results-hint:#8888aa;
+  --filter-hover-border:#a0a0b8;
+  --filter-hover-text:#333355;
+  --filter-active-mix:#ffffff;
+  --nav-border:rgba(0,0,0,.08);
+  --nav-link-hover-bg:rgba(0,0,0,.05);
+  --scrollbar-thumb:#c8c8d8;
+  --badge-text:#fff;
+}
+
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);font-family:'Inter',system-ui,sans-serif}
+
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:var(--nav-bg);border-bottom:1px solid var(--nav-border);font-family:'Inter',system-ui,sans-serif;transition:background .3s,border-color .3s}
 .nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
-.nav-brand{font-size:.85rem;font-weight:800;color:#e0e0e0;text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand{font-size:.85rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.01em;white-space:nowrap;transition:color .3s}
 .nav-brand:hover{text-decoration:none}
 .nav-links{display:flex;gap:4px;align-items:center}
-.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:#8888aa;text-decoration:none;transition:all .2s;white-space:nowrap}
-.nav-link:hover{color:#e0e0e0;background:rgba(255,255,255,.05);text-decoration:none}
-.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:var(--text2);text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:var(--nav-link-hover-bg);text-decoration:none}
+.nav-link.active{color:var(--accent);background:rgba(124,77,255,.1)}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
-.nav-toggle span{display:block;width:20px;height:2px;background:#8888aa;border-radius:1px;transition:all .3s}
-@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,.08);flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+.nav-toggle span{display:block;width:20px;height:2px;background:var(--text2);border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:var(--nav-bg);border-bottom:1px solid var(--nav-border);flex-direction:column;padding:8px 16px;gap:2px;transition:background .3s,border-color .3s}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+
+/* Theme toggle */
+.theme-toggle{
+  position:fixed;
+  top:58px;
+  right:16px;
+  z-index:200;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:var(--card);
+  border:1px solid var(--border);
+  cursor:pointer;
+  font-size:1.2rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .3s,border-color .3s,transform .2s,box-shadow .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  padding:0;
+  line-height:1;
+}
+.theme-toggle:hover{
+  transform:scale(1.08);
+  box-shadow:0 4px 16px rgba(0,0,0,.25);
+  border-color:var(--border-hover);
+}
+@media(max-width:480px){
+  .theme-toggle{
+    top:54px;
+    right:10px;
+    width:38px;
+    height:38px;
+    font-size:1rem;
+  }
+}
 
 body{
-  background:#0a0a0f;
-  color:#e0e0e0;
+  background:var(--bg);
+  color:var(--text);
   font-family:'Inter',system-ui,sans-serif;
   padding-top:50px;
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  transition:background .3s,color .3s;
 }
 
 .page-wrap{
@@ -53,11 +142,12 @@ body{
 }
 .hero-sub{
   font-size:1.05rem;
-  color:#8888aa;
+  color:var(--text2);
   font-weight:500;
   max-width:540px;
   margin:0 auto;
   line-height:1.6;
+  transition:color .3s;
 }
 
 /* Search */
@@ -71,24 +161,25 @@ body{
   left:16px;
   top:50%;
   transform:translateY(-50%);
-  color:#555;
+  color:var(--placeholder);
   pointer-events:none;
+  transition:color .3s;
 }
 .search-input{
   width:100%;
   padding:14px 18px 14px 46px;
-  background:#0c0c16;
-  border:1px solid #1a1a2e;
+  background:var(--search-bg);
+  border:1px solid var(--border);
   border-radius:12px;
-  color:#e0e0e0;
+  color:var(--text);
   font-size:.95rem;
   font-family:'Inter',system-ui,sans-serif;
   outline:none;
-  transition:border-color .2s,box-shadow .2s;
+  transition:border-color .2s,box-shadow .2s,background .3s,color .3s;
 }
-.search-input::placeholder{color:#555}
+.search-input::placeholder{color:var(--placeholder)}
 .search-input:focus{
-  border-color:#7c4dff;
+  border-color:var(--accent);
   box-shadow:0 0 0 3px rgba(124,77,255,.15);
 }
 
@@ -100,17 +191,17 @@ body{
   padding-bottom:8px;
   margin-bottom:20px;
   scrollbar-width:thin;
-  scrollbar-color:#1a1a2e transparent;
+  scrollbar-color:var(--scrollbar-thumb) transparent;
 }
 .filters-row::-webkit-scrollbar{height:4px}
 .filters-row::-webkit-scrollbar-track{background:transparent}
-.filters-row::-webkit-scrollbar-thumb{background:#1a1a2e;border-radius:2px}
+.filters-row::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:2px}
 .filter-btn{
   padding:7px 16px;
   border-radius:8px;
-  border:1px solid #1a1a2e;
-  background:#0c0c16;
-  color:#8888aa;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text2);
   font-size:.78rem;
   font-weight:600;
   font-family:'Inter',system-ui,sans-serif;
@@ -120,22 +211,23 @@ body{
   flex-shrink:0;
 }
 .filter-btn:hover{
-  border-color:#333;
-  color:#ccc;
+  border-color:var(--filter-hover-border);
+  color:var(--filter-hover-text);
 }
 .filter-btn.active{
-  color:#fff;
+  color:var(--badge-text);
   border-color:var(--cat-color);
-  background:color-mix(in srgb,var(--cat-color) 15%,#0c0c16);
+  background:color-mix(in srgb,var(--cat-color) 15%,var(--filter-active-mix));
 }
 
 /* Counter */
 .counter{
   font-size:.82rem;
-  color:#666;
+  color:var(--counter-color);
   font-weight:600;
   margin-bottom:20px;
   font-variant-numeric:tabular-nums;
+  transition:color .3s;
 }
 
 /* Grid */
@@ -148,19 +240,25 @@ body{
 
 /* Card */
 .prompt-card{
-  background:#0c0c16;
-  border:1px solid #1a1a2e;
+  background:var(--card);
+  border:1px solid var(--border);
   border-radius:14px;
   padding:22px;
   display:flex;
   flex-direction:column;
   gap:12px;
-  transition:opacity .3s ease,transform .3s ease,border-color .2s;
+  transition:opacity .3s ease,transform .3s ease,border-color .2s,background .3s,box-shadow .3s;
   opacity:1;
   transform:translateY(0);
 }
 .prompt-card:hover{
-  border-color:#2a2a4e;
+  border-color:var(--border-hover);
+}
+[data-theme="light"] .prompt-card{
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+[data-theme="light"] .prompt-card:hover{
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
 }
 .prompt-card.hidden{
   display:none;
@@ -180,10 +278,11 @@ body{
 .card-title{
   font-size:.95rem;
   font-weight:700;
-  color:#e0e0e0;
+  color:var(--text);
   letter-spacing:-.01em;
   flex:1;
   min-width:120px;
+  transition:color .3s;
 }
 .card-badges{
   display:flex;
@@ -198,7 +297,7 @@ body{
   font-weight:700;
   text-transform:uppercase;
   letter-spacing:.04em;
-  color:#fff;
+  color:var(--badge-text);
   background:var(--cat-color);
   opacity:.85;
 }
@@ -216,22 +315,24 @@ body{
 
 .card-desc{
   font-size:.82rem;
-  color:#8888aa;
+  color:var(--text2);
   line-height:1.55;
+  transition:color .3s;
 }
 
 .card-prompt{
-  background:#0e0e18;
-  border:1px solid #1a1a2e;
+  background:var(--bg2);
+  border:1px solid var(--border);
   border-radius:10px;
   padding:14px 16px;
   font-family:'JetBrains Mono',monospace;
   font-size:.75rem;
   line-height:1.6;
-  color:#b0b0cc;
+  color:var(--code-text);
   white-space:pre-wrap;
   word-break:break-word;
   flex:1;
+  transition:background .3s,border-color .3s,color .3s;
 }
 
 .copy-btn{
@@ -240,7 +341,7 @@ body{
   background:rgba(124,77,255,.12);
   border:1px solid rgba(124,77,255,.25);
   border-radius:8px;
-  color:#7c4dff;
+  color:var(--accent);
   font-size:.78rem;
   font-weight:700;
   font-family:'Inter',system-ui,sans-serif;
@@ -273,14 +374,22 @@ body{
 }
 .no-results-text{
   font-size:1rem;
-  color:#555;
+  color:var(--no-results-text);
   font-weight:600;
+  transition:color .3s;
 }
 .no-results-hint{
   font-size:.85rem;
-  color:#444;
+  color:var(--no-results-hint);
   margin-top:8px;
+  transition:color .3s;
 }
+
+/* Scrollbar global */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px}
+html{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) transparent}
 
 /* Responsive */
 @media(max-width:960px){
@@ -299,7 +408,8 @@ body{
 </head>
 <body>
 
-<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Skins</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link active">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link">Replayer</a></div></div></nav>
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Home</a><a href="skins.html" class="nav-link">Skins</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link active">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link">Replayer</a></div></div></nav>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">&#127769;</button>
 
 <div class="page-wrap">
 
@@ -328,6 +438,17 @@ body{
 </div>
 
 <script>
+(function(){
+  var toggle=document.getElementById('themeToggle');
+  var saved=localStorage.getItem('claude-skins-theme');
+  if(saved==='light'){document.documentElement.setAttribute('data-theme','light');toggle.textContent='\u2600\uFE0F';}
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='light';
+    if(isLight){document.documentElement.removeAttribute('data-theme');toggle.textContent='\uD83C\uDF19';localStorage.setItem('claude-skins-theme','dark');}
+    else{document.documentElement.setAttribute('data-theme','light');toggle.textContent='\u2600\uFE0F';localStorage.setItem('claude-skins-theme','light');}
+  });
+})();
+
 document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open')});
 
 const CATEGORIES = [

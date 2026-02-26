@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Skins — Collectible Mascot Skins for Claude Code</title>
+<meta name="description" content="25 collectible skins across 6 rarity tiers for the Claude Code mascot. Zero dependencies. Pure Node.js.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#0e0e18;--bg3:#141422;--bg4:#1a1a2e;
+  --text:#e0e0e0;--text2:#8888aa;--text3:#555577;
+  --common:#8b8b8b;--uncommon:#4fc3f7;--rare:#ffd700;--epic:#ff4081;--seasonal:#ff9800;--legendary:#ffea00;
+  --border:#1a1a2e;--card:#0c0c16;--card-hover:#111122;
+  --radius:12px;--radius-sm:8px;
+  --filter-bg:rgba(10,10,15,.85);--swatch-border:rgba(255,255,255,.08);--mock-bg:#0e0e18;--mock-titlebar:#181825;
+  --particle-r:124;--particle-g:77;--particle-b:255;
+  --nav-bg:#0d0d14;--nav-border:rgba(255,255,255,.08);
+}
+[data-theme="light"]{
+  --bg:#f0f0f5;--bg2:#e8e8f0;--bg3:#dddde8;--bg4:#d0d0dd;
+  --text:#1a1a2e;--text2:#555577;--text3:#8888aa;
+  --border:#c8c8d8;--card:#ffffff;--card-hover:#f5f5fa;
+  --filter-bg:rgba(240,240,245,.9);--swatch-border:rgba(0,0,0,.1);--mock-bg:#e8e8f0;--mock-titlebar:#dddde8;
+  --particle-r:100;--particle-g:60;--particle-b:200;
+  --nav-bg:#f8f8fc;--nav-border:rgba(0,0,0,.08);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.5;-webkit-font-smoothing:antialiased}
+code,pre,.mono{font-family:'JetBrains Mono',monospace}
+a{color:var(--uncommon);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ============ SOCIAL LINKS ============ */
+.social-links{position:fixed;top:58px;left:16px;z-index:200;display:flex;gap:8px}
+.social-link{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);
+  display:flex;align-items:center;justify-content:center;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2);text-decoration:none}
+.social-link:hover{transform:scale(1.1);border-color:var(--text3);text-decoration:none}
+.social-link svg{width:20px;height:20px;fill:currentColor}
+@media(max-width:480px){.social-links{top:54px;left:10px;gap:6px}
+  .social-link{width:38px;height:38px}
+  .social-link svg{width:17px;height:17px}}
+
+/* ============ THEME TOGGLE ============ */
+.theme-toggle{position:fixed;top:58px;right:16px;z-index:200;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.theme-toggle:hover{transform:scale(1.1);border-color:var(--text3)}
+@media(max-width:480px){.theme-toggle{top:54px;right:10px;width:38px;height:38px;font-size:1rem}}
+
+/* ============ CANVAS BG ============ */
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.4}
+[data-theme="light"] #bgCanvas{opacity:.15}
+.page-wrap{position:relative;z-index:1}
+
+/* ============ HERO ============ */
+.hero{padding:110px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(transparent,var(--bg));pointer-events:none}
+.hero-title{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:16px;
+  background:linear-gradient(135deg,#ff4081,#e040fb,#7c4dff,#00e5ff,#69f0ae,#ffea00,#ff4081);
+  background-size:300% 300%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:heroGrad 6s ease infinite}
+@keyframes heroGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:clamp(1rem,2.5vw,1.25rem);color:var(--text2);max-width:600px;margin:0 auto 32px;font-weight:400}
+.hero-install-btn{display:inline-block;margin-bottom:28px;padding:12px 28px;border-radius:12px;
+  background:linear-gradient(135deg,#7c4dff,#00b4dc);color:#fff;font-weight:700;font-size:1rem;
+  text-decoration:none;letter-spacing:.02em;transition:transform .2s,box-shadow .2s;
+  box-shadow:0 4px 20px rgba(124,77,255,.35)}
+.hero-install-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(124,77,255,.55)}
+.hero-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.hero-stat{padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:700;letter-spacing:.02em;border:1px solid;display:flex;align-items:center;gap:6px}
+.hero-stat .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hero-mascot{width:200px;height:188px;margin:0 auto;animation:float 3s ease-in-out infinite;display:flex;justify-content:center;align-items:center}
+.hero-mascot svg{width:100%;height:100%}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* ============ FILTER BAR ============ */
+.filter-bar{position:sticky;top:50px;z-index:100;padding:12px 24px;background:var(--filter-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;transition:box-shadow .3s}
+.filter-bar.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.5)}
+.filter-btn{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.filter-btn:hover{background:var(--bg3);color:var(--text)}
+.filter-btn.active{color:#fff;border-color:currentColor}
+.filter-btn.active[data-rarity="all"]{background:var(--bg4);border-color:var(--text2)}
+.filter-btn.active[data-rarity="Common"]{color:var(--common);background:rgba(139,139,139,.12)}
+.filter-btn.active[data-rarity="Uncommon"]{color:var(--uncommon);background:rgba(79,195,247,.12)}
+.filter-btn.active[data-rarity="Rare"]{color:var(--rare);background:rgba(255,215,0,.12)}
+.filter-btn.active[data-rarity="Epic"]{color:var(--epic);background:rgba(255,64,129,.12)}
+.filter-btn.active[data-rarity="Seasonal"]{color:var(--seasonal);background:rgba(255,152,0,.12)}
+.filter-btn.active[data-rarity="Legendary"]{color:var(--legendary);background:rgba(255,234,0,.15)}
+.filter-count{font-size:.7rem;opacity:.7}
+
+/* ============ GRID ============ */
+.grid-section{max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+.skin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+@media(max-width:720px){.skin-grid{grid-template-columns:1fr}}
+
+/* ============ CARD ============ */
+.skin-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .3s ease;position:relative}
+.skin-card:hover{transform:translateY(-4px);border-color:var(--glow-color,var(--border))}
+.skin-card:hover .card-preview{background:var(--bg3)}
+.skin-card.expanded{grid-column:1/-1;max-width:700px;margin:0 auto;width:100%}
+.skin-card[data-rarity="Legendary"]{
+  border-image:linear-gradient(135deg,#ffea00,#ff8f00,#ffea00,#fff9c4,#ffea00) 1;
+  animation:legendBorder 3s linear infinite}
+@keyframes legendBorder{0%{border-image-source:linear-gradient(0deg,#ffea00,#ff8f00,#ffea00)}
+  33%{border-image-source:linear-gradient(120deg,#ff8f00,#ffea00,#fff9c4)}
+  66%{border-image-source:linear-gradient(240deg,#ffea00,#fff9c4,#ff8f00)}
+  100%{border-image-source:linear-gradient(360deg,#ffea00,#ff8f00,#ffea00)}}
+.skin-card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);opacity:0;transition:opacity .3s;pointer-events:none;
+  box-shadow:0 0 30px var(--glow-color,transparent),inset 0 0 30px rgba(0,0,0,.3)}
+.skin-card:hover::before{opacity:.5}
+
+.card-preview{padding:24px;display:flex;justify-content:center;align-items:center;background:var(--bg2);transition:background .3s;min-height:160px;position:relative;overflow:hidden}
+.card-preview svg{max-width:136px;max-height:128px}
+.card-body{padding:16px 20px}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.card-name{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
+.rarity-badge{font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:10px;border:1px solid;white-space:nowrap}
+.rarity-Common .rarity-badge{color:var(--common);border-color:rgba(139,139,139,.3);background:rgba(139,139,139,.08)}
+.rarity-Uncommon .rarity-badge{color:var(--uncommon);border-color:rgba(79,195,247,.3);background:rgba(79,195,247,.08)}
+.rarity-Rare .rarity-badge{color:var(--rare);border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.08)}
+.rarity-Epic .rarity-badge{color:var(--epic);border-color:rgba(255,64,129,.3);background:rgba(255,64,129,.08)}
+.rarity-Seasonal .rarity-badge{color:var(--seasonal);border-color:rgba(255,152,0,.3);background:rgba(255,152,0,.08)}
+.rarity-Legendary .rarity-badge{color:var(--legendary);border-color:rgba(255,234,0,.3);background:rgba(255,234,0,.12);animation:shimmerBadge 2s ease infinite}
+@keyframes shimmerBadge{0%,100%{text-shadow:0 0 6px rgba(255,234,0,.4)}50%{text-shadow:0 0 14px rgba(255,234,0,.8)}}
+.card-desc{color:var(--text2);font-size:.85rem;margin-bottom:12px}
+.card-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card-meta-tag{font-size:.7rem;color:var(--text3);padding:2px 8px;border-radius:6px;background:var(--bg2);border:1px solid var(--border)}
+.limited-badge{color:#ff4081;border-color:rgba(255,64,129,.3)!important;background:rgba(255,64,129,.06)!important;font-weight:600}
+
+/* ============ EXPANDED CARD ============ */
+.card-install{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;padding:0 20px}
+.skin-card.expanded .card-install{max-height:600px;padding:0 20px 20px}
+.install-title{font-size:.85rem;font-weight:700;margin-bottom:12px;color:var(--text)}
+.install-step{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.install-step code{font-size:.75rem;color:var(--uncommon);word-break:break-all;flex:1}
+.copy-btn{flex-shrink:0;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.7rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.copy-btn:hover{background:var(--bg4);color:var(--text)}
+.copy-btn.copied{background:#1b5e20;border-color:#4caf50;color:#69f0ae}
+.quick-apply{margin-top:8px;padding:12px 14px;background:linear-gradient(135deg,rgba(124,77,255,.08),rgba(0,229,255,.08));border:1px solid rgba(124,77,255,.2);border-radius:var(--radius-sm)}
+.quick-apply-label{font-size:.7rem;font-weight:700;color:var(--epic);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+
+/* ============ (HOW IT WORKS — replaced by INSTALL GUIDE above) ============ */
+
+/* ============ FOOTER ============ */
+.footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--text3);font-size:.85rem}
+.footer a{color:var(--text2)}
+.footer-line{margin-bottom:6px}
+
+/* ============ SPECIAL SKIN EFFECTS (glow removed — clean pixel art) ============ */
+
+/* ============ SVG LOADING ============ */
+.svg-placeholder{width:136px;height:128px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.7rem}
+
+/* ============ FULL THEMING SECTION ============ */
+.theming-section{max-width:1100px;margin:0 auto;padding:40px 24px 60px}
+.theming-header{text-align:center;margin-bottom:48px}
+.theming-headline{font-size:clamp(1.8rem,5vw,3rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:12px;
+  background:linear-gradient(135deg,#7c4dff,#e040fb,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.theming-sub{color:var(--text2);font-size:clamp(.9rem,2vw,1.05rem);max-width:520px;margin:0 auto}
+
+.vscode-mockup{position:relative;max-width:800px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--mock-bg);box-shadow:0 20px 80px rgba(0,0,0,.3)}
+.mock-titlebar{height:36px;background:var(--mock-titlebar);display:flex;align-items:center;padding:0 14px;gap:8px}
+.mock-dot{width:10px;height:10px;border-radius:50%}
+.mock-body{display:grid;grid-template-columns:48px 200px 1fr;grid-template-rows:36px 1fr 28px;height:320px}
+@media(max-width:640px){.mock-body{grid-template-columns:40px 140px 1fr;height:240px}}
+.mock-activity{grid-row:1/4;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:14px;transition:background 1s ease}
+.mock-act-icon{width:22px;height:22px;border-radius:4px;opacity:.5;transition:background 1s ease}
+.mock-sidebar{grid-row:1/3;padding:10px;display:flex;flex-direction:column;gap:4px;transition:background 1s ease}
+.mock-side-item{height:8px;border-radius:3px;opacity:.3;width:80%;transition:background 1s ease}
+.mock-tabs{grid-column:3;display:flex;align-items:flex-end;padding:0 4px;gap:2px;transition:background 1s ease}
+.mock-tab{height:28px;padding:0 14px;border-radius:6px 6px 0 0;font-size:.65rem;font-weight:600;display:flex;align-items:center;color:rgba(255,255,255,.5);transition:background 1s ease,color 1s ease}
+.mock-tab.active{color:#fff}
+.mock-editor{grid-column:3;padding:14px;display:flex;flex-direction:column;gap:6px;transition:background 1s ease}
+.mock-line{height:6px;border-radius:3px;opacity:.2;transition:background 1s ease}
+.mock-status{grid-column:1/4;display:flex;align-items:center;padding:0 10px;font-size:.6rem;font-weight:600;color:rgba(255,255,255,.8);gap:10px;transition:background 1s ease}
+.mock-terminal-area{grid-column:3;display:none}
+
+.mock-labels{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.mock-label{position:absolute;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;padding:3px 8px;border-radius:4px;white-space:nowrap;opacity:0;transition:opacity .3s;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.vscode-mockup:hover .mock-label{opacity:1}
+.mock-label::before{content:'';position:absolute;width:20px;height:1px;background:currentColor;opacity:.4}
+
+.theming-features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px;max-width:800px;margin-left:auto;margin-right:auto}
+@media(max-width:640px){.theming-features{grid-template-columns:1fr}}
+.theming-feat{text-align:center;padding:16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card)}
+.theming-feat-num{font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#7c4dff,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.theming-feat-label{font-size:.78rem;color:var(--text2);font-weight:500}
+
+/* ============ COLOR SWATCHES IN CARD ============ */
+.card-palette{display:flex;gap:6px;padding:10px 20px 14px;border-top:1px solid var(--border)}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;position:relative}
+.swatch-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--swatch-border);transition:transform .2s,box-shadow .2s;cursor:default}
+.swatch-dot:hover{transform:scale(1.3);box-shadow:0 0 12px var(--sw-color,rgba(255,255,255,.2));z-index:2}
+.swatch-label{font-size:.55rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.swatch-hex{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);font-size:.6rem;font-family:'JetBrains Mono',monospace;color:#fff;background:rgba(0,0,0,.85);padding:2px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.swatch-dot:hover+.swatch-label+.swatch-hex,.swatch-dot:hover~.swatch-hex{opacity:1}
+.swatch:hover .swatch-hex{opacity:1}
+
+/* ============ COMMUNITY SECTION ============ */
+.community-section{max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+.community-header{text-align:center;margin-bottom:40px}
+.community-title{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:8px;
+  background:linear-gradient(135deg,#69f0ae,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.community-sub{color:var(--text2);font-size:clamp(.85rem,1.8vw,1rem);max-width:520px;margin:0 auto 16px}
+.community-stats{display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap}
+.community-count{font-size:.85rem;color:var(--text2);font-weight:600}
+.community-count strong{color:var(--text);font-size:1rem}
+.contribute-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;
+  border:1px solid rgba(105,240,174,.3);background:rgba(105,240,174,.06);color:#69f0ae;font-size:.8rem;font-weight:600;
+  transition:all .2s;text-decoration:none}
+.contribute-btn:hover{background:rgba(105,240,174,.12);border-color:rgba(105,240,174,.5);transform:translateY(-2px);text-decoration:none}
+.community-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+@media(max-width:720px){.community-grid{grid-template-columns:1fr}}
+.community-empty{text-align:center;padding:60px 24px;color:var(--text3);font-size:.9rem;grid-column:1/-1}
+.community-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .3s ease;position:relative}
+.community-card:hover{transform:translateY(-4px);border-color:#69f0ae}
+.community-card:hover .card-preview{background:var(--bg3)}
+.community-card.expanded{grid-column:1/-1;max-width:700px;margin:0 auto;width:100%}
+.community-badge{font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:10px;
+  border:1px solid rgba(105,240,174,.3);color:#69f0ae;background:rgba(105,240,174,.08)}
+.community-author{font-size:.75rem;color:var(--text3);margin-top:4px}
+.community-author a{color:var(--uncommon);font-weight:600}
+.community-card .card-install{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;padding:0 20px}
+.community-card.expanded .card-install{max-height:600px;padding:0 20px 20px}
+
+/* ============ LIGHT MODE OVERRIDES ============ */
+[data-theme="light"] .filter-btn.active{color:#fff}
+[data-theme="light"] .filter-btn.active[data-rarity="all"]{color:var(--text)}
+[data-theme="light"] .hero-stat{background:rgba(0,0,0,.04)}
+[data-theme="light"] .skin-card{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+[data-theme="light"] .skin-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1)}
+[data-theme="light"] .install-step{background:var(--bg2)}
+[data-theme="light"] .install-step code{color:#6200ea}
+[data-theme="light"] .copy-btn{background:var(--bg);border-color:var(--border)}
+[data-theme="light"] .swatch-hex{background:rgba(0,0,0,.75)}
+[data-theme="light"] .quick-apply{background:linear-gradient(135deg,rgba(124,77,255,.06),rgba(0,180,220,.06));border-color:rgba(124,77,255,.15)}
+[data-theme="light"] .mock-label{background:rgba(0,0,0,.6)}
+[data-theme="light"] .rarity-Legendary .rarity-badge{color:#b8860b}
+[data-theme="light"] .card-preview{background:var(--bg2)}
+
+/* ============ MOBILE RESPONSIVE ============ */
+@media(max-width:480px){
+  .hero{padding:60px 16px 40px}
+  .hero-title{font-size:2.4rem}
+  .hero-sub{font-size:.9rem;margin-bottom:20px}
+  .hero-stats{gap:6px;margin-bottom:24px}
+  .hero-stat{padding:4px 10px;font-size:.7rem}
+  .hero-mascot{width:160px;height:150px}
+  .filter-bar{padding:8px 12px;gap:4px;overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .filter-bar::-webkit-scrollbar{display:none}
+  .filter-btn{padding:6px 12px;font-size:.72rem;flex-shrink:0}
+  .grid-section{padding:20px 12px 60px}
+  .skin-grid{gap:14px}
+  .card-preview{padding:16px;min-height:130px}
+  .card-body{padding:12px 14px}
+  .card-name{font-size:.95rem}
+  .card-desc{font-size:.8rem;margin-bottom:8px}
+  .card-palette{padding:8px 14px 10px;gap:4px}
+  .swatch-dot{width:18px;height:18px}
+  .swatch-label{font-size:.48rem}
+  .card-install{padding:0 14px}
+  .skin-card.expanded .card-install{padding:0 14px 14px}
+  .install-step{padding:8px 10px;gap:8px}
+  .install-step code{font-size:.65rem}
+  .copy-btn{padding:4px 8px;font-size:.65rem}
+  .theming-section{padding:24px 16px 40px}
+  .theming-header{margin-bottom:28px}
+  .theming-headline{font-size:1.6rem}
+  .theming-sub{font-size:.85rem}
+  .mock-body{height:200px}
+  .mock-tab{font-size:.55rem;padding:0 8px;height:24px}
+  .mock-status{font-size:.5rem;padding:0 6px}
+  .mock-label{font-size:.45rem;padding:2px 5px}
+  .theming-features{gap:10px;margin-top:20px}
+  .theming-feat{padding:12px}
+  .theming-feat-num{font-size:1.2rem}
+  .theming-feat-label{font-size:.7rem}
+  .footer{padding:24px 16px}
+  .skin-card.expanded{max-width:100%}
+  .quick-apply{padding:8px 10px}
+}
+@media(min-width:481px) and (max-width:720px){
+  .hero{padding:60px 20px 50px}
+  .filter-bar{padding:10px 16px;gap:6px}
+  .grid-section{padding:24px 16px 60px}
+  .theming-section{padding:30px 16px 50px}
+  .skin-card.expanded{max-width:100%}
+}
+
+/* ============ INSTALL GUIDE ============ */
+.guide-section{max-width:860px;margin:0 auto;padding:80px 24px 80px}
+.guide-header{text-align:center;margin-bottom:56px}
+.guide-title{font-size:clamp(2rem,5vw,3rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:12px;
+  background:linear-gradient(135deg,#7c4dff,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.guide-sub{color:var(--text2);font-size:clamp(.9rem,2vw,1.05rem);max-width:480px;margin:0 auto}
+
+/* Prerequisites */
+.prereq-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.prereq-title{font-size:.85rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);margin-bottom:16px}
+.prereq-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+.prereq-item{display:flex;align-items:center;gap:12px;font-size:.92rem;color:var(--text)}
+.prereq-check{width:22px;height:22px;border-radius:6px;background:rgba(105,240,174,.1);border:1px solid rgba(105,240,174,.25);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;color:#69f0ae}
+.prereq-item a{color:var(--uncommon);font-weight:600}
+
+/* Steps */
+.guide-steps{display:flex;flex-direction:column;gap:32px;margin-bottom:48px}
+.guide-step{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.guide-step-header{display:flex;align-items:center;gap:14px;padding:20px 24px 0}
+.step-number{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;flex-shrink:0;
+  background:linear-gradient(135deg,#7c4dff,#00e5ff);color:#fff}
+.step-label{font-size:1.05rem;font-weight:700;color:var(--text)}
+.guide-step-body{padding:12px 24px 20px 74px}
+.guide-step-body p{font-size:.88rem;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.guide-code{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.guide-code code{font-size:.8rem;color:var(--uncommon);word-break:break-all;flex:1}
+.guide-code .copy-btn{flex-shrink:0}
+.guide-example{margin-top:8px;padding-left:2px}
+.guide-example code{font-size:.78rem;color:var(--text3);display:block;margin-bottom:2px}
+.guide-output{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.7;color:var(--text2)}
+.guide-output .g{color:#69f0ae}
+.guide-output .y{color:#ffd700}
+.guide-output .d{color:var(--text3)}
+
+/* Quick one-liner */
+.quick-box{background:linear-gradient(135deg,rgba(124,77,255,.1),rgba(0,229,255,.1));border:1px solid rgba(124,77,255,.25);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.quick-box-label{font-size:.8rem;font-weight:800;color:var(--epic);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.quick-box-sub{font-size:.88rem;color:var(--text2);margin-bottom:14px}
+
+/* Restore */
+.restore-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.restore-box .restore-title{font-size:1rem;font-weight:700;margin-bottom:6px}
+.restore-box p{font-size:.88rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
+
+/* What gets changed */
+.changes-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:48px}
+.changes-title{font-size:1rem;font-weight:700;margin-bottom:16px}
+.changes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}
+.change-item{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--text2)}
+.change-item .ch{color:#69f0ae;font-size:.75rem;flex-shrink:0}
+
+/* FAQ */
+.faq-box{margin-bottom:16px}
+.faq-title{font-size:1rem;font-weight:700;margin-bottom:16px}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden}
+.faq-q{padding:14px 20px;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text);transition:background .2s;user-select:none}
+.faq-q:hover{background:var(--bg3)}
+.faq-arrow{font-size:.65rem;color:var(--text3);transition:transform .25s;flex-shrink:0}
+.faq-item.open .faq-arrow{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.faq-a-inner{padding:0 20px 16px;font-size:.85rem;color:var(--text2);line-height:1.6}
+.faq-item.open .faq-a{max-height:200px}
+
+/* Guide mobile */
+@media(max-width:640px){
+  .guide-section{padding:48px 16px 60px}
+  .guide-step-body{padding:12px 20px 20px 20px}
+  .prereq-box,.quick-box,.restore-box,.changes-box{padding:18px 16px}
+  .changes-grid{grid-template-columns:1fr}
+  .guide-step-header{padding:16px 20px 0}
+  .guide-code{padding:10px 12px}
+  .guide-code code{font-size:.72rem}
+  .guide-output{font-size:.65rem;padding:10px 12px}
+}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* ============ LOCKED SEASONAL CARDS ============ */
+.skin-card.locked{opacity:.55;filter:grayscale(.5);pointer-events:none;position:relative}
+.skin-card.locked .card-preview{position:relative}
+.card-locked-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5;border-radius:var(--radius) var(--radius) 0 0;gap:6px}
+.card-locked-overlay .lock-icon{font-size:1.8rem}
+.card-locked-overlay .lock-text{font-size:.75rem;font-weight:700;color:#fff;letter-spacing:.04em}
+.card-locked-overlay .lock-dates{font-size:.65rem;color:rgba(255,255,255,.7);font-weight:500}
+.seasonal-active-badge{display:inline-block;font-size:.65rem;font-weight:700;color:#69f0ae;background:rgba(105,240,174,.1);border:1px solid rgba(105,240,174,.3);padding:2px 8px;border-radius:6px;margin-left:6px}
+
+/* ============ SUPPLY TRACKING (LEGENDARY) ============ */
+.supply-track{padding:0 20px 14px}
+.supply-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.supply-bar-fill{height:100%;border-radius:3px;transition:width .6s ease;background:linear-gradient(90deg,#ffea00,#ff8f00)}
+.supply-info{display:flex;justify-content:space-between;align-items:center;font-size:.7rem}
+.supply-remaining{font-weight:700;color:var(--legendary)}
+.supply-total{color:var(--text3)}
+.claim-btn{width:100%;padding:10px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:.02em;margin-top:8px}
+.claim-btn.available{background:linear-gradient(135deg,#ffd700,#ff8f00);color:#1a0a00}
+.claim-btn.available:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(255,215,0,.4)}
+.claim-btn.claimed{background:#1b5e20;color:#69f0ae;cursor:default}
+.claim-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* ============ SOLD OUT OVERLAY ============ */
+.skin-card.sold-out{opacity:.45;filter:grayscale(.7)}
+.skin-card.sold-out .card-preview{position:relative}
+.sold-out-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:5;border-radius:var(--radius) var(--radius) 0 0}
+.sold-out-text{font-size:1.4rem;font-weight:900;color:#ff1744;letter-spacing:.12em;text-transform:uppercase;transform:rotate(-12deg);text-shadow:0 2px 8px rgba(0,0,0,.6);border:3px solid #ff1744;padding:6px 20px;border-radius:6px;background:rgba(0,0,0,.4)}
+
+/* ============ TOOLKIT NAV ============ */
+.toolkit-nav{position:fixed;top:0;left:0;right:0;z-index:9999;height:50px;background:var(--nav-bg,#0d0d14);border-bottom:1px solid var(--nav-border,rgba(255,255,255,.08));font-family:'Inter',system-ui,sans-serif;transition:background .3s,border-color .3s}
+.nav-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-brand{font-size:.85rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand:hover{text-decoration:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;color:var(--text2);text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:rgba(124,77,255,.05);text-decoration:none}
+.nav-link.active{color:#7c4dff;background:rgba(124,77,255,.1)}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px}
+.nav-toggle span{display:block;width:20px;height:2px;background:var(--text2);border-radius:1px;transition:all .3s}
+@media(max-width:680px){.nav-toggle{display:flex}.nav-links{display:none;position:absolute;top:50px;left:0;right:0;background:var(--nav-bg,#0d0d14);border-bottom:1px solid var(--nav-border,rgba(255,255,255,.08));flex-direction:column;padding:8px 16px;gap:2px}.nav-links.open{display:flex}.nav-link{padding:10px 14px;font-size:.85rem}}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<nav class="toolkit-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Claude Code Toolkit</a><button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navLinks"><a href="index.html" class="nav-link">Home</a><a href="skins.html" class="nav-link active">Skins</a><a href="generator.html" class="nav-link">Generator</a><a href="prompts.html" class="nav-link">Prompts</a><a href="rules.html" class="nav-link">Rules</a><a href="replayer.html" class="nav-link">Replayer</a></div></div></nav>
+
+<div class="page-wrap">
+
+<!-- SOCIAL LINKS -->
+<div class="social-links">
+  <a href="https://github.com/ClaudevGuy/claude-skins" target="_blank" rel="noopener" class="social-link" title="GitHub">
+    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+  </a>
+  <a href="https://x.com/ClaudeGuy_" target="_blank" rel="noopener" class="social-link" title="X / Twitter">
+    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+  </a>
+</div>
+
+<!-- THEME TOGGLE -->
+<button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme">&#x1F319;</button>
+
+<!-- HERO -->
+<section class="hero">
+  <h1 class="hero-title">CLAUDE SKINS</h1>
+  <p class="hero-sub">Full editor theming for Claude Code. 25 skins. Your mascot, sidebar, terminal, and status bar &mdash; all in one command.</p>
+  <a href="#installGuide" class="hero-install-btn">&#128218; Installation Guide</a>
+  <div class="hero-stats" id="heroStats"></div>
+  <div class="hero-mascot" id="heroMascot"></div>
+</section>
+
+<!-- FULL EDITOR THEMING -->
+<section class="theming-section">
+  <div class="theming-header">
+    <h2 class="theming-headline">Your entire editor. One skin.</h2>
+    <p class="theming-sub">Not just a mascot swap. Every pixel of your VS Code transforms &mdash; background, sidebar, tabs, terminal, status bar, brackets, cursor. One command.</p>
+  </div>
+  <div class="vscode-mockup" id="vscodeMockup">
+    <div class="mock-titlebar">
+      <span class="mock-dot" style="background:#ff5f57"></span>
+      <span class="mock-dot" style="background:#febc2e"></span>
+      <span class="mock-dot" style="background:#28c840"></span>
+    </div>
+    <div class="mock-body" id="mockBody">
+      <div class="mock-activity" id="mockActivity">
+        <div class="mock-act-icon"></div>
+        <div class="mock-act-icon"></div>
+        <div class="mock-act-icon"></div>
+        <div class="mock-act-icon"></div>
+      </div>
+      <div class="mock-sidebar" id="mockSidebar">
+        <div class="mock-side-item" style="width:90%"></div>
+        <div class="mock-side-item" style="width:65%"></div>
+        <div class="mock-side-item" style="width:80%"></div>
+        <div class="mock-side-item" style="width:50%"></div>
+        <div class="mock-side-item" style="width:70%"></div>
+        <div class="mock-side-item" style="width:55%"></div>
+      </div>
+      <div class="mock-tabs" id="mockTabs">
+        <div class="mock-tab active">index.ts</div>
+        <div class="mock-tab">utils.ts</div>
+      </div>
+      <div class="mock-editor" id="mockEditor">
+        <div class="mock-line" style="width:40%"></div>
+        <div class="mock-line" style="width:70%"></div>
+        <div class="mock-line" style="width:55%"></div>
+        <div class="mock-line" style="width:30%"></div>
+        <div class="mock-line" style="width:65%"></div>
+        <div class="mock-line" style="width:45%"></div>
+        <div class="mock-line" style="width:60%"></div>
+      </div>
+      <div class="mock-status" id="mockStatus">
+        <span>main</span><span>UTF-8</span><span>TypeScript</span>
+      </div>
+    </div>
+    <div class="mock-labels">
+      <span class="mock-label" style="top:60px;left:4px;font-size:.5rem">Activity Bar</span>
+      <span class="mock-label" style="top:60px;left:56px">Sidebar</span>
+      <span class="mock-label" style="top:46px;right:80px">Tabs</span>
+      <span class="mock-label" style="top:55%;right:40px">Editor</span>
+      <span class="mock-label" style="bottom:4px;right:40px">Status Bar</span>
+    </div>
+  </div>
+  <div class="theming-features">
+    <div class="theming-feat"><div class="theming-feat-num">99</div><div class="theming-feat-label">Color keys themed</div></div>
+    <div class="theming-feat"><div class="theming-feat-num">16</div><div class="theming-feat-label">Terminal ANSI colors</div></div>
+    <div class="theming-feat"><div class="theming-feat-num">0</div><div class="theming-feat-label">Dependencies</div></div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<nav class="filter-bar" id="filterBar">
+  <button class="filter-btn active" data-rarity="all">All <span class="filter-count">25</span></button>
+</nav>
+
+<!-- SKIN GRID -->
+<section class="grid-section">
+  <div class="skin-grid" id="skinGrid"></div>
+</section>
+
+<!-- COMMUNITY CREATIONS -->
+<section class="community-section" id="communityCreations">
+  <div class="community-header">
+    <h2 class="community-title">Community Creations</h2>
+    <p class="community-sub">Skins built by the community. Fork the repo, add your skin, open a PR.</p>
+    <div class="community-stats">
+      <span class="community-count"><strong id="communityCount">0</strong> community skins</span>
+      <a href="https://github.com/ClaudevGuy/claude-skins/blob/main/CONTRIBUTING.md" target="_blank" class="contribute-btn">+ Submit Your Skin</a>
+    </div>
+  </div>
+  <div class="community-grid" id="communityGrid">
+    <div class="community-empty" id="communityEmpty">No community skins yet. Be the first to contribute!</div>
+  </div>
+</section>
+
+<!-- INSTALLATION GUIDE -->
+<section class="guide-section" id="installGuide">
+  <div class="guide-header">
+    <h2 class="guide-title">Installation Guide</h2>
+    <p class="guide-sub">Clone, scan, apply. Your entire editor transforms in under 60 seconds.</p>
+  </div>
+
+  <!-- Prerequisites -->
+  <div class="prereq-box">
+    <div class="prereq-title">Prerequisites</div>
+    <ul class="prereq-list">
+      <li class="prereq-item"><span class="prereq-check">&#x2713;</span><span><a href="https://nodejs.org" target="_blank" rel="noopener">Node.js 18+</a> installed</span></li>
+      <li class="prereq-item"><span class="prereq-check">&#x2713;</span><span>VS Code or Cursor with the Claude Code extension</span></li>
+      <li class="prereq-item"><span class="prereq-check">&#x2713;</span><span>Git installed</span></li>
+    </ul>
+  </div>
+
+  <!-- Step-by-step -->
+  <div class="guide-steps">
+
+    <!-- Step 1 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">1</div>
+        <div class="step-label">Clone the repo</div>
+      </div>
+      <div class="guide-step-body">
+        <p>Grab the source. Zero dependencies &mdash; nothing to install.</p>
+        <div class="guide-code"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">2</div>
+        <div class="step-label">Scan your system</div>
+      </div>
+      <div class="guide-step-body">
+        <p>Finds your Claude Code installation and shows what can be customized.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js scan</code><button class="copy-btn" data-copy="node bin/claude-skins.js scan">Copy</button></div>
+        <div class="guide-output"><span class="g">&#x2713;</span> Found VS Code extension: claude-code v2.1.56<br><span class="g">&#x2713;</span> Patchable: mascot, logo, icon<br><span class="g">&#x2713;</span> Welcome art: dark + light variants<br><span class="g">&#x2713;</span> Webview mascot: inline SVG<br><span class="d">&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;</span><br><span class="y">Ready to apply skins.</span></div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">3</div>
+        <div class="step-label">Browse available skins</div>
+      </div>
+      <div class="guide-step-body">
+        <p>See all 25 skins with rarity tiers, color palettes, and ASCII previews right in your terminal.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js list</code><button class="copy-btn" data-copy="node bin/claude-skins.js list">Copy</button></div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">4</div>
+        <div class="step-label">Apply a skin</div>
+      </div>
+      <div class="guide-step-body">
+        <p>One command changes everything &mdash; mascot, editor theme, sidebar, terminal colors, status bar, cursor, brackets, and 99 color keys.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js apply &lt;skin-id&gt;</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply ">Copy</button></div>
+        <p>Examples:</p>
+        <div class="guide-example">
+          <code><span style="color:var(--text3)">$</span> <span style="color:var(--uncommon)">node bin/claude-skins.js apply fire</span></code>
+          <code><span style="color:var(--text3)">$</span> <span style="color:var(--uncommon)">node bin/claude-skins.js apply holographic</span></code>
+          <code><span style="color:var(--text3)">$</span> <span style="color:var(--uncommon)">node bin/claude-skins.js apply solana-degen</span></code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">5</div>
+        <div class="step-label">Reload VS Code</div>
+      </div>
+      <div class="guide-step-body">
+        <p>Trigger a window reload so VS Code picks up the new assets and theme.</p>
+        <div class="guide-code"><code>Ctrl+Shift+P &rarr; &quot;Reload Window&quot;</code><button class="copy-btn" data-copy="Ctrl+Shift+P">Copy</button></div>
+        <p>Or just close and reopen VS Code. That works too.</p>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="guide-step">
+      <div class="guide-step-header">
+        <div class="step-number">6</div>
+        <div class="step-label">Auto-reapply after updates <span style="font-size:.7rem;font-weight:500;color:var(--text3);margin-left:6px">optional</span></div>
+      </div>
+      <div class="guide-step-body">
+        <p>Claude Code updates can reset your skin. The watcher detects changes and re-applies automatically in the background.</p>
+        <div class="guide-code"><code>node bin/claude-skins.js watch</code><button class="copy-btn" data-copy="node bin/claude-skins.js watch">Copy</button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick one-liner -->
+  <div class="quick-box">
+    <div class="quick-box-label">Quick Apply</div>
+    <div class="quick-box-sub">Want it fast? Pick a skin from above, then run one line:</div>
+    <div class="guide-code"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply fire</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply fire">Copy</button></div>
+  </div>
+
+  <!-- Undo / Restore -->
+  <div class="restore-box">
+    <div class="restore-title">Changed your mind?</div>
+    <p>Restore everything to default &mdash; original mascot, theme, and VS Code settings from backup.</p>
+    <div class="guide-code"><code>node bin/claude-skins.js restore</code><button class="copy-btn" data-copy="node bin/claude-skins.js restore">Copy</button></div>
+  </div>
+
+  <!-- What gets changed -->
+  <div class="changes-box">
+    <div class="changes-title">What Gets Changed</div>
+    <div class="changes-grid">
+      <div class="change-item"><span class="ch">&#x2713;</span> Welcome screen mascot</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Editor background &amp; foreground</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Sidebar &amp; activity bar colors</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Status bar</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Tab styling</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Terminal ANSI colors</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Cursor color</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Bracket pair colors</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Selection highlights</div>
+      <div class="change-item"><span class="ch">&#x2713;</span> Extension icon &amp; favicon</div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-box">
+    <div class="faq-title">FAQ</div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Is this safe?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. Every file is backed up before patching. Run <code style="color:var(--uncommon)">node bin/claude-skins.js restore</code> to undo everything and return to the original state.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Will it survive Claude Code updates?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Extensions updates may reset patched files. Use <code style="color:var(--uncommon)">node bin/claude-skins.js watch</code> to auto-reapply your skin whenever files change.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Can I make my own skin?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Drop a folder with a <code style="color:var(--uncommon)">manifest.json</code> + <code style="color:var(--uncommon)">mascot.svg</code> into the <code style="color:var(--uncommon)">skins/</code> directory. The tool picks it up automatically.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Does it work with Cursor?</span><span class="faq-arrow">&#x25BC;</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. The scan command auto-detects both VS Code and Cursor installations. It patches whichever it finds.</div></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-line">Made for the Claude Code community</div>
+  <div class="footer-line"><a href="https://github.com/ClaudevGuy/claude-skins" target="_blank">github.com/ClaudevGuy/claude-skins</a></div>
+  <div class="footer-line">Zero dependencies &middot; Pure Node.js &middot; MIT License</div>
+</footer>
+
+</div>
+
+<script>
+/* Nav toggle */
+document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open')});
+
+/* ============================================================
+   DATA — metadata only, SVGs loaded from skins/ directory
+   ============================================================ */
+const RARITY_ORDER={Legendary:0,Epic:1,Seasonal:2,Rare:3,Uncommon:4,Common:5};
+const RARITY_COLORS={Common:'#8b8b8b',Uncommon:'#4fc3f7',Rare:'#ffd700',Epic:'#ff4081',Seasonal:'#ff9800',Legendary:'#ffea00'};
+const RARITY_COUNTS={Common:0,Uncommon:0,Rare:0,Epic:0,Seasonal:0,Legendary:0};
+
+const SKINS=[
+  {id:'ice-blue',name:'Ice Blue',rarity:'Common',desc:'Frozen solid. Cool under pressure.',theme:{editor:'#0a1a2a',sidebar:'#071320',bar:'#040a14',accent:'#4fc3f7',status:'#4fc3f7'}},
+  {id:'forest-green',name:'Forest Green',rarity:'Common',desc:'Camouflaged in the codebase.',theme:{editor:'#0a1f0a',sidebar:'#071507',bar:'#040d04',accent:'#66bb6a',status:'#66bb6a'}},
+  {id:'midnight-purple',name:'Midnight Purple',rarity:'Common',desc:'Late night coding only.',theme:{editor:'#1a0a2a',sidebar:'#120718',bar:'#0a040f',accent:'#ab47bc',status:'#ab47bc'}},
+  {id:'blood-red',name:'Blood Red',rarity:'Common',desc:'Debugging at 3am.',theme:{editor:'#1f0a0a',sidebar:'#150707',bar:'#0d0404',accent:'#ef5350',status:'#ef5350'}},
+  {id:'slate',name:'Slate',rarity:'Common',desc:'Clean. Minimal.',theme:{editor:'#141b1f',sidebar:'#0e1317',bar:'#080c0f',accent:'#78909c',status:'#78909c'}},
+  {id:'gold-edition',name:'Gold Edition',rarity:'Uncommon',desc:'Ship to prod with confidence.',theme:{editor:'#1f1a00',sidebar:'#151100',bar:'#0d0a00',accent:'#ffd700',status:'#ffd700'}},
+  {id:'neon-pink',name:'Neon Pink',rarity:'Uncommon',desc:'Hot pink. Impossible to ignore.',theme:{editor:'#1f0a15',sidebar:'#15070f',bar:'#0d0408',accent:'#ff4081',status:'#ff4081'}},
+  {id:'electric-cyan',name:'Electric Cyan',rarity:'Uncommon',desc:'Pure voltage.',theme:{editor:'#001a1f',sidebar:'#001217',bar:'#000a0f',accent:'#00e5ff',status:'#00e5ff'}},
+  {id:'sunset',name:'Sunset',rarity:'Uncommon',desc:'Golden hour. Ship before dark.',theme:{editor:'#1f1008',sidebar:'#150b05',bar:'#0d0703',accent:'#ff8a65',status:'#ff8a65'}},
+  {id:'diamond',name:'Diamond',rarity:'Rare',desc:'Flawless. The flex skin.',theme:{editor:'#0a1a1f',sidebar:'#071217',bar:'#040a0f',accent:'#e0f7fa',status:'#b3e5fc'}},
+  {id:'fire',name:'Fire',rarity:'Rare',desc:'Straight heat.',theme:{editor:'#1a0a00',sidebar:'#120700',bar:'#0a0400',accent:'#ff5722',status:'#ff5722'}},
+  {id:'shadow',name:'Shadow',rarity:'Rare',desc:'Sees your bugs.',theme:{editor:'#0a0a0f',sidebar:'#060608',bar:'#030304',accent:'#ff0044',status:'#1a1a2e'}},
+  {id:'demon',name:'Demon',rarity:'Rare',desc:'Summoned from the stack trace.',theme:{editor:'#1a0505',sidebar:'#120303',bar:'#0a0202',accent:'#ff4444',status:'#d32f2f'}},
+  {id:'gentleman',name:'Gentleman',rarity:'Rare',desc:'Sir codes-a-lot.',theme:{editor:'#0d0d1f',sidebar:'#080815',bar:'#04040a',accent:'#5c6bc0',status:'#5c6bc0'}},
+  {id:'angel',name:'Angel',rarity:'Rare',desc:'Zero bugs. Divinely clean.',theme:{editor:'#1f1c14',sidebar:'#15140e',bar:'#0d0c08',accent:'#fff3e0',status:'#fff8e1'}},
+  {id:'solana-degen',name:'Solana Degen',rarity:'Rare',desc:'Wen moon? SOL chain on.',theme:{editor:'#041f15',sidebar:'#03150f',bar:'#020d08',accent:'#14f195',status:'#14f195'}},
+  {id:'bitcoin-og',name:'Bitcoin OG',rarity:'Rare',desc:'HODL. Laser eyes. Block 0.',theme:{editor:'#1a0f04',sidebar:'#120a03',bar:'#0a0602',accent:'#f7931a',status:'#f7931a'}},
+  {id:'holographic',name:'Holographic',rarity:'Epic',desc:'Full spectrum shift.',theme:{editor:'#140a1f',sidebar:'#0e0715',bar:'#08040a',accent:'#e040fb',status:'#e040fb'}},
+  {id:'crown-royal',name:'Crown Royal',rarity:'Epic',desc:'King of the codebase.',theme:{editor:'#140a20',sidebar:'#0e0718',bar:'#08040f',accent:'#ffd700',status:'#7b1fa2'}},
+  {id:'void-walker',name:'Void Walker',rarity:'Epic',desc:'Crossed /dev/null. Came back wrong.',theme:{editor:'#050008',sidebar:'#030005',bar:'#020003',accent:'#7c4dff',status:'#0a0014'}},
+  {id:'winter-frost',name:'Winter Frost',rarity:'Seasonal',desc:'Limited launch drop. 2 weeks only.',season:'Feb 26 \u2013 Mar 12',available_from:'2026-02-26',available_until:'2026-03-12',theme:{editor:'#0a1420',sidebar:'#070e18',bar:'#04080f',accent:'#bbdefb',status:'#e3f2fd'}},
+  {id:'sakura-bloom',name:'Sakura Bloom',rarity:'Seasonal',desc:'Limited launch drop. 2 weeks only.',season:'Feb 26 \u2013 Mar 12',available_from:'2026-02-26',available_until:'2026-03-12',theme:{editor:'#1f0a14',sidebar:'#15070e',bar:'#0d0408',accent:'#f48fb1',status:'#f8bbd0'}},
+  {id:'halloween-haunt',name:'Halloween Haunt',rarity:'Seasonal',desc:'Limited launch drop. 2 weeks only.',season:'Feb 26 \u2013 Mar 12',available_from:'2026-02-26',available_until:'2026-03-12',theme:{editor:'#1f0f00',sidebar:'#150a00',bar:'#0d0600',accent:'#76ff03',status:'#ff6f00'}},
+  {id:'genesis',name:'Genesis',rarity:'Legendary',desc:'First 500. Never again.',supply:500,theme:{editor:'#1f1a00',sidebar:'#151100',bar:'#0d0a00',accent:'#ffd700',status:'#ffd700'}},
+  {id:'obsidian',name:'Obsidian',rarity:'Legendary',desc:'Only 200. Volcanic glass.',supply:200,theme:{editor:'#08040f',sidebar:'#050308',bar:'#030204',accent:'#e040fb',status:'#1a1a1a'}}
+];
+SKINS.forEach(s=>RARITY_COUNTS[s.rarity]++);
+SKINS.sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
+
+/* ============================================================
+   DATE & SUPPLY ENFORCEMENT
+   ============================================================ */
+// Seasonal availability — check date window
+function isSeasonalAvailable(s){
+  if(!s.available_from||!s.available_until) return true;
+  var now=new Date(),from=new Date(s.available_from+'T00:00:00'),until=new Date(s.available_until+'T23:59:59');
+  return now>=from&&now<=until;
+}
+
+// Supply state — populated from API
+const supplyState={};
+
+// Fetch supply from backend
+async function fetchSupply(){
+  try{
+    const res=await fetch('/api/supply');
+    if(!res.ok) return;
+    const data=await res.json();
+    for(const[skinId,info]of Object.entries(data)){
+      supplyState[skinId]=info;
+      updateSupplyUI(skinId,info);
+    }
+  }catch(e){
+    // API not available — show max supply as default
+    SKINS.forEach(function(s){
+      if(s.supply){
+        supplyState[s.id]={max:s.supply,remaining:s.supply,claimed:0};
+        updateSupplyUI(s.id,supplyState[s.id]);
+      }
+    });
+  }
+}
+
+// Update a single card's supply display
+function updateSupplyUI(skinId,info){
+  const bar=document.querySelector('.supply-bar-fill[data-skin="'+skinId+'"]');
+  const remaining=document.querySelector('.supply-remaining[data-skin="'+skinId+'"]');
+  const card=document.querySelector('.skin-card[data-skin="'+skinId+'"]');
+  const claimBtn=document.querySelector('.claim-btn[data-skin="'+skinId+'"]');
+  if(bar) bar.style.width=Math.round((info.remaining/info.max)*100)+'%';
+  if(remaining) remaining.textContent=info.remaining+' remaining';
+  if(info.remaining<=0){
+    if(card&&!card.classList.contains('sold-out')){
+      card.classList.add('sold-out');
+      const preview=card.querySelector('.card-preview');
+      if(preview&&!preview.querySelector('.sold-out-overlay')){
+        const overlay=document.createElement('div');
+        overlay.className='sold-out-overlay';
+        overlay.innerHTML='<span class="sold-out-text">Sold Out</span>';
+        preview.appendChild(overlay);
+      }
+    }
+    if(claimBtn){claimBtn.disabled=true;claimBtn.textContent='SOLD OUT';}
+  }
+}
+
+// Check if user already claimed a legendary, lock all legendary buttons if so
+async function checkExistingClaim(){
+  try{
+    const res=await fetch('/api/check-claim');
+    const data=await res.json();
+    if(data.claimed){
+      lockAllLegendaryClaims(data.skin,data.serial);
+    }
+  }catch(e){}
+}
+
+// Lock all legendary claim buttons — user already used their one claim
+function lockAllLegendaryClaims(claimedSkin,serial){
+  document.querySelectorAll('.claim-btn').forEach(function(btn){
+    var skinId=btn.dataset.skin;
+    if(skinId===claimedSkin){
+      btn.className='claim-btn claimed';
+      btn.textContent='\u2713 Claimed #'+serial;
+      btn.disabled=true;
+    }else{
+      btn.className='claim-btn claimed';
+      btn.textContent='1 Legendary per user';
+      btn.disabled=true;
+      btn.style.background='#37474f';
+      btn.style.color='#78909c';
+    }
+  });
+  // Show install instructions for the claimed legendary
+  var infoEl=document.querySelector('.legendary-claimed-info[data-skin="'+claimedSkin+'"]');
+  if(infoEl){
+    infoEl.style.display='block';
+    infoEl.innerHTML=
+      '<div style="background:rgba(105,240,174,.08);border:1px solid rgba(105,240,174,.3);border-radius:8px;padding:12px;margin-bottom:8px">'+
+        '<div style="font-weight:700;color:#69f0ae;margin-bottom:4px">\u2713 You own '+claimedSkin.charAt(0).toUpperCase()+claimedSkin.slice(1)+' #'+serial+'</div>'+
+        '<div style="font-size:.8rem;color:var(--text2)">Install your skin below:</div>'+
+      '</div>'+
+      '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
+      '<div class="install-step"><code>node bin/claude-skins.js apply '+claimedSkin+'</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply '+claimedSkin+'">Copy</button></div>';
+  }
+}
+
+// Claim a legendary skin
+async function claimSkin(skinId,btn){
+  if(btn.disabled)return;
+  btn.disabled=true;btn.textContent='Claiming...';
+  try{
+    const res=await fetch('/api/claim',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({skin:skinId})
+    });
+    const data=await res.json();
+    if(data.success){
+      btn.className='claim-btn claimed';
+      btn.textContent='\u2713 Claimed #'+data.serial+' of '+data.max;
+      supplyState[skinId]={max:data.max,remaining:data.remaining,claimed:data.max-data.remaining};
+      updateSupplyUI(skinId,supplyState[skinId]);
+      // Lock the OTHER legendary buttons too
+      lockAllLegendaryClaims(skinId,data.serial);
+    }else if(data.reason==='sold_out'){
+      btn.textContent='SOLD OUT';
+      supplyState[skinId]={max:data.max,remaining:0,claimed:data.max};
+      updateSupplyUI(skinId,supplyState[skinId]);
+    }else if(data.reason==='already_claimed'){
+      // They already claimed — parse which one and lock everything
+      var parts=data.claimed_skin.split(':');
+      lockAllLegendaryClaims(parts[0],parseInt(parts[1],10));
+    }else{
+      btn.disabled=false;btn.textContent='Claim \u2014 Error';
+      setTimeout(function(){btn.textContent='Claim Your Number';btn.className='claim-btn available';},2000);
+    }
+  }catch(e){
+    btn.disabled=false;btn.className='claim-btn available';btn.textContent='Claim (offline)';
+  }
+}
+
+/* ============================================================
+   SVG LOADER — fetches actual mascot.svg from skins/ directory
+   ============================================================ */
+async function loadSVG(skinId, target){
+  try{
+    const resp=await fetch('skins/'+skinId+'/mascot.svg');
+    if(!resp.ok) return;
+    const text=await resp.text();
+    target.innerHTML=text;
+  }catch(e){}
+}
+
+function loadAllSVGs(){
+  SKINS.forEach(function(s){
+    var el=document.querySelector('.card-preview[data-skin="'+s.id+'"]');
+    if(el) loadSVG(s.id,el);
+  });
+  // Hero mascot
+  loadSVG('holographic',document.getElementById('heroMascot'));
+}
+
+/* ============================================================
+   RENDER UI
+   ============================================================ */
+// Hero stats
+const heroStats=document.getElementById('heroStats');
+Object.entries(RARITY_COUNTS).forEach(([r,c])=>{
+  const el=document.createElement('div');
+  el.className='hero-stat';
+  el.style.borderColor=RARITY_COLORS[r];el.style.color=RARITY_COLORS[r];
+  el.innerHTML='<span class="dot" style="background:'+RARITY_COLORS[r]+'"></span>'+c+' '+r;
+  heroStats.appendChild(el);
+});
+
+// Filter buttons
+const filterBar=document.getElementById('filterBar');
+const rarities=['Common','Uncommon','Rare','Epic','Seasonal','Legendary'];
+rarities.forEach(r=>{
+  const btn=document.createElement('button');
+  btn.className='filter-btn';btn.dataset.rarity=r;
+  btn.innerHTML=r+' <span class="filter-count">'+RARITY_COUNTS[r]+'</span>';
+  filterBar.appendChild(btn);
+});
+
+// Filter logic
+let activeFilter='all';
+filterBar.addEventListener('click',e=>{
+  const btn=e.target.closest('.filter-btn');
+  if(!btn)return;
+  filterBar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter=btn.dataset.rarity;
+  document.querySelectorAll('.skin-card').forEach(card=>{
+    const show=activeFilter==='all'||card.dataset.rarity===activeFilter;
+    card.style.display=show?'':'none';
+    if(!show)card.classList.remove('expanded');
+  });
+});
+
+// Scroll effect on filter bar
+window.addEventListener('scroll',()=>{
+  filterBar.classList.toggle('scrolled',window.scrollY>100);
+},{passive:true});
+
+// Skin grid
+const grid=document.getElementById('skinGrid');
+SKINS.forEach(s=>{
+  const isSeasonal=s.rarity==='Seasonal';
+  const isLegendary=s.rarity==='Legendary';
+  const isLocked=isSeasonal&&!isSeasonalAvailable(s);
+
+  const card=document.createElement('div');
+  card.className='skin-card rarity-'+s.rarity+(isLocked?' locked':'');
+  card.dataset.rarity=s.rarity;
+  card.dataset.skin=s.id;
+  card.style.setProperty('--glow-color',RARITY_COLORS[s.rarity]);
+
+  let metaTags='';
+  if(s.season){
+    if(isLocked){
+      metaTags+='<span class="card-meta-tag" style="color:#ff9800;border-color:rgba(255,152,0,.3)">Available: '+s.season+'</span>';
+    }else if(isSeasonal){
+      metaTags+='<span class="card-meta-tag" style="color:#69f0ae;border-color:rgba(105,240,174,.3)">Available for launch \u2014 2 weeks only</span>';
+    }
+  }
+  if(s.supply) metaTags+='<span class="card-meta-tag limited-badge">Limited: '+s.supply+'</span>';
+
+  // Locked overlay for seasonal skins outside their date window
+  let lockedOverlay='';
+  if(isLocked){
+    lockedOverlay='<div class="card-locked-overlay"><span class="lock-icon">\uD83D\uDD12</span><span class="lock-text">Not Available</span><span class="lock-dates">'+s.season+'</span></div>';
+  }
+
+  // Supply tracker for legendary skins
+  let supplyHtml='';
+  if(isLegendary&&s.supply){
+    supplyHtml=
+      '<div class="supply-track">'+
+        '<div class="supply-bar"><div class="supply-bar-fill" data-skin="'+s.id+'" style="width:100%"></div></div>'+
+        '<div class="supply-info">'+
+          '<span class="supply-remaining" data-skin="'+s.id+'">'+s.supply+' remaining</span>'+
+          '<span class="supply-total">of '+s.supply+'</span>'+
+        '</div>'+
+        '<button class="claim-btn available" data-skin="'+s.id+'" onclick="claimSkin(\''+s.id+'\',this)">Claim Your Number</button>'+
+      '</div>';
+  }
+
+  const installId=s.id;
+  card.innerHTML=
+    '<div class="card-preview" data-skin="'+s.id+'"><div class="svg-placeholder">Loading...</div>'+lockedOverlay+'</div>'+
+    '<div class="card-body">'+
+      '<div class="card-top">'+
+        '<span class="card-name">'+s.name+'</span>'+
+        '<span class="rarity-badge">'+s.rarity+'</span>'+
+      '</div>'+
+      '<div class="card-desc">'+s.desc+'</div>'+
+      (metaTags?'<div class="card-meta">'+metaTags+'</div>':'')+
+    '</div>'+
+    (s.theme?
+    '<div class="card-palette">'+
+      ['editor','sidebar','bar','accent','status'].map(function(k){
+        var label=k==='bar'?'Bar':k.charAt(0).toUpperCase()+k.slice(1);
+        return '<div class="swatch"><div class="swatch-dot" style="background:'+s.theme[k]+';--sw-color:'+s.theme[k]+'"></div><span class="swatch-label">'+label+'</span><span class="swatch-hex">'+s.theme[k]+'</span></div>';
+      }).join('')+
+    '</div>':'')+
+    supplyHtml+
+    (isLegendary?
+    '<div class="card-install">'+
+      '<div class="install-title">Numbered Edition</div>'+
+      '<div style="font-size:.85rem;color:var(--text2);line-height:1.5;margin-bottom:8px">This is a <strong style="color:var(--legendary)">limited edition</strong> skin. Claim your serial number above, then install via CLI.</div>'+
+      '<div class="legendary-claimed-info" data-skin="'+s.id+'" style="display:none"></div>'+
+    '</div>':
+    '<div class="card-install">'+
+      '<div class="install-title">Install Instructions</div>'+
+      '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
+      '<div class="install-step"><code>node bin/claude-skins.js scan</code><button class="copy-btn" data-copy="node bin/claude-skins.js scan">Copy</button></div>'+
+      '<div class="install-step"><code>node bin/claude-skins.js apply '+installId+'</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply '+installId+'">Copy</button></div>'+
+      '<div class="install-step"><code># Reload VS Code: Ctrl+Shift+P &rarr; &quot;Reload Window&quot;</code><button class="copy-btn" data-copy="Ctrl+Shift+P \u2192 &quot;Reload Window&quot;">Copy</button></div>'+
+      '<div style="font-size:.75rem;color:var(--text2);margin:8px 0 4px;line-height:1.4">Applies <strong style="color:var(--text)">full editor theming</strong> &mdash; mascot, favicon, sidebar, tabs, terminal, status bar, brackets, cursor &amp; 99 color keys.</div>'+
+      '<div class="quick-apply">'+
+        '<div class="quick-apply-label">Quick Apply</div>'+
+        '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins &amp;&amp; node bin/claude-skins.js apply '+installId+'</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins && node bin/claude-skins.js apply '+installId+'">Copy</button></div>'+
+      '</div>'+
+    '</div>');
+  card.addEventListener('click',e=>{
+    if(e.target.closest('.copy-btn')||e.target.closest('.claim-btn'))return;
+    if(isLocked)return; // prevent expanding locked cards
+    const wasExpanded=card.classList.contains('expanded');
+    document.querySelectorAll('.skin-card.expanded').forEach(c=>c.classList.remove('expanded'));
+    if(!wasExpanded) card.classList.add('expanded');
+  });
+  grid.appendChild(card);
+});
+
+// Load all SVGs from skins/ directory
+loadAllSVGs();
+
+// Fetch supply data for legendary skins, then check user's claim status
+fetchSupply().then(function(){ checkExistingClaim(); });
+
+// Copy buttons
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.copy-btn');
+  if(!btn)return;
+  e.stopPropagation();
+  const text=btn.dataset.copy;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},1500);
+  });
+});
+
+/* ============================================================
+   COMMUNITY SKINS — loaded from generated index.json
+   ============================================================ */
+(async function loadCommunitySkins(){
+  var grid=document.getElementById('communityGrid');
+  var countEl=document.getElementById('communityCount');
+  var emptyEl=document.getElementById('communityEmpty');
+  try{
+    var resp=await fetch('community-skins/index.json');
+    if(!resp.ok)return;
+    var data=await resp.json();
+    if(!data.skins||data.skins.length===0)return;
+    emptyEl.style.display='none';
+    countEl.textContent=data.count;
+    data.skins.forEach(function(s){
+      var card=document.createElement('div');
+      card.className='community-card';
+      // Build color swatches
+      var swHtml='';
+      if(s.colors){
+        var keys=Object.keys(s.colors);
+        swHtml='<div class="card-palette">'+keys.map(function(k){
+          var lbl=k.charAt(0).toUpperCase()+k.slice(1);
+          return '<div class="swatch"><div class="swatch-dot" style="background:'+s.colors[k]+';--sw-color:'+s.colors[k]+'"></div><span class="swatch-label">'+lbl+'</span><span class="swatch-hex">'+s.colors[k]+'</span></div>';
+        }).join('')+'</div>';
+      }
+      card.innerHTML=
+        '<div class="card-preview" data-cskin="'+s.id+'"><div style="color:var(--text3);font-size:.8rem">Loading...</div></div>'+
+        '<div class="card-body">'+
+          '<div class="card-top"><span class="card-name">'+s.name+'</span><span class="community-badge">Community</span></div>'+
+          '<div class="card-desc" style="color:var(--text2);font-size:.85rem;margin-bottom:4px">'+(s.description||'')+'</div>'+
+          '<div class="community-author">by <a href="'+s.author_url+'" target="_blank" rel="noopener">@'+s.author+'</a></div>'+
+        '</div>'+swHtml+
+        '<div class="card-install">'+
+          '<div style="font-weight:700;margin-bottom:8px;font-size:.9rem">Install</div>'+
+          '<div class="install-step"><code>git clone https://github.com/ClaudevGuy/claude-skins.git &amp;&amp; cd claude-skins</code><button class="copy-btn" data-copy="git clone https://github.com/ClaudevGuy/claude-skins.git && cd claude-skins">Copy</button></div>'+
+          '<div class="install-step"><code>node bin/claude-skins.js apply '+s.id+'</code><button class="copy-btn" data-copy="node bin/claude-skins.js apply '+s.id+'">Copy</button></div>'+
+        '</div>';
+      card.addEventListener('click',function(e){
+        if(e.target.closest('.copy-btn'))return;
+        var was=card.classList.contains('expanded');
+        document.querySelectorAll('.community-card.expanded').forEach(function(c){c.classList.remove('expanded');});
+        if(!was)card.classList.add('expanded');
+      });
+      grid.appendChild(card);
+      // Load SVG
+      (async function(id,target){
+        try{
+          var r=await fetch('community-skins/'+id+'/mascot.svg');
+          if(r.ok){target.innerHTML=await r.text();}
+        }catch(e){}
+      })(s.id,card.querySelector('.card-preview'));
+    });
+  }catch(e){}
+})();
+
+/* ============================================================
+   VS CODE MOCKUP — cycle through skin themes
+   ============================================================ */
+(function(){
+  var mockBody=document.getElementById('mockBody');
+  if(!mockBody) return;
+  var mockActivity=document.getElementById('mockActivity');
+  var mockSidebar=document.getElementById('mockSidebar');
+  var mockTabs=document.getElementById('mockTabs');
+  var mockEditor=document.getElementById('mockEditor');
+  var mockStatus=document.getElementById('mockStatus');
+  var idx=0;
+  function applyMockTheme(){
+    var s=SKINS[idx];
+    var t=s.theme;
+    mockActivity.style.background=t.bar;
+    mockActivity.querySelectorAll('.mock-act-icon').forEach(function(el){el.style.background=t.accent;});
+    mockSidebar.style.background=t.sidebar;
+    mockSidebar.querySelectorAll('.mock-side-item').forEach(function(el){el.style.background=t.accent;});
+    mockTabs.style.background=t.sidebar;
+    var tabs=mockTabs.querySelectorAll('.mock-tab');
+    tabs[0].style.background=t.editor;tabs[0].style.color=t.accent;
+    if(tabs[1]){tabs[1].style.background=t.sidebar;tabs[1].style.color='rgba(255,255,255,.3)';}
+    mockEditor.style.background=t.editor;
+    mockEditor.querySelectorAll('.mock-line').forEach(function(el){el.style.background=t.accent;});
+    mockStatus.style.background=t.status;
+    idx=(idx+1)%SKINS.length;
+  }
+  applyMockTheme();
+  setInterval(applyMockTheme,2500);
+})();
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+(function(){
+  var toggle=document.getElementById('themeToggle');
+  var saved=localStorage.getItem('claude-skins-theme');
+  if(saved==='light'){document.documentElement.setAttribute('data-theme','light');toggle.textContent='\u2600\uFE0F';}
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='light';
+    if(isLight){document.documentElement.removeAttribute('data-theme');toggle.textContent='\uD83C\uDF19';localStorage.setItem('claude-skins-theme','dark');}
+    else{document.documentElement.setAttribute('data-theme','light');toggle.textContent='\u2600\uFE0F';localStorage.setItem('claude-skins-theme','light');}
+  });
+})();
+
+/* ============================================================
+   PARTICLE BACKGROUND
+   ============================================================ */
+(function(){
+  const canvas=document.getElementById('bgCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  const COUNT=60;
+  for(let i=0;i<COUNT;i++){
+    particles.push({
+      x:Math.random()*2000,y:Math.random()*2000,
+      vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
+      r:Math.random()*1.5+.5,
+      a:Math.random()*.3+.05
+    });
+  }
+  function getPC(){var s=getComputedStyle(document.documentElement);return{r:s.getPropertyValue('--particle-r').trim(),g:s.getPropertyValue('--particle-g').trim(),b:s.getPropertyValue('--particle-b').trim()};}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var c=getPC();
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba('+c.r+','+c.g+','+c.b+','+p.a+')';ctx.fill();
+    });
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+        const d=dx*dx+dy*dy;
+        if(d<18000){
+          ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle='rgba('+c.r+','+c.g+','+c.b+','+(.04*(1-d/18000))+')';ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
