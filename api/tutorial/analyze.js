@@ -12,43 +12,18 @@ function checkRateLimit(ip) {
   return true;
 }
 
-function generateFallbackTutorial(elements, pageInfo) {
-  const steps = [];
-  const visibleElements = elements.filter(e => e.rect.y < 800 && e.rect.width > 20);
-
-  // Step 1: main heading / overview
-  steps.push({
-    x: 640, y: 300, action: 'hover', zoom: 1.0, duration: 3000,
-    callout: pageInfo.title ? 'Welcome to ' + pageInfo.title.substring(0, 30) : 'Overview of the page',
-    elementText: pageInfo.h1 || pageInfo.title || 'Page'
-  });
-
-  // Step 2: largest button or link
-  const buttons = visibleElements.filter(e => e.tagName === 'button' || e.role === 'button' || e.tagName === 'a');
-  if (buttons.length > 0) {
-    const largest = buttons.sort((a, b) => (b.rect.width * b.rect.height) - (a.rect.width * a.rect.height))[0];
-    steps.push({
-      x: largest.rect.x + largest.rect.width / 2,
-      y: largest.rect.y + largest.rect.height / 2,
-      action: 'click', zoom: 1.5, duration: 3000,
-      callout: 'Click "' + (largest.text || 'this button').substring(0, 20) + '"',
-      elementText: largest.text || 'Button'
-    });
-  }
-
-  // Step 3: nav area
-  const navLinks = visibleElements.filter(e => e.tagName === 'a' && e.rect.y < 100);
-  if (navLinks.length > 0) {
-    steps.push({
-      x: navLinks[0].rect.x + navLinks[0].rect.width / 2,
-      y: navLinks[0].rect.y + navLinks[0].rect.height / 2,
-      action: 'hover', zoom: 1.5, duration: 3000,
-      callout: 'Use the navigation to explore more',
-      elementText: 'Navigation'
-    });
-  }
-
-  return { title: 'Tutorial: ' + (pageInfo.title || 'This Page'), steps };
+function generateFallbackTutorial(pageInfo) {
+  return {
+    title: 'Tutorial: ' + ((pageInfo && pageInfo.title) || 'This Page'),
+    steps: [
+      { x: 640, y: 100, action: 'hover', zoom: 1.0, duration: 3000,
+        callout: 'Welcome — let\'s explore this page', elementText: 'Overview' },
+      { x: 640, y: 300, action: 'click', zoom: 1.5, duration: 3000,
+        callout: 'Check out the main content area', elementText: 'Main Content' },
+      { x: 640, y: 500, action: 'hover', zoom: 1.3, duration: 3000,
+        callout: 'Scroll down for more information', elementText: 'More Content' },
+    ]
+  };
 }
 
 module.exports = async function handler(req, res) {
@@ -63,8 +38,8 @@ module.exports = async function handler(req, res) {
 
   const { screenshot, elements, pageInfo } = req.body || {};
 
-  if (!screenshot || !elements) {
-    return res.status(400).json({ error: 'Missing screenshot or elements data' });
+  if (!screenshot) {
+    return res.status(400).json({ error: 'Missing screenshot data' });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -74,6 +49,17 @@ module.exports = async function handler(req, res) {
       setup: true
     });
   }
+
+  // Build the prompt — use element data if available, otherwise rely on vision
+  const hasElements = elements && Array.isArray(elements) && elements.length > 0;
+
+  const elementContext = hasElements
+    ? `\n\nHere are all the interactive elements on the page with their pixel coordinates:\n${JSON.stringify(elements, null, 2)}`
+    : `\n\nNo pre-extracted element data is available. You must visually identify all interactive elements (buttons, links, inputs, navigation items, etc.) from the screenshot and estimate their pixel coordinates. The screenshot is 1280x800 pixels.`;
+
+  const coordInstructions = hasElements
+    ? '- x and y coordinates must match actual element positions from the data provided'
+    : '- Estimate x and y pixel coordinates based on the visual position of elements in the 1280x800 screenshot\n- Be as accurate as possible with coordinates — look at where elements actually are in the image';
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -99,19 +85,17 @@ module.exports = async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `You are analyzing a webpage to create a tutorial walkthrough.
+              text: `You are analyzing a webpage screenshot to create a tutorial walkthrough.
 
 Page title: ${(pageInfo && pageInfo.title) || ''}
 Page description: ${(pageInfo && pageInfo.description) || ''}
 Main heading: ${(pageInfo && pageInfo.h1) || ''}
-
-Here are all the interactive elements on the page with their pixel coordinates:
-${JSON.stringify(elements, null, 2)}
+${elementContext}
 
 Create a tutorial that walks a new user through this page. Generate 4-8 steps.
 
-For each step, choose the most important interactive element to highlight and provide:
-1. The exact pixel coordinates to move the cursor to (center of the element)
+For each step, identify the most important interactive element to highlight and provide:
+1. The exact pixel coordinates to move the cursor to (center of the element) within the 1280x800 viewport
 2. The action type: "click", "hover", "scroll", "type"
 3. A short callout text explaining what this element does (max 15 words)
 4. A zoom level (1.0 = no zoom, 1.5 = moderate zoom, 2.0 = close zoom)
@@ -135,7 +119,7 @@ Respond ONLY in this exact JSON format, no other text:
 Important:
 - Order steps in a logical user flow (what would a new user do first?)
 - Start with the most prominent/important element
-- x and y coordinates must match actual element positions from the data provided
+${coordInstructions}
 - Keep callout text concise and helpful
 - Set duration between 2000-4000ms per step (time to display each step)
 - For "type" actions, include a "typeText" field with example text to type
@@ -182,8 +166,7 @@ Important:
     }
 
     if (!tutorial || !tutorial.steps || !Array.isArray(tutorial.steps)) {
-      // Fallback tutorial
-      tutorial = generateFallbackTutorial(elements, pageInfo);
+      tutorial = generateFallbackTutorial(pageInfo);
     }
 
     // Validate and clean up steps
@@ -201,14 +184,14 @@ Important:
     }));
 
     if (tutorial.steps.length === 0) {
-      tutorial = generateFallbackTutorial(elements, pageInfo);
+      tutorial = generateFallbackTutorial(pageInfo);
     }
 
     res.status(200).json(tutorial);
   } catch (err) {
     // On any error, try fallback
     try {
-      const fallback = generateFallbackTutorial(elements || [], pageInfo || {});
+      const fallback = generateFallbackTutorial(pageInfo || {});
       return res.status(200).json(fallback);
     } catch (e) {
       return res.status(500).json({ error: 'Failed to generate tutorial: ' + (err.message || 'Unknown error') });
